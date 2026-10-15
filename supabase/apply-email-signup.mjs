@@ -48,7 +48,7 @@ await api("PATCH", "/config/auth", {
   ].join(","),
   disable_signup: false,
   mailer_autoconfirm: false,
-  mailer_subjects_confirmation: "Confirm your email – Pitstop Plus",
+  mailer_subjects_confirmation: "Confirm your email | Pitstop Plus",
   mailer_templates_confirmation_content: file("./templates/confirm-signup.html"),
 });
 

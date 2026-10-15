@@ -36,12 +36,12 @@ export default function Layout() {
     <div className="app">
       <header className="topbar no-print">
         <div className="topbar-inner">
-          <NavLink to="/" className="brand">
+          <NavLink to="/dashboard" className="brand">
             <Logo size={30} />
             <span>{settings?.shop_name || "Workshop Billing"}</span>
           </NavLink>
           <nav className="nav">
-            <NavLink to="/" end>
+            <NavLink to="/dashboard" end>
               Dashboard
             </NavLink>
             <NavLink to="/complaints/new">New complaint</NavLink>

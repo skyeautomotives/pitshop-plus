@@ -3,8 +3,11 @@ import { Link, Navigate, useLocation } from "react-router";
 import { useAuth } from "../lib/auth";
 import { errorMessage, isRemembered, rememberedEmail, setRememberMe, supabase } from "../lib/supabase";
 import { LOGIN_DOMAIN, loginEmail, normalizeUsername } from "../lib/username";
-import { authRedirectUrl } from "../lib/platform";
+import { authRedirectUrl, isNativeApp } from "../lib/platform";
+import { PlatformIcon } from "./marketing/Home";
+import { DOWNLOADS } from "./marketing/Site";
 import BrandMark from "../components/BrandMark";
+import { usePageTitle } from "../lib/usePageTitle";
 
 /** Remembered sign-in name: an owner's email, or a staff username (older versions saved <username>@pitstop.invalid). */
 function rememberedLogin(): string {
@@ -19,9 +22,10 @@ function signInEmail(login: string): string {
 }
 
 export default function Login() {
+  usePageTitle("Sign in");
   const { session, loading } = useAuth();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from || "/";
+  const from = (location.state as { from?: string } | null)?.from || "/dashboard";
   const [email, setEmail] = useState(rememberedLogin);
   const [unconfirmed, setUnconfirmed] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
@@ -123,6 +127,22 @@ export default function Login() {
           New workshop? <Link to="/register">Register your workshop</Link>
         </p>
         <p className="hint">Staff: sign in with the username your workshop owner gave you.</p>
+        {!isNativeApp && (
+          <div className="get-app">
+            <p>Get the app</p>
+            <div className="get-app-links">
+              <a href={DOWNLOADS.windows}>
+                <PlatformIcon kind="windows" /> Windows
+              </a>
+              <a href={DOWNLOADS.android}>
+                <PlatformIcon kind="android" /> Android
+              </a>
+            </div>
+            <Link to="/download" className="get-app-more">
+              All downloads and install help
+            </Link>
+          </div>
+        )}
       </form>
     </main>
   );

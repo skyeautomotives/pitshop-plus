@@ -348,7 +348,7 @@ function SalesBody({
                             <td className="num">{formatINR(d.spares)}</td>
                             <td className="num">{formatINR(d.labour)}</td>
                             <td className="num">{formatINR(d.services)}</td>
-                            <td className="num">{d.discount > 0 ? `−${formatINR(d.discount)}` : "—"}</td>
+                            <td className="num">{d.discount > 0 ? `−${formatINR(d.discount)}` : "-"}</td>
                           </>
                         ) : (
                           <td className="num">{formatINR(d.excludingLabour)}</td>
@@ -369,7 +369,7 @@ function SalesBody({
                           <td className="num">{formatINR(monthTotal.labour)}</td>
                           <td className="num">{formatINR(monthTotal.services)}</td>
                           <td className="num">
-                            {monthTotal.discount > 0 ? `−${formatINR(monthTotal.discount)}` : "—"}
+                            {monthTotal.discount > 0 ? `−${formatINR(monthTotal.discount)}` : "-"}
                           </td>
                         </>
                       ) : (

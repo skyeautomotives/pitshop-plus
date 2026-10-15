@@ -1,0 +1,22 @@
+{
+  "name": "Pitstop Plus",
+  "short_name": "Pitstop Plus",
+  "description": "Billing for automobile workshops, by Skye Automotives",
+  "start_url": "./login",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F1F4B",
+  "theme_color": "#0F1F4B",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

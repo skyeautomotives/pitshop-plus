@@ -63,7 +63,7 @@ export function ComplaintCard({ complaint, showCustomer = true }: { complaint: C
         <span className="reg">{c.vehicle_reg}</span>
         {showCustomer && <span>{c.phone}</span>}
         <span>Reported {formatDate(c.reported_on)}</span>
-        <span>Attended by {c.attended_by || "—"}</span>
+        <span>Attended by {c.attended_by || "not recorded"}</span>
       </div>
       <div className="result-links">
         {c.bills.length === 0 ? (

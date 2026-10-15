@@ -2173,3 +2173,55 @@ h3 {
   margin-top: 8px;
   font-weight: 600;
 }
+
+/* "Get the app" on the sign-in page (website only). */
+.get-app {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.get-app > p {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.get-app-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.get-app-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.get-app-links a:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.get-app-links svg {
+  width: 22px;
+  height: 22px;
+}
+
+.get-app-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.88rem;
+}

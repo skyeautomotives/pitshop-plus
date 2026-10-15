@@ -119,7 +119,7 @@ Netlify, Cloudflare Pages and similar hosts work the same way: build command `np
 The same app is also built as a Windows installer (Tauri) and an Android APK (Capacitor). Both use the same Supabase project and logins as the website.
 
 - **Build them:** GitHub → **Actions → Build apps → Run workflow**. When it finishes, download `windows-installer` and `android-apk` from the run's **Artifacts**.
-- **Publish a version:** bump `version` in `package.json`, then push a tag such as `v0.1.0`. The workflow attaches `PitstopPlus-Setup-<version>.exe` and `PitstopPlus-<version>.apk` to a new GitHub Release.
+- **Publish a version:** bump `version` in `package.json`, then push a tag such as `v0.1.0`. The workflow attaches `PitstopPlus-Setup.exe` and `PitstopPlus.apk` to a new GitHub Release; the website's Download page always links to the latest one.
 - **Locally** (optional): `npm run tauri dev` needs Rust; `npm run android:sync`, then open `android/` in Android Studio.
 
 Notes:

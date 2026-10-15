@@ -38,9 +38,8 @@ jobs:
       - name: Name the installer
         shell: bash
         run: |
-          ver=$(node -p "require('./package.json').version")
           mkdir out
-          cp src-tauri/target/release/bundle/nsis/*.exe "out/PitstopPlus-Setup-$ver.exe"
+          cp src-tauri/target/release/bundle/nsis/*.exe out/PitstopPlus-Setup.exe
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
@@ -68,9 +67,8 @@ jobs:
           ./gradlew assembleDebug --no-daemon
       - name: Name the APK
         run: |
-          ver=$(node -p "require('./package.json').version")
           mkdir out
-          cp android/app/build/outputs/apk/debug/app-debug.apk "out/PitstopPlus-$ver.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/PitstopPlus.apk
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
@@ -89,7 +87,7 @@ jobs:
         with:
           name: Pitstop Plus ${{ github.ref_name }}
           body: |
-            **Windows:** download `PitstopPlus-Setup-*.exe` and run it. If Windows shows "Windows protected your PC", click *More info → Run anyway*.
-            **Android:** download `PitstopPlus-*.apk` on the phone and open it. Allow "Install unknown apps" for your browser if asked.
-            **Web:** no install needed — use the website.
+            **Windows:** download `PitstopPlus-Setup.exe` and run it. If Windows shows "Windows protected your PC", click *More info → Run anyway*.
+            **Android:** download `PitstopPlus.apk` on the phone and open it. Allow "Install unknown apps" for your browser if asked.
+            **Web:** no install needed. Use the website.
           files: out/*

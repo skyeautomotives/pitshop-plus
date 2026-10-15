@@ -4,6 +4,7 @@ import { Field, fieldProps } from "../components/fields";
 import { useAuth } from "../lib/auth";
 import { authRedirectUrl } from "../lib/platform";
 import { errorMessage, supabase } from "../lib/supabase";
+import { usePageTitle } from "../lib/usePageTitle";
 
 const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,6 +34,7 @@ function validate(f: Form): Errors {
 
 /** Sign-up for a new workshop. Supabase emails a confirmation link; the workshop is created with the login. */
 export default function Register() {
+  usePageTitle("Register your workshop");
   const { session, loading } = useAuth();
   const [form, setForm] = useState<Form>({ shopName: "", fullName: "", phone: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Errors>({});
@@ -42,7 +44,7 @@ export default function Register() {
   const [resent, setResent] = useState(false);
 
   if (loading) return <p className="page-status">Loading…</p>;
-  if (session) return <Navigate to="/" replace />;
+  if (session) return <Navigate to="/dashboard" replace />;
 
   const set = (key: keyof Form) => (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [key]: e.target.value });

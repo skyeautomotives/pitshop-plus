@@ -122,7 +122,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
             {mismatched.map((c) => (
               <p key={c.id} className="mismatch-line">
                 Complaint <strong>#{c.complaint_number}</strong> is for vehicle <strong>{c.vehicle_reg}</strong>, but this bill
-                is for <strong>{customer.vehicleReg.toUpperCase() || "—"}</strong>.{" "}
+                is for <strong>{customer.vehicleReg.toUpperCase() || "no vehicle number"}</strong>.{" "}
                 <button type="button" className="link-button" onClick={() => onUseVehicle(c.vehicle_reg)}>
                   Use {c.vehicle_reg}
                 </button>{" "}
@@ -191,7 +191,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
                       </span>
                       <span className="picker-desc">{c.description}</span>
                       <span className="muted picker-meta">
-                        Attended by {c.attended_by || "—"}
+                        Attended by {c.attended_by || "not recorded"}
                         {otherBills.length > 0 && ` · Already on bill ${otherBills.map((b) => `#${b.bill_number}`).join(", ")}`}
                       </span>
                     </span>

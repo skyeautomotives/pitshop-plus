@@ -12,6 +12,8 @@ import { ComplaintView, EditComplaint, NewComplaint } from "./pages/ComplaintPag
 import Complaints from "./pages/Complaints";
 import EditBill from "./pages/EditBill";
 import Login from "./pages/Login";
+import Download from "./pages/marketing/Download";
+import Home from "./pages/marketing/Home";
 import NewBill from "./pages/NewBill";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
@@ -22,7 +24,7 @@ function NotFound() {
   return (
     <main className="container empty">
       <h1>Page not found</h1>
-      <Link to="/" className="btn btn-primary">
+      <Link to="/dashboard" className="btn btn-primary">
         Go to the dashboard
       </Link>
     </main>
@@ -34,6 +36,8 @@ function NotFound() {
 const createRouter = isNativeApp ? createHashRouter : createBrowserRouter;
 const router = createRouter(
   [
+    { path: "/", element: <Home /> },
+    { path: "/download", element: <Download /> },
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
     {
@@ -47,7 +51,7 @@ const router = createRouter(
         </RequireAuth>
       ),
       children: [
-        { index: true, element: <Dashboard /> },
+        { path: "dashboard", element: <Dashboard /> },
         { path: "bills/new", element: <NewBill /> },
         { path: "bills", element: <BillSearch /> },
         { path: "bills/:id", element: <BillView /> },
