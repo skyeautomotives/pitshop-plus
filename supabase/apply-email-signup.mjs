@@ -1,7 +1,9 @@
 // One-time update for email signup, through the Supabase Management API (HTTPS):
 //   1. runs migrations/0012_email_signup.sql (if not applied yet);
-//   2. turns on sign-ups with email confirmation, sets where email links go,
-//      and installs the branded "Confirm signup" email.
+//   2. turns on sign-ups with email confirmation and sets where email links go;
+//   3. installs the branded "Confirm signup" email once SMTP is set up
+//      (Supabase requires your own SMTP for custom templates on the free plan).
+// Safe to run again.
 // SMTP (the sending mailbox) is set in the dashboard: Authentication -> Emails -> SMTP Settings.
 //
 // Usage (PowerShell):  $env:SUPABASE_ACCESS_TOKEN="sbp_..."; node supabase/apply-email-signup.mjs
@@ -37,7 +39,7 @@ if (done[0]?.n > 0) {
   console.log("Database: email signup set up.");
 }
 
-// 2. Auth settings and the confirmation email
+// 2. Auth settings: sign-ups on, email confirmation on, where email links go.
 await api("PATCH", "/config/auth", {
   site_url: SITE,
   uri_allow_list: [
@@ -48,15 +50,25 @@ await api("PATCH", "/config/auth", {
   ].join(","),
   disable_signup: false,
   mailer_autoconfirm: false,
-  mailer_subjects_confirmation: "Confirm your email | Pitstop Plus",
-  mailer_templates_confirmation_content: file("./templates/confirm-signup.html"),
 });
 
-const cfg = await api("GET", "/config/auth");
+// 3. The branded confirmation email. Supabase only allows custom templates on the
+//    free plan once your own SMTP mailbox is set (Authentication -> Emails -> SMTP Settings).
+let cfg = await api("GET", "/config/auth");
+let template = "not installed yet: set up SMTP first, then run this script again";
+if (cfg.smtp_host) {
+  await api("PATCH", "/config/auth", {
+    mailer_subjects_confirmation: "Confirm your email | Pitstop Plus",
+    mailer_templates_confirmation_content: file("./templates/confirm-signup.html"),
+  });
+  cfg = await api("GET", "/config/auth");
+  template = "installed";
+}
+
 console.log("Auth settings:");
 console.log("  sign-ups allowed:      ", !cfg.disable_signup);
 console.log("  email confirmation on: ", !cfg.mailer_autoconfirm);
 console.log("  email links go to:     ", cfg.site_url);
-console.log("  confirmation subject:  ", cfg.mailer_subjects_confirmation);
-console.log("  custom SMTP host:      ", cfg.smtp_host || "(not set - using Supabase's test mailer, a few emails per hour)");
+console.log("  sending mailbox (SMTP):", cfg.smtp_host || "Supabase's built-in mailer (a few emails per hour)");
+console.log("  branded email:         ", template);
 console.log("Done.");
