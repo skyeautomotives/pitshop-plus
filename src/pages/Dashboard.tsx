@@ -9,6 +9,7 @@ import { salesForLastDays, shiftDay, summarize } from "../lib/sales";
 import { useShopSettings } from "../lib/shopSettings";
 import { useIsOwner, useMe } from "../lib/staff";
 import { useLoad } from "../lib/useLoad";
+import BrandMark from "../components/BrandMark";
 
 const CHART_DAYS = 14;
 
@@ -62,7 +63,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <section className="card dash-hero">
-        <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="dash-logo" />
+        <BrandMark className="dash-logo" />
         <div className="dash-welcome">
           <p className="dash-greet">
             {greeting()}

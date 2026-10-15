@@ -2151,3 +2151,32 @@ h3 {
   text-align: center;
   margin-top: 14px;
 }
+
+/* ---------- Brand byline ---------- */
+
+.brand-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-mark .login-logo {
+  margin-bottom: 0;
+}
+
+.byline {
+  margin: 2px 0 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.byline span {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dash-hero .byline {
+  margin-bottom: 0;
+}

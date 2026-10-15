@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation } from "react-router";
 import { useAuth } from "../lib/auth";
 import { errorMessage, isRemembered, rememberedEmail, setRememberMe, supabase } from "../lib/supabase";
 import { loginEmail, normalizeUsername } from "../lib/username";
+import BrandMark from "../components/BrandMark";
 
 /** Remembered sign-in name; older versions saved an email, whose first part is the username. */
 function rememberedUsername(): string {
@@ -44,7 +45,7 @@ export default function Login() {
       <form className="card login-card" onSubmit={onSubmit} noValidate>
         <div className="login-brand">
           <h1 className="sr-only">Pitstop Plus</h1>
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
+          <BrandMark />
           <p className="hint">Sign in to create and find bills.</p>
         </div>
         {error && (
