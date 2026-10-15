@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pitstop Plus"><rect width="512" height="512" rx="112" fill="#FFFFFF"/><g transform="translate(40 52) scale(1.0)"><defs>
+<linearGradient id="aio" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB02E"/><stop offset="1" stop-color="#FF6B24"/></linearGradient>
+<mask id="aim" maskUnits="userSpaceOnUse" x="-20" y="-20" width="480" height="440"><rect x="-20" y="-20" width="480" height="440" fill="#fff"/><path d="M353 156h30v29h29v30h-29v29h-30v-29h-29v-30h29z" stroke="#000" stroke-width="20" stroke-linejoin="round"/></mask></defs>
+<g mask="url(#aim)">
+<path d="M116 345.49A168 168 0 0 1 246.31 38.51" fill="none" stroke="#101820" stroke-width="30" stroke-linecap="round"/>
+<path d="M262.93 44.23A168 168 0 0 1 368 200" fill="none" stroke="url(#aio)" stroke-width="30"/>
+</g>
+<path d="M83.95 267L103.01 256M66 200L88 200M83.95 133L103.01 144M133 83.95L144 103.01M200 66L200 88" stroke="#101820" stroke-width="12" stroke-linecap="round"/>
+<path d="M267 83.95L256 103.01M316.05 133L296.99 144" stroke="url(#aio)" stroke-width="12" stroke-linecap="round"/>
+<g transform="translate(200 200) rotate(315)"><path d="M128 0L0 -13L-26 -8L-26 8L0 13Z" fill="#E3262F"/></g>
+<circle cx="200" cy="200" r="28" fill="#101820"/><circle cx="200" cy="200" r="10" fill="url(#aio)"/>
+<path d="M353 156h30v29h29v30h-29v29h-30v-29h-29v-30h29z" fill="url(#aio)" stroke="url(#aio)" stroke-width="6" stroke-linejoin="round"/></g></svg>
