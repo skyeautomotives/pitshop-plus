@@ -2,7 +2,7 @@
 
 A simple, mobile-friendly web app for automobile workshops to create, save, search and print customer repair bills.
 
-- **Many workshops, one app:** any workshop can **register** from the sign-in page (workshop name, owner's name, username and password) and gets its own private space. Each workshop sees only its own bills, complaints, staff and reports, and its bill and complaint numbers start at 1.
+- **Many workshops, one app:** any workshop can **register** from the sign-in page (workshop name, owner's name, mobile number, email and password), confirms its email from a branded email with getting-started steps, and gets its own private space. Each workshop sees only its own bills, complaints, staff and reports, and its bill and complaint numbers start at 1.
 
 - **New bill:** customer and vehicle details, any number of parts or work items (free text and price), a required labour charge, and optional painting and washing. Totals update as you type.
 - **Complaints:** record what the customer reports (free text), the date, who attended them, notes, and status (Open / Resolved). Enter the vehicle number first; if the vehicle has been seen before, the app offers to fill in the customer's details.
@@ -30,18 +30,19 @@ Built with React, TypeScript, Vite and Supabase (Postgres plus Auth).
    - `supabase/migrations/0009_delivery_and_discount.sql`
    - `supabase/migrations/0010_item_quantity.sql`
    - `supabase/migrations/0011_multi_shop.sql`
+   - `supabase/migrations/0012_email_signup.sql`
 
    Run each file only once.
-3. **Deploy the registration function.** This powers the **Register your workshop** page. Open **Edge Functions → Deploy a new function → Via Editor**, name it `register-shop`, paste the contents of `supabase/functions/register-shop/index.ts`, and click **Deploy**. Then open the function's **Settings** and turn **off** "Verify JWT with legacy secret" (visitors registering aren't signed in yet). Using the CLI instead: `npx supabase functions deploy register-shop --no-verify-jwt --project-ref <ref>`.
+3. **Email signup.** Run `node supabase/apply-email-signup.mjs` with `SUPABASE_ACCESS_TOKEN` set (it turns on sign-ups with email confirmation, sets the site URL and installs the branded confirmation email from `supabase/templates/confirm-signup.html`). Then add a sending mailbox in **Authentication → Emails → SMTP Settings** (Supabase's built-in mailer only sends a few emails per hour). For Gmail: host `smtp.gmail.com`, port `465`, your Gmail address as username, and a Google **App Password** as password.
 4. **Deploy the login-management function.** This lets the owner add and remove logins from **Settings**. Open **Edge Functions → Deploy a new function → Via Editor**, name it `manage-staff`, paste the contents of `supabase/functions/manage-staff/index.ts`, and click **Deploy**. Then open the function's **Settings** and turn **off** "Verify JWT with legacy secret" (the function checks the caller itself). Using the CLI instead: `npx supabase functions deploy manage-staff --no-verify-jwt --project-ref <ref>`.
-5. **Turn off public sign-ups.** Open **Authentication → Sign In / Providers** and turn off **Allow new users to sign up**. Workshops register through the `register-shop` function instead, which creates the login and the workshop together. Even if sign-ups stay on, logins that don't belong to a workshop can't see any bills.
+5. **Sign-ups stay on** (Authentication → Sign In / Providers) with **Confirm email** enabled. A new login creates its workshop through a database trigger; logins that don't belong to a workshop can't see any bills.
 6. **Get the public keys.** Open **Project Settings → API Keys** and copy the **Project URL** and the **publishable** (or legacy **anon**) key.
 
 ### How access is protected
 
 - Every login belongs to one workshop (`staff.shop_id`), and every bill, complaint and settings row belongs to one workshop. Row Level Security only shows a login the rows of its own workshop. Visitors who aren't logged in see nothing.
 - **Owner** logins can change their workshop's Settings and add or remove its logins. **Staff** logins can create, edit, search, print and send bills.
-- New workshops are created by the `register-shop` Edge Function, and logins are added and removed by the `manage-staff` Edge Function. Both run on Supabase's servers with the service-role key; `manage-staff` re-checks on every call that the caller is an owner and only touches logins of the caller's own workshop.
+- New workshops are created when the owner signs up (database trigger `handle_new_signup`). Staff logins are added and removed by the `manage-staff` Edge Function, which runs on Supabase's servers with the service-role key and re-checks on every call that the caller is an owner and only touches logins of the caller's own workshop.
 - Database functions that run with elevated rights (`save_bill`, `set_staff_name`, `staff_names`, …) only read and write the caller's own workshop.
 - Bills and complaints for the same vehicle are matched by the registration number with spaces, dashes and case ignored (`KL 39 W 0890` = `kl-39w0890`). There are no separate customer or vehicle tables.
 - Bill-to-complaint links (`bill_complaints`) are written only by `save_bill`, which rejects a complaint that belongs to a different vehicle.

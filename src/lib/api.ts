@@ -151,32 +151,6 @@ export async function updateShopSettings(s: ShopSettings): Promise<void> {
   if (error) throw error;
 }
 
-/** Creates a new workshop and its owner login (Register page; no sign-in needed). */
-export async function registerShop(input: {
-  shop_name: string;
-  full_name: string;
-  phone: string;
-  username: string;
-  password: string;
-}): Promise<void> {
-  const { error } = await supabase.functions.invoke("register-shop", { body: input });
-  if (!error) return;
-  if (error instanceof FunctionsHttpError) {
-    let payload: { error?: string } | null = null;
-    try {
-      payload = await error.context.json();
-    } catch {
-      /* not JSON */
-    }
-    if (payload?.error) throw new Error(payload.error);
-  }
-  throw new Error(
-    /failed to send|not found|fetch/i.test(error.message)
-      ? "Registration isn't available right now. Check your internet connection and try again."
-      : error.message,
-  );
-}
-
 export async function listStaff(): Promise<StaffMember[]> {
   const { data, error } = await supabase
     .from("staff")

@@ -23,3 +23,11 @@ export async function openExternal(url: string): Promise<void> {
     window.open(url, "_blank", "noopener,noreferrer");
   }
 }
+
+/** The public website, used for links in emails (the apps can't receive them). */
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL || "https://skyeautomotives.github.io/pitshop-plus/";
+
+/** Where email links (confirm email, reset password) should land. */
+export function authRedirectUrl(): string {
+  return isNativeApp ? SITE_URL : window.location.origin + import.meta.env.BASE_URL;
+}

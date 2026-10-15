@@ -2,19 +2,29 @@ import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router";
 import { useAuth } from "../lib/auth";
 import { errorMessage, isRemembered, rememberedEmail, setRememberMe, supabase } from "../lib/supabase";
-import { loginEmail, normalizeUsername } from "../lib/username";
+import { LOGIN_DOMAIN, loginEmail, normalizeUsername } from "../lib/username";
+import { authRedirectUrl } from "../lib/platform";
 import BrandMark from "../components/BrandMark";
 
-/** Remembered sign-in name; older versions saved an email, whose first part is the username. */
-function rememberedUsername(): string {
-  return rememberedEmail().split("@")[0];
+/** Remembered sign-in name: an owner's email, or a staff username (older versions saved <username>@pitstop.invalid). */
+function rememberedLogin(): string {
+  const saved = rememberedEmail();
+  return saved.endsWith(`@${LOGIN_DOMAIN}`) ? saved.split("@")[0] : saved;
+}
+
+/** Owners sign in with their email; staff added by an owner sign in with a username. */
+function signInEmail(login: string): string {
+  const v = login.trim().toLowerCase();
+  return v.includes("@") ? v : loginEmail(normalizeUsername(v));
 }
 
 export default function Login() {
   const { session, loading } = useAuth();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from || "/";
-  const [email, setEmail] = useState(rememberedUsername);
+  const [email, setEmail] = useState(rememberedLogin);
+  const [unconfirmed, setUnconfirmed] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
   const [remember, setRemember] = useState(isRemembered);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,19 +35,33 @@ export default function Login() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const username = normalizeUsername(email);
-    if (!username || !password) {
-      setError("Enter your username and password.");
+    const login = email.trim().toLowerCase();
+    if (!login || !password) {
+      setError("Enter your email (or username) and password.");
       return;
     }
     setBusy(true);
     setError(null);
-    setRememberMe(remember, username);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: loginEmail(username), password });
+    setUnconfirmed(null);
+    setRememberMe(remember, login.includes("@") ? login : normalizeUsername(login));
+    const address = signInEmail(login);
+    const { error: err } = await supabase.auth.signInWithPassword({ email: address, password });
     if (err) {
-      setError(errorMessage(err));
+      if (/not confirmed/i.test(err.message)) {
+        setUnconfirmed(address);
+        setError("Please confirm your email first. Open the link we emailed you (check Spam too).");
+      } else {
+        setError(errorMessage(err));
+      }
       setBusy(false);
     }
+  }
+
+  async function resend() {
+    if (!unconfirmed) return;
+    const { error: err } = await supabase.auth.resend({ type: "signup", email: unconfirmed, options: { emailRedirectTo: authRedirectUrl() } });
+    if (err) setError(errorMessage(err));
+    else setResent(true);
   }
 
   return (
@@ -51,13 +75,19 @@ export default function Login() {
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
+            {unconfirmed && (
+              <button type="button" className="link-button resend" onClick={() => void resend()} disabled={resent}>
+                {resent ? "Confirmation email sent again." : "Send the confirmation email again"}
+              </button>
+            )}
           </div>
         )}
         <div className="field">
-          <label htmlFor="email">Username</label>
+          <label htmlFor="email">Email or username</label>
           <input
             id="email"
             type="text"
+            inputMode="email"
             autoComplete="username"
             autoCapitalize="none"
             spellCheck={false}
@@ -92,7 +122,7 @@ export default function Login() {
         <p className="hint login-switch">
           New workshop? <Link to="/register">Register your workshop</Link>
         </p>
-        <p className="hint">Staff: ask your workshop owner to create a login for you.</p>
+        <p className="hint">Staff: sign in with the username your workshop owner gave you.</p>
       </form>
     </main>
   );

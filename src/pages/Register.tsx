@@ -1,18 +1,18 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, Navigate } from "react-router";
 import { Field, fieldProps } from "../components/fields";
-import { registerShop } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { errorMessage, setRememberMe, supabase } from "../lib/supabase";
-import { loginEmail, normalizeUsername, USERNAME_HINT, usernameError } from "../lib/username";
+import { authRedirectUrl } from "../lib/platform";
+import { errorMessage, supabase } from "../lib/supabase";
 
 const MIN_PASSWORD = 8;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Form {
   shopName: string;
   fullName: string;
   phone: string;
-  username: string;
+  email: string;
   password: string;
   confirm: string;
 }
@@ -24,21 +24,22 @@ function validate(f: Form): Errors {
   if (!f.shopName.trim()) errors.shopName = "Enter your workshop's name.";
   if (!f.fullName.trim()) errors.fullName = "Enter your name.";
   const digits = f.phone.replace(/\D/g, "");
-  if (f.phone.trim() && (digits.length < 10 || digits.length > 13)) errors.phone = "Enter a 10-digit phone number.";
-  const u = usernameError(f.username);
-  if (u) errors.username = u;
+  if (digits.length < 10 || digits.length > 13) errors.phone = "Enter a 10-digit mobile number.";
+  if (!EMAIL_RE.test(f.email.trim())) errors.email = "Enter a valid email address.";
   if (f.password.length < MIN_PASSWORD) errors.password = `Use at least ${MIN_PASSWORD} characters.`;
   else if (f.confirm !== f.password) errors.confirm = "The passwords don't match.";
   return errors;
 }
 
-/** Sign-up for a new workshop: creates the shop and its owner login, then signs in. */
+/** Sign-up for a new workshop. Supabase emails a confirmation link; the workshop is created with the login. */
 export default function Register() {
   const { session, loading } = useAuth();
-  const [form, setForm] = useState<Form>({ shopName: "", fullName: "", phone: "", username: "", password: "", confirm: "" });
+  const [form, setForm] = useState<Form>({ shopName: "", fullName: "", phone: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   if (loading) return <p className="page-status">Loading…</p>;
   if (session) return <Navigate to="/" replace />;
@@ -57,25 +58,65 @@ export default function Register() {
       document.getElementById(`f-${first}`)?.focus();
       return;
     }
-    const username = normalizeUsername(form.username);
+    const email = form.email.trim().toLowerCase();
     setBusy(true);
     setError(null);
-    try {
-      await registerShop({
-        shop_name: form.shopName.trim(),
-        full_name: form.fullName.trim(),
-        phone: form.phone.trim(),
-        username,
-        password: form.password,
-      });
-      setRememberMe(true, username);
-      const { error: err } = await supabase.auth.signInWithPassword({ email: loginEmail(username), password: form.password });
-      // Signed in: the auth listener redirects to the dashboard.
-      if (err) throw err;
-    } catch (err) {
-      setError(errorMessage(err));
-      setBusy(false);
+    const { data, error: err } = await supabase.auth.signUp({
+      email,
+      password: form.password,
+      options: {
+        emailRedirectTo: authRedirectUrl(),
+        data: { shop_name: form.shopName.trim(), full_name: form.fullName.trim(), phone: form.phone.trim() },
+      },
+    });
+    setBusy(false);
+    if (err) {
+      setError(/already registered/i.test(err.message) ? "That email is already registered. Sign in instead." : errorMessage(err));
+      return;
     }
+    // With email confirmation on there is no session yet: ask them to check their inbox.
+    if (!data.session) setSentTo(email);
+  }
+
+  async function resend() {
+    if (!sentTo) return;
+    const { error: err } = await supabase.auth.resend({ type: "signup", email: sentTo, options: { emailRedirectTo: authRedirectUrl() } });
+    if (err) setError(errorMessage(err));
+    else setResent(true);
+  }
+
+  if (sentTo) {
+    return (
+      <main className="login">
+        <div className="card login-card">
+          <div className="login-brand">
+            <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
+          </div>
+          <h1 className="check-title">Check your email</h1>
+          <p>
+            We sent a confirmation link to <strong>{sentTo}</strong>.
+          </p>
+          <ol className="steps">
+            <li>Open the email from Pitstop Plus (check Spam or Promotions if you don't see it).</li>
+            <li>
+              Tap <strong>Confirm my email</strong>.
+            </li>
+            <li>Sign in with your email and password, and start billing.</li>
+          </ol>
+          {error && (
+            <div className="alert alert-error" role="alert">
+              {error}
+            </div>
+          )}
+          <button type="button" className="btn btn-outline btn-block" onClick={() => void resend()} disabled={resent}>
+            {resent ? "Email sent again" : "Send the email again"}
+          </button>
+          <p className="hint login-switch">
+            Confirmed already? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -97,18 +138,19 @@ export default function Register() {
         <Field fieldKey="fullName" label="Your name" required error={errors.fullName}>
           <input {...fieldProps("fullName", errors.fullName)} type="text" autoComplete="name" value={form.fullName} onChange={set("fullName")} />
         </Field>
-        <Field fieldKey="phone" label="Workshop phone" error={errors.phone}>
+        <Field fieldKey="phone" label="Mobile number" required error={errors.phone} hint="Shown on your bills. You can change it later.">
           <input {...fieldProps("phone", errors.phone)} type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={set("phone")} />
         </Field>
-        <Field fieldKey="username" label="Choose a username" required error={errors.username} hint={`You'll sign in with this. ${USERNAME_HINT}`}>
+        <Field fieldKey="email" label="Email" required error={errors.email} hint="You'll sign in with this. We'll send a link to confirm it.">
           <input
-            {...fieldProps("username", errors.username)}
-            type="text"
-            autoComplete="username"
+            {...fieldProps("email", errors.email)}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
             autoCapitalize="none"
             spellCheck={false}
-            value={form.username}
-            onChange={set("username")}
+            value={form.email}
+            onChange={set("email")}
           />
         </Field>
         <Field fieldKey="password" label="Password" required error={errors.password} hint={`At least ${MIN_PASSWORD} characters.`}>

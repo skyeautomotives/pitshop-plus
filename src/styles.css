@@ -2151,3 +2151,25 @@ h3 {
   text-align: center;
   margin-top: 14px;
 }
+
+.check-title {
+  font-size: 1.35rem;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.steps {
+  margin: 12px 0 18px;
+  padding-left: 22px;
+  line-height: 1.55;
+}
+
+.steps li + li {
+  margin-top: 6px;
+}
+
+.alert .resend {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+}
