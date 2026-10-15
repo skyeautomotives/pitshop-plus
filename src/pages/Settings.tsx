@@ -126,6 +126,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
   return (
     <form onSubmit={onSubmit} noValidate>
       {part === "shop" ? (
+        <div className="shop-details">
         <section className="card">
           <h2>Shop details</h2>
           <p className="hint">Printed at the top of every bill and included in WhatsApp messages.</p>
@@ -150,6 +151,25 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
           </Field>
           <SaveRow saving={saving} status={status} />
         </section>
+        <aside className="card bill-preview" aria-label="Preview of your bill header">
+          <p className="bill-preview-label">Preview: top of your bills</p>
+          <div className="bill-preview-paper">
+            <div className="bill-preview-head">
+              <div>
+                <strong>{form.shop_name.trim() || "Your workshop name"}</strong>
+                <span>{form.address?.trim() || "Your address"}</span>
+                <span>{form.phone?.trim() ? `Phone: ${form.phone.trim()}` : "Your phone number"}</span>
+              </div>
+              <em>INVOICE</em>
+            </div>
+            <div className="bill-preview-lines" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+        </aside>
+        </div>
       ) : (
         <section className="card">
           <h2>Billing rules</h2>

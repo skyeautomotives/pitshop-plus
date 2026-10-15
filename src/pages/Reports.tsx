@@ -119,7 +119,7 @@ export default function Reports() {
   if (me.status === "loading") return <p className="page-status">Loading…</p>;
   if (!isOwner)
     return (
-      <div className="empty">
+      <div className="empty empty-list">
         <h1>Reports</h1>
         <p>Only the workshop owner can see reports.</p>
       </div>

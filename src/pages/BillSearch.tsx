@@ -106,7 +106,7 @@ export default function BillSearch() {
             <section className="result-section">
               <h2>{query ? `Bills · ${countLabel(results.bills.length, "found", "found")}` : "Recent bills"}</h2>
               {results.bills.length === 0 ? (
-                <div className="empty">
+                <div className="empty empty-list">
                   {query ? (
                     <p>No bills match “{query}”. Check the spelling, or try the phone or vehicle number instead.</p>
                   ) : (
@@ -134,7 +134,7 @@ export default function BillSearch() {
                 {query ? `Complaints · ${countLabel(results.complaints.length, "found", "found")}` : "Recent complaints"}
               </h2>
               {results.complaints.length === 0 ? (
-                <div className="empty">
+                <div className="empty empty-list">
                   <p>{query ? `No complaints match “${query}”.` : "No complaints recorded yet."}</p>
                   <Link to="/complaints/new" className="btn btn-outline">
                     Record a complaint

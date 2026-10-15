@@ -101,7 +101,7 @@ export default function VehicleHistory() {
       </div>
 
       {shown.length === 0 ? (
-        <div className="empty">
+        <div className="empty empty-list">
           <p>{FILTER_EMPTY[filter]}</p>
         </div>
       ) : (

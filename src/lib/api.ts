@@ -243,6 +243,13 @@ export async function countOpenComplaints(): Promise<number> {
   return count ?? 0;
 }
 
+/** How many bills this workshop has ever made (0 for a new workshop). */
+export async function countAllBills(): Promise<number> {
+  const { count, error } = await supabase.from("bills").select("id", { count: "exact", head: true });
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function countBillsOn(date: string): Promise<number> {
   const { count, error } = await supabase
     .from("bills")

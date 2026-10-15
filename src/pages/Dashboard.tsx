@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import MiniSalesChart from "../components/MiniSalesChart";
-import { countBillsOn, countOpenComplaints, salesForRange } from "../lib/api";
+import { countAllBills, countBillsOn, countOpenComplaints, listStaff, salesForRange } from "../lib/api";
 import { todayISO } from "../lib/customer";
 import { formatDate } from "../lib/format";
 import { formatINR } from "../lib/money";
@@ -9,7 +9,8 @@ import { salesForLastDays, shiftDay, summarize } from "../lib/sales";
 import { useShopSettings } from "../lib/shopSettings";
 import { useIsOwner, useMe } from "../lib/staff";
 import { useLoad } from "../lib/useLoad";
-import BrandMark from "../components/BrandMark";
+import { isAndroidApp, isDesktopApp } from "../lib/platform";
+import { DOWNLOADS } from "./marketing/Site";
 
 const CHART_DAYS = 14;
 
@@ -37,7 +38,55 @@ const ACTIONS = [
   { to: "/bills", icon: "🔍", label: "Find bills" },
 ];
 
-/** Landing page after sign-in: software logo, shortcuts, today's numbers and (owners) recent sales. */
+/** First steps for a new workshop; once they are done, a card about the other apps. */
+function GettingStarted({ isOwner, hasDetails, hasBill, hasStaff }: { isOwner: boolean; hasDetails: boolean; hasBill: boolean; hasStaff: boolean }) {
+  const steps = [
+    { done: true, label: "Register your workshop", to: null },
+    ...(isOwner ? [{ done: hasDetails, label: "Add your address and phone", to: "/settings/shop" }] : []),
+    { done: hasBill, label: "Make your first bill", to: "/bills/new" },
+    ...(isOwner ? [{ done: hasStaff, label: "Add a staff login (optional)", to: "/settings/add-staff" }] : []),
+  ];
+  const left = steps.filter((s) => !s.done).length;
+  if (left > 0) {
+    return (
+      <section className="card dash-side">
+        <h2>Getting started</h2>
+        <p className="muted">
+          {left} {left === 1 ? "step" : "steps"} left
+        </p>
+        <ol className="checklist">
+          {steps.map((s) => (
+            <li key={s.label} className={s.done ? "done" : ""}>
+              <span className="check-dot" aria-hidden="true" />
+              {s.done || !s.to ? <span>{s.label}</span> : <Link to={s.to}>{s.label}</Link>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    );
+  }
+  // All set: point to the apps this person is not using yet.
+  return (
+    <section className="card dash-side dash-apps">
+      <h2>Pitstop Plus everywhere</h2>
+      <p className="muted">Sign in with the same account on your other devices. Every bill shows up on all of them.</p>
+      <div className="dash-app-links">
+        {!isDesktopApp && (
+          <a href={DOWNLOADS.windows} className="btn btn-outline">
+            Windows app
+          </a>
+        )}
+        {!isAndroidApp && (
+          <a href={DOWNLOADS.android} className="btn btn-outline">
+            Android app
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** Landing page after sign-in: greeting, shortcuts, today's numbers and (owners) recent sales. */
 export default function Dashboard() {
   const me = useMe();
   const isOwner = useIsOwner();
@@ -45,7 +94,8 @@ export default function Dashboard() {
   const today = todayISO();
   const name = me.status === "ok" ? me.me.full_name || me.me.username : "";
 
-  const counts = useLoad(`counts|${today}`, () => Promise.all([countOpenComplaints(), countBillsOn(today)]));
+  const counts = useLoad(`counts|${today}`, () => Promise.all([countOpenComplaints(), countBillsOn(today), countAllBills()]));
+  const staff = useLoad(`staffcount|${isOwner}`, () => (isOwner ? listStaff().then((l) => l.length) : Promise.resolve(0)));
 
   // Owners: one fetch covers both the 14-day chart and this month's total.
   const monthStart = `${today.slice(0, 7)}-01`;
@@ -62,19 +112,26 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      <section className="card dash-hero">
-        <BrandMark className="dash-logo" />
-        <div className="dash-welcome">
-          <p className="dash-greet">
+      <header className="dash-head">
+        <div>
+          <h1 className="dash-greet">
             {greeting()}
             {name && `, ${name}`}
-          </p>
+          </h1>
           <p className="muted">
             {settings?.shop_name ? `${settings.shop_name} · ` : ""}
             {formatDate(today)}
           </p>
         </div>
-      </section>
+        <div className="dash-head-actions">
+          <Link to="/complaints/new" className="btn btn-outline">
+            New complaint
+          </Link>
+          <Link to="/bills/new" className="btn btn-primary">
+            New bill
+          </Link>
+        </div>
+      </header>
 
       <nav className="dash-actions" aria-label="Quick actions">
         {ACTIONS.map((a) => (
@@ -130,8 +187,9 @@ export default function Dashboard() {
         )}
       </div>
 
+      <div className="dash-grid">
       {isOwner && (
-        <section className="card">
+        <section className="card dash-main">
           <div className="card-head">
             <h2>Daily sales · last {CHART_DAYS} days</h2>
             <Link to="/reports/chart" className="link-button">
@@ -141,7 +199,21 @@ export default function Dashboard() {
           {loadingSales ? (
             <p className="muted">Loading chart…</p>
           ) : sales.status === "error" ? null : periodTotal === 0 ? (
-            <p className="muted">No sales in the last {CHART_DAYS} days yet.</p>
+            <div className="chart-empty">
+              <div className="chart-ghost" aria-hidden="true">
+                {[35, 55, 40, 70, 50, 85, 60, 45, 75, 65, 90, 55, 70, 80].map((h, i) => (
+                  <span key={i} style={{ height: `${h}%` }} />
+                ))}
+              </div>
+              <p>
+                <strong>Your daily sales will appear here.</strong>
+                <br />
+                <span className="muted">Make a bill and it shows up on this chart straight away.</span>
+              </p>
+              <Link to="/bills/new" className="btn btn-primary btn-sm">
+                Make a bill
+              </Link>
+            </div>
           ) : (
             <>
               <p className="muted mini-chart-total">
@@ -152,6 +224,15 @@ export default function Dashboard() {
           )}
         </section>
       )}
+      {counts.status === "ok" && staff.status !== "loading" && (
+        <GettingStarted
+          isOwner={isOwner}
+          hasDetails={!!(settings?.address && settings?.phone)}
+          hasBill={counts.data[2] > 0}
+          hasStaff={staff.status === "ok" && staff.data > 1}
+        />
+      )}
+      </div>
     </div>
   );
 }

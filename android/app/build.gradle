@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+// The app version comes from package.json, e.g. 0.1.1 -> versionName "0.1.1", versionCode 101.
+def pkg = new groovy.json.JsonSlurper().parse(file('../../package.json'))
+def (vMajor, vMinor, vPatch) = pkg.version.tokenize('.').collect { it.toInteger() }
+
 android {
     namespace = "com.skyeautomotives.pitstopplus"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +11,8 @@ android {
         applicationId "com.skyeautomotives.pitstopplus"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode vMajor * 10000 + vMinor * 100 + vPatch
+        versionName pkg.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,7 +20,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // One fixed key for the APKs published on GitHub, so a new version installs over the old one.
+    // Temporary: move this key into a GitHub secret (and use a new one) before publishing on the Play Store.
+    signingConfigs {
+        sideload {
+            storeFile file('pitstop-sideload.p12')
+            storeType 'pkcs12'
+            storePassword 'pitstopplus'
+            keyAlias 'pitstop'
+            keyPassword 'pitstopplus'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.sideload
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

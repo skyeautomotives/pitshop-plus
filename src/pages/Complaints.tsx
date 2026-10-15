@@ -117,7 +117,7 @@ export default function Complaints() {
                 : `${state.data.length} ${state.data.length === 1 ? "complaint" : "complaints"}${query ? ` matching “${query}”` : ""}`}
             </p>
             {state.data.length === 0 && !searching ? (
-              <div className="empty">
+              <div className="empty empty-list">
                 <p>{query ? `No complaints match “${query}” in this list.` : EMPTY[filter]}</p>
                 {filter !== "all" && (
                   <button type="button" className="btn btn-outline" onClick={() => setFilter("all")}>

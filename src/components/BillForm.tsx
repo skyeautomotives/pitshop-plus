@@ -161,11 +161,13 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
         </div>
       )}
 
+      <div className="bill-cols">
+      <div className="bill-main">
       <section className="card">
         <h2>Customer & vehicle</h2>
         <div className="grid">
           <CustomerInputs value={draft} errors={shown} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
-          <div className="grid-2">
+          <div className="grid-2 bill-dates">
             <Field fieldKey="dateReceived" label="Date received" required error={shown.dateReceived}>
               <input
                 {...fieldProps("dateReceived", shown.dateReceived)}
@@ -298,7 +300,9 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
           + Add item
         </button>
       </section>
+      </div>
 
+      <aside className="bill-side">
       <section className="card">
         <h2>Charges</h2>
         <Field
@@ -436,6 +440,8 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
           </div>
         </dl>
       </section>
+      </aside>
+      </div>
 
       <div className="savebar">
         <div className="savebar-total" aria-hidden="true">

@@ -1783,43 +1783,92 @@ h3 {
   margin: 0 auto 10px;
 }
 
-.dash-hero {
+.dash-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px 24px;
-  padding: 18px 22px;
-}
-
-.dash-logo {
-  width: 100%;
-  max-width: 320px;
-  height: auto;
-}
-
-.dash-welcome {
-  text-align: right;
+  margin-bottom: 18px;
 }
 
 .dash-greet {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 800;
 }
 
-.dash-welcome .muted {
+.dash-head .muted {
   margin: 2px 0 0;
 }
 
-@media (max-width: 640px) {
-  .dash-hero {
-    justify-content: center;
-    text-align: center;
-  }
-  .dash-welcome {
-    text-align: center;
-  }
+.dash-head-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Quick actions as big tiles on phones; the desktop has the sidebar and header buttons. */
+.dash-head-actions {
+  display: none;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.dash-side h2 {
+  margin: 0;
+}
+
+.dash-side > .muted {
+  margin: 2px 0 12px;
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.checklist li:first-child {
+  border-top: 0;
+}
+
+.checklist li.done {
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: line-through;
+}
+
+.check-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #c3cddd;
+}
+
+.checklist li.done .check-dot {
+  border-color: var(--success);
+  background: var(--success)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12l4 4 8-8'/%3E%3C/svg%3E")
+    center / 14px no-repeat;
+}
+
+.dash-app-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .dash-actions {
@@ -2414,6 +2463,39 @@ h3 {
 }
 
 @media (min-width: 1024px) {
+  /* New / edit bill: details on the left, charges and total on the right. */
+  .bill-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 16px;
+    align-items: start;
+  }
+  .bill-side {
+    position: sticky;
+    top: 20px;
+  }
+  .bill-side .card {
+    margin-bottom: 16px;
+  }
+  .bill-dates {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dash-head-actions {
+    display: flex;
+  }
+  .dash-actions {
+    display: none;
+  }
+  .dash-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    align-items: start;
+  }
+  .dash-grid > :only-child {
+    grid-column: 1 / -1;
+  }
+
   .app {
     display: grid;
     grid-template-columns: 248px minmax(0, 1fr);
@@ -2660,4 +2742,152 @@ h3 {
   .tile-link:hover {
     box-shadow: 0 10px 24px rgba(15, 31, 75, 0.12);
   }
+}
+
+/* Empty sales chart: faded sample bars with a call to action. */
+.chart-empty {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 190px;
+  padding: 12px;
+}
+
+.chart-empty > p,
+.chart-empty > .btn {
+  position: relative;
+  z-index: 1;
+}
+
+.chart-empty > p {
+  margin: 0 0 10px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.chart-ghost {
+  position: absolute;
+  inset: 12px 8px 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 6%;
+  gap: 8px;
+  opacity: 0.14;
+}
+
+.chart-ghost span {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #2350d8, #0f1f4b);
+}
+
+/* Empty lists: a white card with faded sample rows, so an empty screen shows what will appear. */
+.empty-list {
+  background: #fff;
+  border: 1px dashed #cfd8e6;
+  border-radius: var(--radius);
+  padding: 28px 20px 26px;
+  margin-bottom: 16px;
+  color: var(--muted);
+}
+
+.empty-list::before {
+  content: "";
+  display: block;
+  width: min(340px, 85%);
+  height: 92px;
+  margin: 0 auto 18px;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, #ffb02e, #ff6b24) 0 0 / 4px 24px no-repeat,
+    linear-gradient(#e7ecf4, #e7ecf4) 12px 0 / calc(100% - 12px) 24px no-repeat,
+    linear-gradient(90deg, #c9d5f2, #c9d5f2) 0 34px / 4px 24px no-repeat,
+    linear-gradient(#eef2f8, #eef2f8) 12px 34px / calc(88% - 12px) 24px no-repeat,
+    linear-gradient(90deg, #c9d5f2, #c9d5f2) 0 68px / 4px 24px no-repeat,
+    linear-gradient(#f3f6fa, #f3f6fa) 12px 68px / calc(70% - 12px) 24px no-repeat;
+}
+
+.empty-list p {
+  color: var(--muted);
+}
+
+/* Settings > Shop details: live preview of the bill header beside the form. */
+.shop-details {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .shop-details {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.8fr);
+  }
+}
+
+.bill-preview-label {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bill-preview-paper {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.bill-preview-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--text);
+}
+
+.bill-preview-head div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.bill-preview-head strong {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.bill-preview-head em {
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.bill-preview-lines {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.bill-preview-lines span {
+  height: 10px;
+  border-radius: 5px;
+  background: #eef2f8;
+}
+
+.bill-preview-lines span:nth-child(2) {
+  width: 80%;
+}
+
+.bill-preview-lines span:nth-child(3) {
+  width: 60%;
 }
