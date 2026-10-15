@@ -12,6 +12,32 @@ type MeState =
 
 const MeContext = createContext<MeState>({ status: "loading" });
 
+const meKey = (userId: string) => `pitstop:me:${userId}`;
+
+/** The signed-in person's staff row as last loaded on this device (lets the app open offline). */
+export function cachedMe(userId: string): StaffMember | null {
+  try {
+    const raw = localStorage.getItem(meKey(userId));
+    return raw ? (JSON.parse(raw) as StaffMember) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveMe(userId: string, me: StaffMember | null) {
+  try {
+    if (me) localStorage.setItem(meKey(userId), JSON.stringify(me));
+    else localStorage.removeItem(meKey(userId));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+/** Forgets the saved staff row (on sign-out). */
+export function forgetMe(userId: string) {
+  saveMe(userId, null);
+}
+
 /** Loads the signed-in person's staff row (role and name). */
 export function MeProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
@@ -28,8 +54,14 @@ export function MeProvider({ children }: { children: ReactNode }) {
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) setState({ status: "error", message: errorMessage(error) });
-        else setState(data ? { status: "ok", me: data as StaffMember } : { status: "not-staff" });
+        if (error) {
+          // Offline: carry on with the copy saved last time.
+          const saved = cachedMe(userId);
+          setState(saved ? { status: "ok", me: saved } : { status: "error", message: errorMessage(error) });
+        } else {
+          saveMe(userId, (data as StaffMember | null) ?? null);
+          setState(data ? { status: "ok", me: data as StaffMember } : { status: "not-staff" });
+        }
       });
     return () => {
       cancelled = true;

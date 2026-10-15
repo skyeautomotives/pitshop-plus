@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from "react-router";
 import { useShopSettings } from "../lib/shopSettings";
 import { useMe } from "../lib/staff";
-import { supabase } from "../lib/supabase";
+import { signOut as signOutAndClear } from "../lib/auth";
 import Logo from "./Logo";
+import SyncStatus from "./SyncStatus";
+import { useSyncState } from "../lib/sync";
 
 /** Line icons for the sidebar (24 x 24, stroke = currentColor). */
 const ICON: Record<string, string> = {
@@ -25,10 +27,23 @@ function Icon({ name }: { name: keyof typeof ICON }) {
   );
 }
 
+/** Shown on a new device until the workshop's data has been downloaded once. */
+function FirstSyncNotice() {
+  const s = useSyncState();
+  if (s.ready) return null;
+  return (
+    <div className="alert first-sync no-print" role="status">
+      {s.phase === "offline"
+        ? "This device hasn't downloaded your workshop's data yet. Connect to the internet once to download it; after that it works offline."
+        : "Downloading your workshop's data to this device so it also works offline…"}
+    </div>
+  );
+}
+
 export default function Layout() {
   const { settings, error } = useShopSettings();
   const me = useMe();
-  const signOut = () => void supabase.auth.signOut();
+  const signOut = () => void signOutAndClear();
 
   if (me.status === "loading") return <p className="page-status">Loading…</p>;
   if (me.status !== "ok") {
@@ -93,6 +108,7 @@ export default function Layout() {
             </NavLink>
           )}
         </nav>
+        <SyncStatus />
         <div className="sidebar-user">
           <div className="sidebar-avatar" aria-hidden="true">
             {(me.me.full_name || me.me.username || "?").trim().charAt(0).toUpperCase()}
@@ -110,10 +126,13 @@ export default function Layout() {
       {/* Phones and narrow windows: top bar. */}
       <header className="topbar no-print">
         <div className="topbar-inner">
-          <NavLink to="/dashboard" className="brand">
-            <Logo size={30} />
-            <span>{shopName}</span>
-          </NavLink>
+          <div className="topbar-brand-row">
+            <NavLink to="/dashboard" className="brand">
+              <Logo size={30} />
+              <span>{shopName}</span>
+            </NavLink>
+            <SyncStatus compact />
+          </div>
           <nav className="nav">
             <NavLink to="/dashboard" end>
               Dashboard
@@ -140,6 +159,7 @@ export default function Layout() {
             Couldn't load shop settings: {error}
           </div>
         )}
+        <FirstSyncNotice />
         <Outlet />
       </main>
     </div>

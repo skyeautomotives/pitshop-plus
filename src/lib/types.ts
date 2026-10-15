@@ -2,7 +2,8 @@
 
 export interface BillRow {
   id: string;
-  bill_number: number;
+  /** Null for a bill saved offline that hasn't synced yet (the server numbers it). */
+  bill_number: number | null;
   customer_name: string;
   address: string | null;
   phone: string;
@@ -22,6 +23,8 @@ export interface BillRow {
   grand_total: number;
   created_at: string;
   updated_at: string;
+  /** True while a change made on this device is waiting to be sent. */
+  pending?: boolean;
 }
 
 export interface BillItemRow {
@@ -41,7 +44,8 @@ export type ComplaintStatus = "open" | "resolved";
 
 export interface ComplaintRow {
   id: string;
-  complaint_number: number;
+  /** Null for a complaint recorded offline that hasn't synced yet. */
+  complaint_number: number | null;
   customer_name: string;
   address: string | null;
   phone: string;
@@ -56,6 +60,8 @@ export interface ComplaintRow {
   status: ComplaintStatus;
   created_at: string;
   updated_at: string;
+  /** True while a change made on this device is waiting to be sent. */
+  pending?: boolean;
 }
 
 /** A complaint as shown next to a bill. */

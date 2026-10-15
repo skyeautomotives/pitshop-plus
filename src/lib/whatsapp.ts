@@ -1,6 +1,7 @@
 import { formatDate } from "./format";
 import { formatINR, rupeesToPaise } from "./money";
 import type { BillWithItems, ShopSettings } from "./types";
+import { displayNumber, seqNumber } from "./format";
 
 /**
  * Turns a phone number as typed into the international digits WhatsApp needs.
@@ -22,7 +23,7 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
   const items = [...bill.bill_items].sort((a, b) => a.position - b.position);
   const lines = [
     `*${shop?.shop_name || "Workshop"}*`,
-    `Bill #${bill.bill_number}`,
+    `Bill ${displayNumber(bill.bill_number)}`,
     "",
     `Customer: ${bill.customer_name}`,
     `Vehicle: ${bill.vehicle_reg}`,
@@ -30,7 +31,7 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
     `Delivered: ${formatDate(bill.delivered_on)}`,
     "",
   ];
-  const complaints = [...(bill.complaints ?? [])].sort((a, b) => a.complaint_number - b.complaint_number);
+  const complaints = [...(bill.complaints ?? [])].sort((a, b) => seqNumber(a.complaint_number) - seqNumber(b.complaint_number));
   if (complaints.length > 0) {
     lines.push("*Your complaints*");
     complaints.forEach((c) => lines.push(`- ${c.description}`));

@@ -8,6 +8,7 @@ import { useShopSettings } from "../lib/shopSettings";
 import { useBill } from "../lib/useBill";
 import { whatsappLink } from "../lib/whatsapp";
 import { canPrint, isNativeApp, openExternal } from "../lib/platform";
+import { displayNumber, seqNumber } from "../lib/format";
 
 const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
 
@@ -31,7 +32,7 @@ export default function BillView() {
   const bill = state.bill;
   const items = [...bill.bill_items].sort((a, b) => a.position - b.position);
   const whatsapp = whatsappLink(bill, settings);
-  const complaints = [...(bill.complaints ?? [])].sort((a, b) => a.complaint_number - b.complaint_number);
+  const complaints = [...(bill.complaints ?? [])].sort((a, b) => seqNumber(a.complaint_number) - seqNumber(b.complaint_number));
 
   return (
     <div className="bill-page">
@@ -73,10 +74,17 @@ export default function BillView() {
 
       {justSaved && (
         <div className="alert alert-success no-print" role="status">
-          Bill #{bill.bill_number} saved.{" "}
+          {bill.bill_number === null
+            ? "Bill saved on this device. It gets its bill number when it syncs."
+            : `Bill ${displayNumber(bill.bill_number)} saved.`}{" "}
           <Link to="/bills/new" className="link-button">
             Start a new bill
           </Link>
+        </div>
+      )}
+      {!justSaved && bill.pending && (
+        <div className="alert first-sync no-print" role="status">
+          This bill has changes saved on this device that haven't reached the server yet. They will be sent when you're online.
         </div>
       )}
 
@@ -89,7 +97,7 @@ export default function BillView() {
             {settings?.phone && <p className="shop-line">Phone: {settings.phone}</p>}
           </div>
           <div className="bill-meta">
-            <p className="bill-no">Bill #{bill.bill_number}</p>
+            <p className="bill-no">Bill {displayNumber(bill.bill_number)}</p>
             <p>Received: {formatDate(bill.date_received)}</p>
             <p>Delivered: {formatDate(bill.delivered_on)}</p>
           </div>
@@ -123,7 +131,7 @@ export default function BillView() {
               {complaints.map((c) => (
                 <li key={c.id}>
                   <Link to={`/complaints/${c.id}`} className="complaint-ref">
-                    #{c.complaint_number}
+                    {displayNumber(c.complaint_number)}
                   </Link>{" "}
                   {c.description}
                   <span className="muted">

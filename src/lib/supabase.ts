@@ -69,8 +69,18 @@ export const sessionStore = {
 
 // Only the public (anon / publishable) key is used in the browser.
 // All authorization is enforced by Row Level Security.
+// Development only: `window.__pitstopOffline = true` makes every request fail like a lost
+// connection, to try offline mode without unplugging. Not included in released builds.
+const devFetch: typeof fetch | undefined = import.meta.env.DEV
+  ? (input, init) =>
+      (window as unknown as { __pitstopOffline?: boolean }).__pitstopOffline
+        ? Promise.reject(new TypeError("Failed to fetch"))
+        : fetch(input, init)
+  : undefined;
+
 export const supabase = createClient(url ?? "http://localhost", anonKey ?? "missing", {
   auth: { persistSession: true, autoRefreshToken: true, storage: sessionStore },
+  ...(devFetch ? { global: { fetch: devFetch } } : {}),
 });
 
 /** Turns Supabase/Postgres errors into short, readable messages. */

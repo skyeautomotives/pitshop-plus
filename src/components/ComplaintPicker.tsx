@@ -6,6 +6,7 @@ import { formatDate } from "../lib/format";
 import { errorMessage } from "../lib/supabase";
 import type { ComplaintWithBills } from "../lib/types";
 import { StatusBadge } from "./cards";
+import { displayNumber } from "../lib/format";
 
 type Load = { status: "idle" } | { status: "loading" } | { status: "error"; message: string } | { status: "ok"; list: ComplaintWithBills[] };
 
@@ -121,7 +122,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
           <div>
             {mismatched.map((c) => (
               <p key={c.id} className="mismatch-line">
-                Complaint <strong>#{c.complaint_number}</strong> is for vehicle <strong>{c.vehicle_reg}</strong>, but this bill
+                Complaint <strong>{displayNumber(c.complaint_number)}</strong> is for vehicle <strong>{c.vehicle_reg}</strong>, but this bill
                 is for <strong>{customer.vehicleReg.toUpperCase() || "no vehicle number"}</strong>.{" "}
                 <button type="button" className="link-button" onClick={() => onUseVehicle(c.vehicle_reg)}>
                   Use {c.vehicle_reg}
@@ -146,7 +147,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
             </p>
             {elsewhere.map((c) => (
               <p key={c.id} className="mismatch-line">
-                <strong>#{c.complaint_number}</strong> · {c.vehicle_reg} · {c.description}{" "}
+                <strong>{displayNumber(c.complaint_number)}</strong> · {c.vehicle_reg} · {c.description}{" "}
                 <button type="button" className="btn btn-outline btn-sm" onClick={() => onUseVehicle(c.vehicle_reg)}>
                   Use {c.vehicle_reg}
                 </button>
@@ -185,14 +186,14 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
                     <input type="checkbox" checked={selected.includes(c.id)} onChange={(e) => toggle(c.id, e.target.checked)} />
                     <span className="picker-body">
                       <span className="picker-top">
-                        <strong>#{c.complaint_number}</strong>
+                        <strong>{displayNumber(c.complaint_number)}</strong>
                         <StatusBadge status={c.status} />
                         <span className="muted">{formatDate(c.reported_on)}</span>
                       </span>
                       <span className="picker-desc">{c.description}</span>
                       <span className="muted picker-meta">
                         Attended by {c.attended_by || "not recorded"}
-                        {otherBills.length > 0 && ` · Already on bill ${otherBills.map((b) => `#${b.bill_number}`).join(", ")}`}
+                        {otherBills.length > 0 && ` · Already on bill ${otherBills.map((b) => displayNumber(b.bill_number)).join(", ")}`}
                       </span>
                     </span>
                   </label>

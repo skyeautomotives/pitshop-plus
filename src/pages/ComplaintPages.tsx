@@ -12,6 +12,7 @@ import { errorMessage } from "../lib/supabase";
 import type { ComplaintStatus } from "../lib/types";
 import { useLoad } from "../lib/useLoad";
 import type { BillPrefill } from "./NewBill";
+import { displayNumber } from "../lib/format";
 
 function NotFound() {
   return (
@@ -62,7 +63,7 @@ export function EditComplaint() {
       initial={initial}
       complaintId={state.data.id}
       attendedBy={state.data.attended_by ?? ""}
-      title={`Edit complaint #${state.data.complaint_number}`}
+      title={`Edit complaint ${displayNumber(state.data.complaint_number)}`}
     />
   );
 }
@@ -131,7 +132,9 @@ export function ComplaintView() {
 
       {justSaved && (
         <div className="alert alert-success" role="status">
-          Complaint #{c.complaint_number} saved.
+          {c.complaint_number === null
+            ? "Complaint saved on this device. It gets its number when it syncs."
+            : `Complaint ${displayNumber(c.complaint_number)} saved.`}
         </div>
       )}
       {statusError && (
@@ -143,7 +146,7 @@ export function ComplaintView() {
       <article className="card">
         <div className="complaint-head">
           <h1>
-            Complaint #{c.complaint_number} <StatusBadge status={status} />
+            Complaint {displayNumber(c.complaint_number)} <StatusBadge status={status} />
           </h1>
         </div>
         <p className="complaint-description pre-line">{c.description}</p>
@@ -197,7 +200,7 @@ export function ComplaintView() {
           <ul className="linked-list">
             {bills.map((b) => (
               <li key={b.id}>
-                <Link to={`/bills/${b.id}`}>Bill #{b.bill_number}</Link>
+                <Link to={`/bills/${b.id}`}>Bill {displayNumber(b.bill_number)}</Link>
                 <span className="muted">{formatDate(b.date_received)}</span>
                 <strong>{formatINR(rupeesToPaise(b.grand_total))}</strong>
               </li>

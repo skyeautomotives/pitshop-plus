@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { formatDate } from "../lib/format";
 import { formatINR, rupeesToPaise } from "../lib/money";
 import type { BillWithComplaints, ComplaintStatus, ComplaintWithBills } from "../lib/types";
+import { displayNumber, seqNumber } from "../lib/format";
 
 export function StatusBadge({ status }: { status: ComplaintStatus }) {
   return <span className={`badge badge-${status}`}>{status === "open" ? "Open" : "Resolved"}</span>;
@@ -15,7 +16,7 @@ export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplain
     <Link to={`/bills/${bill.id}`} className="result">
       <div className="result-top">
         <span>
-          <span className="kind kind-bill">Bill #{bill.bill_number}</span>
+          <span className="kind kind-bill">Bill {displayNumber(bill.bill_number)}</span>
           {showCustomer && <strong className="result-name">{bill.customer_name}</strong>}
         </span>
         <strong className="result-total">{inr(bill.grand_total)}</strong>
@@ -33,10 +34,10 @@ export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplain
           <>
             <span className="muted">Addresses:</span>
             {[...bill.complaints]
-              .sort((a, b) => a.complaint_number - b.complaint_number)
+              .sort((a, b) => seqNumber(a.complaint_number) - seqNumber(b.complaint_number))
               .map((c) => (
                 <span key={c.id} className="tag">
-                  #{c.complaint_number} {c.description.length > 40 ? `${c.description.slice(0, 40)}…` : c.description}
+                  {displayNumber(c.complaint_number)} {c.description.length > 40 ? `${c.description.slice(0, 40)}…` : c.description}
                 </span>
               ))}
           </>
@@ -53,7 +54,7 @@ export function ComplaintCard({ complaint, showCustomer = true }: { complaint: C
     <Link to={`/complaints/${c.id}`} className="result result-complaint">
       <div className="result-top">
         <span>
-          <span className="kind kind-complaint">Complaint #{c.complaint_number}</span>
+          <span className="kind kind-complaint">Complaint {displayNumber(c.complaint_number)}</span>
           {showCustomer && <strong className="result-name">{c.customer_name}</strong>}
         </span>
         <StatusBadge status={c.status} />
@@ -72,10 +73,10 @@ export function ComplaintCard({ complaint, showCustomer = true }: { complaint: C
           <>
             <span className="muted">Bills:</span>
             {[...c.bills]
-              .sort((a, b) => a.bill_number - b.bill_number)
+              .sort((a, b) => seqNumber(a.bill_number) - seqNumber(b.bill_number))
               .map((b) => (
                 <span key={b.id} className="tag">
-                  #{b.bill_number} · {inr(b.grand_total)}
+                  {displayNumber(b.bill_number)} · {inr(b.grand_total)}
                 </span>
               ))}
           </>

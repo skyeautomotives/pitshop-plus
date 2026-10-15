@@ -2891,3 +2891,113 @@ h3 {
 .bill-preview-lines span:nth-child(3) {
   width: 60%;
 }
+
+/* ---------- Sync status ---------- */
+
+.sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #c9d5f2;
+  background: rgba(255, 255, 255, 0.07);
+  white-space: nowrap;
+}
+
+.sync-status:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sync-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.sync-busy .sync-dot {
+  background: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+  animation: sync-pulse 1.2s ease-in-out infinite;
+}
+
+.sync-offline .sync-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.sync-problem .sync-dot {
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+.sync-problem .sync-label {
+  color: #fecaca;
+}
+
+@keyframes sync-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.sidebar .sync-status {
+  margin: 10px 4px 0;
+}
+
+/* Phones: a dot (and a short label when there's something to say) beside the shop name. */
+.topbar-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.sync-compact.sync-ok .sync-label {
+  display: none;
+}
+
+.first-sync {
+  background: #eaf0ff;
+  border-color: #c7d6fb;
+  color: #1e3a8a;
+}
+
+.sync-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sync-item-problem {
+  border-left: 4px solid var(--danger);
+}
+
+.sync-item-main p {
+  margin: 4px 0 0;
+}
+
+.sync-item-when {
+  font-size: 0.85rem;
+}
+
+.sync-item-error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.sync-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

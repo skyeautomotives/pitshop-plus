@@ -4,6 +4,7 @@ import BillForm from "../components/BillForm";
 import { BillNotFound, LoadError } from "../components/states";
 import { billToDraft } from "../lib/bill";
 import { useBill } from "../lib/useBill";
+import { displayNumber } from "../lib/format";
 
 export default function EditBill() {
   const { id } = useParams();
@@ -15,5 +16,5 @@ export default function EditBill() {
   if (state.status === "error") return <LoadError message={state.message} onRetry={state.retry} />;
   if (!initial) return null;
 
-  return <BillForm initial={initial} billId={state.bill.id} title={`Edit bill #${state.bill.bill_number}`} />;
+  return <BillForm initial={initial} billId={state.bill.id} title={`Edit bill ${displayNumber(state.bill.bill_number)}`} />;
 }

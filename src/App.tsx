@@ -19,6 +19,7 @@ import Register from "./pages/Register";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import VehicleHistory from "./pages/VehicleHistory";
+import SyncPage from "./pages/SyncPage";
 
 function NotFound() {
   return (
@@ -66,6 +67,7 @@ const router = createRouter(
         { path: "sales", element: <Navigate to="/reports" replace /> },
         { path: "settings", element: <Settings /> },
         { path: "settings/:section", element: <Settings /> },
+        { path: "sync", element: <SyncPage /> },
       ],
     },
     { path: "*", element: <NotFound /> },

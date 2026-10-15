@@ -1,4 +1,5 @@
 import type { BillWithComplaints, ComplaintWithBills } from "./types";
+import { seqNumber } from "./format";
 
 export type HistoryEntry =
   | { kind: "complaint"; date: string; complaint: ComplaintWithBills }
@@ -19,7 +20,7 @@ export function buildHistory(complaints: ComplaintWithBills[], bills: BillWithCo
   return entries.sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1;
     if (a.kind !== b.kind) return a.kind === "bill" ? -1 : 1;
-    return seq(b) - seq(a);
+    return seqNumber(seq(b)) - seqNumber(seq(a));
   });
 }
 
