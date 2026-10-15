@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">Pitstop Plus</title>
+  <desc id="desc">A bold motorcycle workshop logo with a speed-inspired wheel and plus symbol.</desc>
+  <defs>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFB02E"/>
+      <stop offset="1" stop-color="#FF6B24"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(48 42)">
+    <path d="M168 0a168 168 0 1 0 168 168A168 168 0 0 0 168 0Zm0 34a134 134 0 1 1-134 134A134 134 0 0 1 168 34Z" fill="#101820"/>
+    <path d="M168 0a168 168 0 0 1 166 142h-35A133 133 0 0 0 168 35Z" fill="url(#orange)"/>
+    <path d="M66 213h102l43-77h47l-61 111H66Z" fill="#101820"/>
+    <path d="M75 247h80l-15 24H63Z" fill="url(#orange)"/>
+    <circle cx="168" cy="168" r="25" fill="#FF7A27"/>
+    <path d="M278 232v-24h-24v-25h24v-24h25v24h24v25h-24v24Z" fill="#FF7A27" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M39 117l36 12M21 168h42M39 219l36-12" fill="none" stroke="#101820" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="900">
+    <text x="445" y="205" font-size="104" letter-spacing="-4" fill="#101820">PITSTOP</text>
+    <text x="450" y="315" font-size="88" letter-spacing="9" fill="#FF7628">PLUS</text>
+    <path d="M690 280h360" stroke="#101820" stroke-width="8" stroke-linecap="round" opacity=".12"/>
+  </g>
+</svg>
