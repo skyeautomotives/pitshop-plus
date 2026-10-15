@@ -226,7 +226,7 @@ export function PlatformIcon({ kind }: { kind: "windows" | "android" | "web" }) 
 }
 
 /** A drawn (not screenshotted) preview of a bill on a laptop and the WhatsApp message on a phone. */
-function HeroMock() {
+export function HeroMock() {
   return (
     <div className="mk-mock" aria-hidden="true">
       <div className="mk-window">

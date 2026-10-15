@@ -6,7 +6,7 @@ import { LOGIN_DOMAIN, loginEmail, normalizeUsername } from "../lib/username";
 import { authRedirectUrl, isNativeApp } from "../lib/platform";
 import { PlatformIcon } from "./marketing/Home";
 import { DOWNLOADS } from "./marketing/Site";
-import BrandMark from "../components/BrandMark";
+import AuthLayout from "../components/AuthLayout";
 import { usePageTitle } from "../lib/usePageTitle";
 
 /** Remembered sign-in name: an owner's email, or a staff username (older versions saved <username>@pitstop.invalid). */
@@ -69,13 +69,10 @@ export default function Login() {
   }
 
   return (
-    <main className="login">
-      <form className="card login-card" onSubmit={onSubmit} noValidate>
-        <div className="login-brand">
-          <h1 className="sr-only">Pitstop Plus</h1>
-          <BrandMark />
-          <p className="hint">Sign in to create and find bills.</p>
-        </div>
+    <AuthLayout>
+      <form onSubmit={onSubmit} noValidate>
+        <h1 className="auth-title">Sign in</h1>
+        <p className="auth-sub">Welcome back. Sign in to your workshop.</p>
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
@@ -123,10 +120,10 @@ export default function Login() {
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
         </button>
-        <p className="hint login-switch">
+        <p className="auth-switch">
           New workshop? <Link to="/register">Register your workshop</Link>
         </p>
-        <p className="hint">Staff: sign in with the username your workshop owner gave you.</p>
+        <p className="hint auth-staff">Staff: sign in with the username your workshop owner gave you.</p>
         {!isNativeApp && (
           <div className="get-app">
             <p>Get the app</p>
@@ -144,6 +141,6 @@ export default function Login() {
           </div>
         )}
       </form>
-    </main>
+    </AuthLayout>
   );
 }

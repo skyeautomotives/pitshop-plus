@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth";
 import { authRedirectUrl } from "../lib/platform";
 import { errorMessage, supabase } from "../lib/supabase";
 import { usePageTitle } from "../lib/usePageTitle";
+import AuthLayout from "../components/AuthLayout";
 
 const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,12 +90,9 @@ export default function Register() {
 
   if (sentTo) {
     return (
-      <main className="login">
-        <div className="card login-card">
-          <div className="login-brand">
-            <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
-          </div>
-          <h1 className="check-title">Check your email</h1>
+      <AuthLayout>
+        <div>
+          <h1 className="auth-title">Check your email</h1>
           <p>
             We sent a confirmation link to <strong>{sentTo}</strong>.
           </p>
@@ -113,37 +111,35 @@ export default function Register() {
           <button type="button" className="btn btn-outline btn-block" onClick={() => void resend()} disabled={resent}>
             {resent ? "Email sent again" : "Send the email again"}
           </button>
-          <p className="hint login-switch">
+          <p className="auth-switch">
             Confirmed already? <Link to="/login">Sign in</Link>
           </p>
         </div>
-      </main>
+      </AuthLayout>
     );
   }
 
   return (
-    <main className="login">
-      <form className="card login-card" onSubmit={onSubmit} noValidate>
-        <div className="login-brand">
-          <h1 className="sr-only">Register your workshop</h1>
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
-          <p className="hint">Register your workshop to start making bills.</p>
-        </div>
+    <AuthLayout wide>
+      <form onSubmit={onSubmit} noValidate>
+        <h1 className="auth-title">Register your workshop</h1>
+        <p className="auth-sub">Create your account. We will email you a link to confirm it.</p>
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
           </div>
         )}
-        <Field fieldKey="shopName" label="Workshop name" required error={errors.shopName} hint="Printed at the top of your bills.">
+        <div className="form-grid">
+        <Field fieldKey="shopName" label="Workshop name" required error={errors.shopName} hint="Printed on your bills.">
           <input {...fieldProps("shopName", errors.shopName)} type="text" autoComplete="organization" autoFocus value={form.shopName} onChange={set("shopName")} />
         </Field>
         <Field fieldKey="fullName" label="Your name" required error={errors.fullName}>
           <input {...fieldProps("fullName", errors.fullName)} type="text" autoComplete="name" value={form.fullName} onChange={set("fullName")} />
         </Field>
-        <Field fieldKey="phone" label="Mobile number" required error={errors.phone} hint="Shown on your bills. You can change it later.">
+        <Field fieldKey="phone" label="Mobile number" required error={errors.phone} hint="Printed on your bills.">
           <input {...fieldProps("phone", errors.phone)} type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={set("phone")} />
         </Field>
-        <Field fieldKey="email" label="Email" required error={errors.email} hint="You'll sign in with this. We'll send a link to confirm it.">
+        <Field fieldKey="email" label="Email" required error={errors.email} hint="You will sign in with this.">
           <input
             {...fieldProps("email", errors.email)}
             type="email"
@@ -161,13 +157,14 @@ export default function Register() {
         <Field fieldKey="confirm" label="Confirm password" required error={errors.confirm}>
           <input {...fieldProps("confirm", errors.confirm)} type="password" autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
         </Field>
+        </div>
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
           {busy ? "Registering…" : "Register workshop"}
         </button>
-        <p className="hint login-switch">
+        <p className="auth-switch">
           Already registered? <Link to="/login">Sign in</Link>
         </p>
       </form>
-    </main>
+    </AuthLayout>
   );
 }
