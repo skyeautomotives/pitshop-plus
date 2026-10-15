@@ -1,8 +1,9 @@
-import { createBrowserRouter, Link, Navigate, RouterProvider } from "react-router";
+import { createBrowserRouter, createHashRouter, Link, Navigate, RouterProvider } from "react-router";
 import Layout from "./components/Layout";
 import { AuthProvider, RequireAuth } from "./lib/auth";
 import { ShopSettingsProvider } from "./lib/shopSettings";
 import { MeProvider } from "./lib/staff";
+import { isNativeApp } from "./lib/platform";
 import { configError } from "./lib/supabase";
 import BillSearch from "./pages/BillSearch";
 import Dashboard from "./pages/Dashboard";
@@ -29,7 +30,9 @@ function NotFound() {
 }
 
 // A data router is needed for useBlocker (the unsaved-bill warning).
-const router = createBrowserRouter(
+// The apps load index.html from disk, so they keep the page in the #hash instead of the path.
+const createRouter = isNativeApp ? createHashRouter : createBrowserRouter;
+const router = createRouter(
   [
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
@@ -63,7 +66,7 @@ const router = createBrowserRouter(
     },
     { path: "*", element: <NotFound /> },
   ],
-  { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" },
+  isNativeApp ? {} : { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" },
 );
 
 export default function App() {

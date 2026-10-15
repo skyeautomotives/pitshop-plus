@@ -87,6 +87,8 @@ a {
   top: 0;
   z-index: 10;
   box-shadow: 0 2px 12px rgba(15, 31, 75, 0.25);
+  /* Phones with edge-to-edge screens (Android app, notched iPhones): keep clear of the status bar. */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .topbar-inner {
@@ -1268,7 +1270,7 @@ h3 {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(circle at 15% 10%, rgba(249, 115, 22, 0.25), transparent 40%),
     linear-gradient(140deg, #0f1f4b 0%, #1e3a8a 60%, #2350d8 100%);

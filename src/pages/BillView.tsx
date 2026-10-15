@@ -7,6 +7,7 @@ import { formatINR, rupeesToPaise } from "../lib/money";
 import { useShopSettings } from "../lib/shopSettings";
 import { useBill } from "../lib/useBill";
 import { whatsappLink } from "../lib/whatsapp";
+import { canPrint, isNativeApp, openExternal } from "../lib/platform";
 
 const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
 
@@ -42,11 +43,23 @@ export default function BillView() {
           <Link to={`/bills/${bill.id}/edit`} className="btn btn-outline">
             Edit
           </Link>
-          <button type="button" className="btn btn-outline" onClick={() => window.print()}>
-            Print / Save PDF
-          </button>
+          {canPrint && (
+            <button type="button" className="btn btn-outline" onClick={() => window.print()}>
+              Print / Save PDF
+            </button>
+          )}
           {whatsapp && (
-            <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-whatsapp"
+              onClick={(e) => {
+                if (!isNativeApp) return;
+                e.preventDefault();
+                void openExternal(whatsapp);
+              }}
+            >
               Send on WhatsApp
             </a>
           )}

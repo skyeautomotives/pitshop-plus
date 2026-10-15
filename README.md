@@ -113,6 +113,20 @@ Every push to `main` redeploys automatically. `public/_redirects` makes page lin
 
 Netlify, Cloudflare Pages and similar hosts work the same way: build command `npm run build`, output folder `dist`, the same two environment variables, and a rewrite of all paths to `/index.html`.
 
+## Windows and Android apps
+
+The same app is also built as a Windows installer (Tauri) and an Android APK (Capacitor). Both use the same Supabase project and logins as the website.
+
+- **Build them:** GitHub → **Actions → Build apps → Run workflow**. When it finishes, download `windows-installer` and `android-apk` from the run's **Artifacts**.
+- **Publish a version:** bump `version` in `package.json`, then push a tag such as `v0.1.0`. The workflow attaches `PitstopPlus-Setup-<version>.exe` and `PitstopPlus-<version>.apk` to a new GitHub Release.
+- **Locally** (optional): `npm run tauri dev` needs Rust; `npm run android:sync`, then open `android/` in Android Studio.
+
+Notes:
+- Windows shows "Windows protected your PC" for unsigned installers (click *More info → Run anyway*). A code-signing certificate removes this.
+- The Android build is a test APK. Publishing on the Play Store needs a release signing key (kept as a GitHub secret) and a Play Console account.
+- Android has no print dialog, so the app hides **Print / Save PDF** there; **Send on WhatsApp** opens the WhatsApp app.
+- App icons, splash screen and installer images are made from the logo in `brand/`.
+
 ## Using the app
 
 - **Staff logins** (Settings, owner only): add a login with a name, email and password, then tell the person their password. **Change password** sets a new one. **Remove** stops that person signing in; bills they created are kept.
