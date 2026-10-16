@@ -32,6 +32,7 @@ Built with React, TypeScript, Vite and Supabase (Postgres plus Auth).
    - `supabase/migrations/0011_multi_shop.sql`
    - `supabase/migrations/0012_email_signup.sql`
    - `supabase/migrations/0013_offline_sync.sql`
+   - `supabase/migrations/0014_platform_admin.sql`
 
    Run each file only once. With `SUPABASE_ACCESS_TOKEN` set in your environment you can also run one from a terminal: `node supabase/apply-migration.mjs supabase/migrations/<file>.sql` (works on networks that block the database port).
 3. **Email signup.** Run `node supabase/apply-email-signup.mjs` with `SUPABASE_ACCESS_TOKEN` set (it turns on sign-ups with email confirmation, sets the site URL and installs the branded confirmation email from `supabase/templates/confirm-signup.html`). Then add a sending mailbox in **Authentication → Emails → SMTP Settings** (Supabase's built-in mailer only sends a few emails per hour). For Gmail: host `smtp.gmail.com`, port `465`, your Gmail address as username, and a Google **App Password** as password.
@@ -49,6 +50,31 @@ Built with React, TypeScript, Vite and Supabase (Postgres plus Auth).
 - Bill-to-complaint links (`bill_complaints`) are written only by `save_bill`, which rejects a complaint that belongs to a different vehicle.
 - Bills are saved only through the `save_bill` database function. It checks the labour charge and calculates the subtotal and grand total, so stored totals always match the items, including after edits.
 - The frontend uses only the publishable/anon key. **Never put the `service_role` / secret key in `.env` or in the frontend.** Every `VITE_` variable is visible in the browser.
+- **Platform admins** (Skye Automotives) are listed in `platform_admins` and use the admin panel at `/admin`. They read every workshop only through the `admin_*` database functions, which check `is_platform_admin()` on every call; the workshop tables' Row Level Security is unchanged. Login changes go through the `admin-logins` Edge Function, which re-checks the caller is an admin. Every admin action is recorded in `admin_audit_log`.
+
+### Admin panel (/admin)
+
+For Skye Automotives staff: all workshops with their logins, bills, complaints and usage.
+
+- **Overview:** number of workshops (active, suspended, new), logins, bills, complaints, amounts billed, and monthly charts of amount billed and sign-ups.
+- **Workshops:** search by workshop name, owner, email or phone, and filter by status. Each workshop shows its details, its **logins** (reset password, disable or enable, remove a staff login), its **bills** and **complaints** (read-only, searchable), and the admin actions taken on it.
+- **Suspend / reactivate a workshop:** its logins keep their data but can't see or change anything, and the app tells them why.
+- **Activity log:** every admin action, with who did it and when.
+
+Setup, after running `0014_platform_admin.sql`:
+
+1. **Deploy the `admin-logins` function** the same way as `manage-staff` (step 4 above): paste `supabase/functions/admin-logins/index.ts`, and turn **off** "Verify JWT with legacy secret". CLI: `npx supabase functions deploy admin-logins --no-verify-jwt --project-ref <ref>`.
+2. **Add an admin.** The admin needs a login that is *not* a workshop login. Create one in **Authentication → Users → Add user** (tick "Auto confirm"), then in the SQL Editor run:
+
+   ```sql
+   insert into public.platform_admins (user_id, email)
+   select id, email from auth.users where email = 'admin@example.com';
+   ```
+3. Sign in on the normal sign-in page with that login. Admins are taken to `/admin`.
+
+To remove an admin: `delete from public.platform_admins where email = 'admin@example.com';`
+
+**Try it without Supabase:** `npm run dev:admin-demo` and open http://localhost:5190/admin. It runs the panel on built-in sample workshops (development only; the sample data is never included in a build).
 
 ## 2. Run locally
 

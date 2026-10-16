@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router";
+import { Navigate, NavLink, Outlet } from "react-router";
+import { usePlatformAdmin } from "../lib/admin/access";
 import { useShopSettings } from "../lib/shopSettings";
 import { useMe } from "../lib/staff";
 import { signOut as signOutAndClear } from "../lib/auth";
@@ -42,6 +43,14 @@ function FirstSyncNotice() {
   );
 }
 
+/** Not on any workshop's staff list: platform admins go to the admin panel. */
+function NotStaff() {
+  const check = usePlatformAdmin();
+  if (check.status === "loading") return <p className="page-status">Loading…</p>;
+  if (check.status === "ok" && check.isAdmin) return <Navigate to="/admin" replace />;
+  return <p>Your login isn't on the workshop's staff list yet. Ask the owner to add you in Settings.</p>;
+}
+
 export default function Layout() {
   const { settings, error } = useShopSettings();
   const me = useMe();
@@ -56,7 +65,14 @@ export default function Layout() {
             <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
           </div>
           {me.status === "not-staff" ? (
-            <p>Your login isn't on the workshop's staff list yet. Ask the owner to add you in Settings.</p>
+            <NotStaff />
+          ) : me.status === "suspended" ? (
+            <div className="alert alert-error" role="alert">
+              <span>
+                <strong>This workshop is suspended.</strong> {me.reason && `Reason: ${me.reason}. `}Contact Pitstop Plus support (Skye Automotives) to restore
+                access. Your bills and complaints are kept.
+              </span>
+            </div>
           ) : (
             <div className="alert alert-error" role="alert">
               Couldn't check your login. {me.message}
