@@ -74,6 +74,8 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
     created_at: prev?.created_at ?? stamp,
     updated_at: stamp,
     bill_items: items,
+    // Edits never touch payments; they are recorded separately.
+    payments: prev?.payments ?? [],
     complaint_ids: [...new Set(p.complaintIds)],
     pending: 1,
   };

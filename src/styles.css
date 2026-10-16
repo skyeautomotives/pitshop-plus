@@ -3523,3 +3523,95 @@ a.admin-list-row:hover {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
+
+/* ---------- Bill: payments received after billing ---------- */
+
+.bill-payments {
+  margin-top: 16px;
+}
+
+.pay-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.pay-summary > div {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.pay-summary dt {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pay-summary dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-summary .pay-balance {
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+
+.pay-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.pay-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.pay-meta {
+  font-size: 0.85rem;
+}
+
+.pay-form {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.pay-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pay-methods .btn {
+  min-width: 96px;
+}
+
+.pay-methods select {
+  width: auto;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  background: #fbfcfe;
+}
+
+.pay-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.result-details .badge {
+  margin-left: 0;
+}

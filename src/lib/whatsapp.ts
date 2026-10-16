@@ -1,5 +1,6 @@
 import { formatDate } from "./format";
-import { advanceAndBalance } from "./complaint";
+import { paymentMethodLabel } from "./complaint";
+import { billMoney } from "./payments";
 import { formatINR, rupeesToPaise } from "./money";
 import type { BillWithItems, ShopSettings } from "./types";
 import { displayNumber, seqNumber } from "./format";
@@ -53,8 +54,12 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
   if (Number(bill.discount) > 0)
     lines.push(`Discount${bill.discount_percent !== null ? ` (${Number(bill.discount_percent)}%)` : ""}: -${inr(bill.discount)}`);
   lines.push(`*Grand total: ${inr(bill.grand_total)}*`);
-  const { advance, balance } = advanceAndBalance(bill.grand_total, complaints);
-  if (advance > 0) lines.push(`Advance received: -${inr(advance)}`, `*Balance to pay: ${inr(balance)}*`);
+  const payments = bill.payments ?? [];
+  const money = billMoney(bill.grand_total, complaints, payments);
+  if (money.advance > 0) lines.push(`Advance received: -${inr(money.advance)}`);
+  payments.forEach((p) => lines.push(`Paid ${formatDate(p.paid_on)} (${paymentMethodLabel(p.method)}): -${inr(p.amount)}`));
+  if (money.advance > 0 || payments.length > 0)
+    lines.push(money.status === "paid" ? "*Paid in full. Thank you!*" : `*Balance to pay: ${inr(money.balance)}*`);
   lines.push("", "Thank you for your business.");
   if (shop?.phone) lines.push(`Contact: ${shop.phone}`);
   return lines.join("\n");

@@ -7,7 +7,9 @@ import { formatINR, rupeesToPaise } from "../lib/money";
 import { useShopSettings } from "../lib/shopSettings";
 import { useBill } from "../lib/useBill";
 import { whatsappLink } from "../lib/whatsapp";
-import { advanceAndBalance } from "../lib/complaint";
+import { paymentMethodLabel } from "../lib/complaint";
+import { billMoney } from "../lib/payments";
+import BillPayments from "../components/BillPayments";
 import { canPrint, isNativeApp, openExternal } from "../lib/platform";
 import { displayNumber, seqNumber } from "../lib/format";
 
@@ -34,8 +36,9 @@ export default function BillView() {
   const items = [...bill.bill_items].sort((a, b) => a.position - b.position);
   const whatsapp = whatsappLink(bill, settings);
   const complaints = [...(bill.complaints ?? [])].sort((a, b) => seqNumber(a.complaint_number) - seqNumber(b.complaint_number));
-  // Advances taken when the complaints were recorded; the bill's own total is unchanged.
-  const { advance, balance } = advanceAndBalance(bill.grand_total, complaints);
+  // Advance taken on the complaints and payments after billing; the bill's own total is unchanged.
+  const payments = [...(bill.payments ?? [])].sort((a, b) => (a.paid_on < b.paid_on ? -1 : a.paid_on > b.paid_on ? 1 : 0));
+  const money = billMoney(bill.grand_total, complaints, payments);
 
   return (
     <div className="bill-page">
@@ -218,22 +221,32 @@ export default function BillView() {
             <dt>Grand total</dt>
             <dd>{inr(bill.grand_total)}</dd>
           </div>
-          {advance > 0 && (
-            <>
-              <div className="discount-row">
-                <dt>Advance received</dt>
-                <dd>−{inr(advance)}</dd>
-              </div>
-              <div className="grand balance-row">
-                <dt>Balance to pay</dt>
-                <dd>{inr(balance)}</dd>
-              </div>
-            </>
+          {money.advance > 0 && (
+            <div className="discount-row">
+              <dt>Advance received</dt>
+              <dd>−{inr(money.advance)}</dd>
+            </div>
+          )}
+          {payments.map((p) => (
+            <div key={p.id} className="discount-row">
+              <dt>
+                Paid {formatDate(p.paid_on)} · {paymentMethodLabel(p.method)}
+              </dt>
+              <dd>−{inr(p.amount)}</dd>
+            </div>
+          ))}
+          {(money.advance > 0 || payments.length > 0) && (
+            <div className="grand balance-row">
+              <dt>{money.status === "paid" ? "Paid in full" : "Balance to pay"}</dt>
+              <dd>{inr(money.balance)}</dd>
+            </div>
           )}
         </dl>
 
         <p className="bill-foot">Thank you for your business.</p>
       </article>
+
+      <BillPayments billId={bill.id} payments={payments} money={money} />
     </div>
   );
 }

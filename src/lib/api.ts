@@ -9,6 +9,7 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import type { SaveBillPayload } from "./bill";
 import type { ComplaintPayload } from "./complaint";
+import type { PaymentInput } from "./payments";
 import { getMeta, localDb, localUserId, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import {
   applyComplaintEdit,
@@ -29,6 +30,7 @@ import { cachedMe } from "./staff";
 import { supabase } from "./supabase";
 import { isNetworkError, notifyDataChanged, refreshCounts, syncNow } from "./sync";
 import type {
+  BillPayment,
   BillWithComplaints,
   BillWithItems,
   ComplaintRow,
@@ -134,6 +136,72 @@ async function saveLocally(
   });
   notifyDataChanged();
   if (queue) await enqueue({ kind: "bill", entityId: billId, payload, createdAt: new Date().toISOString() });
+}
+
+// ---------- Payments on a bill ----------
+
+/**
+ * Records money the customer paid on a bill. Online it goes straight to the server;
+ * offline (or while the bill itself is still waiting to be sent) it is kept on this
+ * device and sent later. The payment's id is chosen here, so a retry never doubles it.
+ */
+export async function addBillPayment(billId: string, input: PaymentInput): Promise<void> {
+  const db = localDb();
+  const bill = await db.bills.get(billId);
+  if (!bill) throw new Error("Bill not found.");
+  const payment: BillPayment = {
+    id: newId(),
+    ...input,
+    recorded_by: localUserId(),
+    recorded_by_name: me().name || null,
+    created_at: new Date().toISOString(),
+  };
+  if (navigator.onLine && !(await hasWaitingChanges(billId))) {
+    const { error } = await supabase.rpc("add_bill_payment", { p_bill: billId, p_payment: payment });
+    if (!error) {
+      await db.bills.update(billId, { payments: [...(bill.payments ?? []), payment] });
+      notifyDataChanged();
+      void syncNow();
+      return;
+    }
+    if (!isNetworkError(error)) throw error;
+  }
+  await db.bills.update(billId, { payments: [...(bill.payments ?? []), payment], pending: 1 });
+  notifyDataChanged();
+  await enqueue({ kind: "bill-payment", entityId: billId, payload: { add: payment }, createdAt: payment.created_at });
+}
+
+/** Removes a payment recorded by mistake. */
+export async function removeBillPayment(billId: string, paymentId: string): Promise<void> {
+  const db = localDb();
+  const bill = await db.bills.get(billId);
+  if (!bill) throw new Error("Bill not found.");
+  const payments = (bill.payments ?? []).filter((p) => p.id !== paymentId);
+  // Recorded offline and not sent yet: just drop it from the queue.
+  const queued = (await db.outbox.where("entityId").equals(billId).toArray()).find(
+    (o) => o.kind === "bill-payment" && "add" in o.payload && o.payload.add.id === paymentId,
+  );
+  if (queued) {
+    await db.outbox.delete(queued.seq!);
+    const stillWaiting = await db.outbox.where("entityId").equals(billId).count();
+    await db.bills.update(billId, { payments, pending: stillWaiting ? 1 : 0 });
+    await refreshCounts();
+    notifyDataChanged();
+    return;
+  }
+  if (navigator.onLine && !(await hasWaitingChanges(billId))) {
+    const { error } = await supabase.rpc("remove_bill_payment", { p_bill: billId, p_payment: paymentId });
+    if (!error) {
+      await db.bills.update(billId, { payments });
+      notifyDataChanged();
+      void syncNow();
+      return;
+    }
+    if (!isNetworkError(error)) throw error;
+  }
+  await db.bills.update(billId, { payments, pending: 1 });
+  notifyDataChanged();
+  await enqueue({ kind: "bill-payment", entityId: billId, payload: { remove: paymentId }, createdAt: new Date().toISOString() });
 }
 
 export async function getBill(id: string): Promise<BillWithItems | null> {

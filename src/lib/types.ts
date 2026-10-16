@@ -21,6 +21,8 @@ export interface BillRow {
   /** Set when the discount was given as a percentage (for display). */
   discount_percent: number | null;
   grand_total: number;
+  /** Payments received after billing (0020); missing on bills saved before it. */
+  payments?: BillPayment[];
   created_at: string;
   updated_at: string;
   /** True while a change made on this device is waiting to be sent. */
@@ -78,6 +80,19 @@ export interface ComplaintRow {
 }
 
 export type IntakeDocument = "rc" | "pollution" | "licence";
+
+/** Money the customer paid on a bill after billing (0020). */
+export interface BillPayment {
+  id: string;
+  /** Rupees. */
+  amount: number;
+  method: PaymentMethod;
+  paid_on: string;
+  note: string | null;
+  recorded_by?: string | null;
+  recorded_by_name?: string | null;
+  created_at: string;
+}
 export type PaymentMethod = "cash" | "upi" | "card" | "bank" | "other";
 
 /** A complaint as shown next to a bill. */

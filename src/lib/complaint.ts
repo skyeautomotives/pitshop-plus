@@ -171,10 +171,3 @@ export function documentsText(c: Pick<ComplaintRow, "documents" | "other_documen
 export function paymentMethodLabel(m: PaymentMethod | null | undefined): string {
   return PAYMENT_METHODS.find((x) => x.id === m)?.label ?? "";
 }
-
-/** Advance paid on the complaints a bill addresses, and what is left to pay (rupees; never below 0). */
-export function advanceAndBalance(grandTotal: number, complaints: { advance_amount?: number | null }[]) {
-  const paise = complaints.reduce((sum, c) => sum + (c.advance_amount ? rupeesToPaise(c.advance_amount) : 0), 0);
-  const balance = Math.max(0, rupeesToPaise(grandTotal) - paise);
-  return { advance: paise / 100, balance: balance / 100 };
-}

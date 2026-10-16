@@ -3,7 +3,7 @@
 import Dexie, { type Table } from "dexie";
 import type { SaveBillPayload } from "../bill";
 import type { ComplaintPayload } from "../complaint";
-import type { BillItemRow, BillRow, ComplaintRow } from "../types";
+import type { BillItemRow, BillPayment, BillRow, ComplaintRow } from "../types";
 
 /** A bill as stored on the device: the row, its items and the complaints it addresses. */
 export interface LocalBill extends Omit<BillRow, "pending"> {
@@ -33,7 +33,12 @@ interface OpBase {
 export type OutboxOp =
   | (OpBase & { kind: "bill"; payload: SaveBillPayload })
   | (OpBase & { kind: "complaint-create"; payload: ComplaintPayload })
-  | (OpBase & { kind: "complaint-update"; payload: Partial<ComplaintPayload> });
+  | (OpBase & { kind: "complaint-update"; payload: Partial<ComplaintPayload> })
+  /** entityId is the bill's id. */
+  | (OpBase & { kind: "bill-payment"; payload: { add: BillPayment } | { remove: string } });
+
+/** Changes to bills (the bill itself or its payments), as opposed to complaints. */
+export const isBillOp = (op: Pick<OutboxOp, "kind">) => op.kind === "bill" || op.kind === "bill-payment";
 
 export interface MetaRow {
   key: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceAndBalance, complaintToDraft, documentsText, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
+import { complaintToDraft, documentsText, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
 import { vehicleKey } from "./customer";
 import { buildHistory, filterHistory, historyCounts } from "./history";
 import type { BillWithComplaints, ComplaintWithBills } from "./types";
@@ -73,11 +73,6 @@ describe("validateComplaint", () => {
     const r = validateComplaint(filled({ odometerKm: "12.5k", otherDocumentsOn: true, otherDocuments: [" "], advance: "abc" }));
     expect(Object.keys(r.errors).sort()).toEqual(["advance", "odometerKm", "otherDocuments"]);
     expect(validateComplaint(filled({ advance: "0" })).errors.advance).toMatch(/empty/);
-  });
-
-  it("works out the advance and balance on a bill", () => {
-    expect(advanceAndBalance(1500, [{ advance_amount: 500 }, { advance_amount: null }, {}])).toEqual({ advance: 500, balance: 1000 });
-    expect(advanceAndBalance(300, [{ advance_amount: 500 }])).toEqual({ advance: 500, balance: 0 });
   });
 
   it("lists documents received", () => {
