@@ -86,6 +86,9 @@ export default function Terms() {
               when you ask us for help, to keep the service secure and working, or when the law requires it.
             </li>
             <li>
+              How we handle information is explained in our <Link to="/privacy">Privacy Policy</Link>.
+            </li>
+            <li>
               Messages you send to customers (for example on WhatsApp) are sent by you, from your own phone or account.
             </li>
           </ul>

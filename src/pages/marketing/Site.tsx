@@ -54,6 +54,7 @@ export default function Site({ children }: { children: ReactNode }) {
               <span>Skye Automotives</span>
               <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
               <Link to="/terms">Terms &amp; Conditions</Link>
+              <Link to="/privacy">Privacy Policy</Link>
             </div>
           </div>
         </div>
