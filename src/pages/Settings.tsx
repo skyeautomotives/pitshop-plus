@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
+import BackupSection from "../components/BackupSection";
 import StaffSection from "../components/StaffSection";
 import { updateShopSettings } from "../lib/api";
 import { useShopSettings } from "../lib/shopSettings";
@@ -23,6 +24,10 @@ const GROUPS = [
       { id: "staff", label: "Staff logins", hint: "Names, usernames, passwords" },
       { id: "add-staff", label: "Add a login", hint: "Give someone access" },
     ],
+  },
+  {
+    label: "Your data",
+    items: [{ id: "backup", label: "Backup & restore", hint: "Keep a copy in your Google Drive" }],
   },
 ] as const;
 
@@ -71,6 +76,7 @@ export default function Settings() {
           {current === "billing" && <ShopSettingsForm part="billing" />}
           {current === "staff" && <StaffSection show="list" />}
           {current === "add-staff" && <StaffSection show="add" />}
+          {current === "backup" && <BackupSection />}
         </div>
       </div>
     </div>

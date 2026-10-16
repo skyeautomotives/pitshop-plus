@@ -7,6 +7,7 @@ import Logo from "./Logo";
 import SyncStatus from "./SyncStatus";
 import UpdateBanner from "./UpdateBanner";
 import SubscriptionReminder from "./SubscriptionReminder";
+import BackupReminder from "./BackupReminder";
 import { APP_VERSION } from "../lib/updates";
 import { useSyncState } from "../lib/sync";
 
@@ -182,6 +183,7 @@ export default function Layout() {
         <FirstSyncNotice />
         <UpdateBanner />
         {isOwner && <SubscriptionReminder />}
+        {isOwner && <BackupReminder />}
         <Outlet />
       </main>
     </div>

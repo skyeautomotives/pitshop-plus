@@ -3392,3 +3392,67 @@ a.admin-list-row:hover {
   color: var(--primary);
   background: var(--primary-soft);
 }
+
+/* Settings: backup and restore. */
+.backup {
+  display: grid;
+  gap: 16px;
+}
+
+.backup .card p {
+  margin: 0 0 10px;
+}
+
+.backup-last {
+  font-weight: 600;
+}
+
+.backup-msg {
+  margin: 12px 0 0;
+}
+
+.backup-check {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.backup-check .alert {
+  margin: 0;
+  width: 100%;
+}
+
+.backup-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.backup-reminder {
+  background: var(--info-soft);
+  border-color: var(--info-border);
+  color: inherit;
+}
+
+/* Registration: agree to the terms. */
+.terms-agree {
+  margin: 4px 0 16px;
+}
+
+.terms-agree .check {
+  align-items: flex-start;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.terms-agree .check input {
+  flex-shrink: 0;
+  margin-top: 1px;
+}

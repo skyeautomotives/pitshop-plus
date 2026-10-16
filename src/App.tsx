@@ -14,6 +14,7 @@ import EditBill from "./pages/EditBill";
 import Login from "./pages/Login";
 import Download from "./pages/marketing/Download";
 import Home from "./pages/marketing/Home";
+import Terms from "./pages/marketing/Terms";
 import NewBill from "./pages/NewBill";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
@@ -47,6 +48,7 @@ const router = createRouter(
   [
     { path: "/", element: <Home /> },
     { path: "/download", element: <Download /> },
+    { path: "/terms", element: <Terms /> },
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
     {
