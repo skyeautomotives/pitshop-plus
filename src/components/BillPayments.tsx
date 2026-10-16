@@ -25,7 +25,10 @@ export default function BillPayments({
   money: BillMoney;
 }) {
   const [draft, setDraft] = useState<PaymentDraft | null>(null);
+  /** A problem with what was typed (shown under the amount). */
   const [error, setError] = useState<string | null>(null);
+  /** The save itself failed (server or connection): shown above the form. */
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [removing, setRemoving] = useState<BillPayment | null>(null);
@@ -33,6 +36,7 @@ export default function BillPayments({
   const open = () => {
     setNotice(null);
     setError(null);
+    setSaveError(null);
     setDraft(emptyPayment(money.balance));
   };
 
@@ -47,12 +51,13 @@ export default function BillPayments({
     }
     setSaving(true);
     setError(null);
+    setSaveError(null);
     try {
       await addBillPayment(billId, input);
       setDraft(null);
       setNotice(`Recorded ${inr(input.amount)} by ${paymentMethodLabel(input.method)}.`);
     } catch (e2) {
-      setError(errorMessage(e2));
+      setSaveError(errorMessage(e2));
     } finally {
       setSaving(false);
     }
@@ -61,11 +66,12 @@ export default function BillPayments({
   async function onRemove(p: BillPayment) {
     setRemoving(null);
     setNotice(null);
+    setSaveError(null);
     try {
       await removeBillPayment(billId, p.id);
       setNotice(`Removed the payment of ${inr(p.amount)}.`);
     } catch (e2) {
-      setError(errorMessage(e2));
+      setSaveError(errorMessage(e2));
     }
   }
 
@@ -103,9 +109,9 @@ export default function BillPayments({
           {notice}
         </div>
       )}
-      {error && !draft && (
+      {saveError && (
         <div className="alert alert-error" role="alert">
-          {error}
+          Couldn't save the payment. {saveError}
         </div>
       )}
 
