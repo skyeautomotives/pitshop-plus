@@ -237,7 +237,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 #variable_conflict use_column
 declare
   v_q text := nullif(lower(btrim(coalesce(p_search, ''))), '');
@@ -309,7 +309,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 #variable_conflict use_column
 begin
   perform public.require_platform_admin();
@@ -352,7 +352,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 #variable_conflict use_column
 declare
   v_q text := nullif(lower(btrim(coalesce(p_search, ''))), '');
@@ -443,7 +443,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 #variable_conflict use_column
 declare
   v_q text := nullif(lower(btrim(coalesce(p_search, ''))), '');
@@ -525,7 +525,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 #variable_conflict use_column
 begin
   perform public.require_platform_admin();
