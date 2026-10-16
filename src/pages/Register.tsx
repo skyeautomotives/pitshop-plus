@@ -6,6 +6,7 @@ import { authRedirectUrl } from "../lib/platform";
 import { errorMessage, supabase } from "../lib/supabase";
 import { usePageTitle } from "../lib/usePageTitle";
 import AuthLayout from "../components/AuthLayout";
+import PasswordInput from "../components/PasswordInput";
 
 const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -152,10 +153,10 @@ export default function Register() {
           />
         </Field>
         <Field fieldKey="password" label="Password" required error={errors.password} hint={`At least ${MIN_PASSWORD} characters.`}>
-          <input {...fieldProps("password", errors.password)} type="password" autoComplete="new-password" value={form.password} onChange={set("password")} />
+          <PasswordInput {...fieldProps("password", errors.password)} autoComplete="new-password" value={form.password} onChange={set("password")} />
         </Field>
         <Field fieldKey="confirm" label="Confirm password" required error={errors.confirm}>
-          <input {...fieldProps("confirm", errors.confirm)} type="password" autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
+          <PasswordInput {...fieldProps("confirm", errors.confirm)} autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
         </Field>
         </div>
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>

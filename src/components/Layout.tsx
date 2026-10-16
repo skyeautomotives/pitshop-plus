@@ -6,6 +6,7 @@ import { signOut as signOutAndClear } from "../lib/auth";
 import Logo from "./Logo";
 import SyncStatus from "./SyncStatus";
 import UpdateBanner from "./UpdateBanner";
+import SubscriptionReminder from "./SubscriptionReminder";
 import { APP_VERSION } from "../lib/updates";
 import { useSyncState } from "../lib/sync";
 
@@ -180,6 +181,7 @@ export default function Layout() {
         )}
         <FirstSyncNotice />
         <UpdateBanner />
+        {isOwner && <SubscriptionReminder />}
         <Outlet />
       </main>
     </div>

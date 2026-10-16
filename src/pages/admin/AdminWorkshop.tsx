@@ -1,23 +1,22 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { StatusBadge } from "../../components/cards";
 import { admin } from "../../lib/admin/api";
 import { AUDIT_LABELS, formatDateTime, isDisabled, timeAgo } from "../../lib/admin/format";
 import type { AdminLogin, AdminShop, LoginAction } from "../../lib/admin/types";
 import { formatDate } from "../../lib/format";
-import { formatINR, rupeesToPaise } from "../../lib/money";
 import { errorMessage } from "../../lib/supabase";
 import { useLoad } from "../../lib/useLoad";
 import { usePageTitle } from "../../lib/usePageTitle";
+import { BillingTab } from "./Billing";
 import { LoadFailed, Pager, ShopStatus, Tile } from "./parts";
 
-const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
 
+// Admins manage the workshop (logins, subscription) and see usage counts; its
+// customers' bills and complaints stay private to the workshop (0016).
 const TABS = [
   { id: "logins", label: "Logins" },
-  { id: "bills", label: "Bills" },
-  { id: "complaints", label: "Complaints" },
+  { id: "billing", label: "Subscription & payments" },
   { id: "activity", label: "Admin activity" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
@@ -109,7 +108,7 @@ export default function AdminWorkshop() {
           <Tile label="Logins" value={s.logins} />
           <Tile label="Bills" value={s.bills.toLocaleString("en-IN")} />
           <Tile label="Complaints" value={s.complaints.toLocaleString("en-IN")} />
-          <Tile strong label="Billed, all time" value={inr(s.total_billed)} />
+
         </div>
       </div>
 
@@ -132,8 +131,7 @@ export default function AdminWorkshop() {
       </div>
 
       {tab === "logins" && <LoginsTab shopId={s.id} version={version} onDone={refresh} />}
-      {tab === "bills" && <BillsTab shopId={s.id} />}
-      {tab === "complaints" && <ComplaintsTab shopId={s.id} />}
+      {tab === "billing" && <BillingTab shopId={s.id} version={version} onDone={refresh} />}
       {tab === "activity" && <ActivityTab shopId={s.id} version={version} />}
     </div>
   );
@@ -408,169 +406,6 @@ function LoginsTab({ shopId, version, onDone }: { shopId: string; version: numbe
 }
 
 /** Search box that updates `onSearch` a moment after the last key. */
-function SearchBox({ id, placeholder, onSearch }: { id: string; placeholder: string; onSearch: (q: string) => void }) {
-  const [text, setText] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => onSearch(text.trim()), 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
-  return (
-    <>
-      <label htmlFor={id} className="sr-only">
-        {placeholder}
-      </label>
-      <input id={id} type="search" placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" />
-    </>
-  );
-}
-
-function BillsTab({ shopId }: { shopId: string }) {
-  const [q, setQ] = useState("");
-  const [page, setPage] = useState(0);
-  const bills = useLoad(`admin-bills|${shopId}|${q}|${page}`, () => admin((api) => api.bills(shopId, q, page)));
-
-  return (
-    <section className="card">
-      <div className="admin-tab-tools">
-        <SearchBox
-          id="admin-bill-search"
-          placeholder="Search by customer, phone or vehicle number"
-          onSearch={(v) => {
-            setQ(v);
-            setPage(0);
-          }}
-        />
-      </div>
-      {bills.status === "loading" && <p className="page-status">Loading bills…</p>}
-      {bills.status === "error" && <LoadFailed what="bills" message={bills.message} onRetry={bills.retry} />}
-      {bills.status === "ok" &&
-        (bills.data.rows.length === 0 ? (
-          <p className="muted">{q ? "No bills match." : "This workshop hasn't made any bills yet."}</p>
-        ) : (
-          <>
-            <div className="table-scroll">
-              <table className="sales-table admin-table">
-                <thead>
-                  <tr>
-                    <th>Bill</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Phone</th>
-                    <th>Vehicle</th>
-                    <th className="num">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bills.data.rows.map((b) => (
-                    <tr key={b.id}>
-                      <td>
-                        <Link to={`/admin/bills/${b.id}`} className="admin-row-link">
-                          #{b.bill_number}
-                        </Link>
-                      </td>
-                      <td>{formatDate(b.date_received)}</td>
-                      <td>{b.customer_name}</td>
-                      <td>{b.phone}</td>
-                      <td className="reg">{b.vehicle_reg}</td>
-                      <td className="num">{inr(b.grand_total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <Pager page={page} total={bills.data.total} onPage={setPage} />
-          </>
-        ))}
-    </section>
-  );
-}
-
-function ComplaintsTab({ shopId }: { shopId: string }) {
-  const [q, setQ] = useState("");
-  const [status, setStatus] = useState<"open" | "resolved" | null>(null);
-  const [page, setPage] = useState(0);
-  const complaints = useLoad(`admin-complaints|${shopId}|${q}|${status}|${page}`, () =>
-    admin((api) => api.complaints(shopId, q, status, page)),
-  );
-
-  return (
-    <section className="card">
-      <div className="admin-tab-tools">
-        <SearchBox
-          id="admin-complaint-search"
-          placeholder="Search by customer, phone or vehicle number"
-          onSearch={(v) => {
-            setQ(v);
-            setPage(0);
-          }}
-        />
-        <div className="segmented segmented-sm" role="group" aria-label="Status">
-          {([null, "open", "resolved"] as const).map((s) => (
-            <button
-              key={s ?? "all"}
-              type="button"
-              aria-pressed={status === s}
-              onClick={() => {
-                setStatus(s);
-                setPage(0);
-              }}
-            >
-              {s === null ? "All" : s === "open" ? "Open" : "Resolved"}
-            </button>
-          ))}
-        </div>
-      </div>
-      {complaints.status === "loading" && <p className="page-status">Loading complaints…</p>}
-      {complaints.status === "error" && <LoadFailed what="complaints" message={complaints.message} onRetry={complaints.retry} />}
-      {complaints.status === "ok" &&
-        (complaints.data.rows.length === 0 ? (
-          <p className="muted">{q || status ? "No complaints match." : "This workshop hasn't recorded any complaints yet."}</p>
-        ) : (
-          <>
-            <div className="table-scroll">
-              <table className="sales-table admin-table">
-                <thead>
-                  <tr>
-                    <th>Complaint</th>
-                    <th>Reported</th>
-                    <th>Customer</th>
-                    <th>Vehicle</th>
-                    <th>Problem</th>
-                    <th>Attended by</th>
-                    <th>Status</th>
-                    <th className="num">Bills</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {complaints.data.rows.map((c) => (
-                    <tr key={c.id}>
-                      <td>
-                        <Link to={`/admin/complaints/${c.id}`} className="admin-row-link">
-                          #{c.complaint_number}
-                        </Link>
-                      </td>
-                      <td>{formatDate(c.reported_on)}</td>
-                      <td>{c.customer_name}</td>
-                      <td className="reg">{c.vehicle_reg}</td>
-                      <td className="admin-wrap">{c.description}</td>
-                      <td>{c.attended_by || "-"}</td>
-                      <td>
-                        <StatusBadge status={c.status} />
-                      </td>
-                      <td className="num">{c.bills}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <Pager page={page} total={complaints.data.total} onPage={setPage} />
-          </>
-        ))}
-    </section>
-  );
-}
-
 function ActivityTab({ shopId, version }: { shopId: string; version: number }) {
   const [page, setPage] = useState(0);
   const log = useLoad(`admin-audit|${shopId}|${page}|${version}`, () => admin((api) => api.audit(shopId, page)));

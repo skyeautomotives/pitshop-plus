@@ -1,8 +1,6 @@
 import { Link } from "react-router";
 import { admin } from "../../lib/admin/api";
 import { timeAgo } from "../../lib/admin/format";
-import { compactINR } from "../../lib/chart";
-import { formatINR, rupeesToPaise } from "../../lib/money";
 import { useLoad } from "../../lib/useLoad";
 import { usePageTitle } from "../../lib/usePageTitle";
 import { LoadFailed, MonthBars, ShopStatus, Tile } from "./parts";
@@ -15,14 +13,14 @@ export default function AdminOverview() {
   usePageTitle("Admin overview");
   const data = useLoad("admin-overview", () =>
     admin(async (api) => {
-      const [overview, shops] = await Promise.all([api.overview(), api.shops()]);
-      return { overview, recent: shops.slice(0, 5) };
+      const [overview, billing, shops] = await Promise.all([api.overview(), api.billingOverview(), api.shops()]);
+      return { overview, billing, recent: shops.slice(0, 5) };
     }),
   );
 
   if (data.status === "loading") return <p className="page-status">Loading…</p>;
   if (data.status === "error") return <LoadFailed what="the overview" message={data.message} onRetry={data.retry} />;
-  const { overview: o, recent } = data.data;
+  const { overview: o, billing: b, recent } = data.data;
   const months = o.by_month.map((m) => m.month);
 
   return (
@@ -46,29 +44,24 @@ export default function AdminOverview() {
         <Tile label="Logins" value={count(o.logins)} sub="Owners and staff" />
       </div>
       <div className="tiles dash-tiles">
-        <Tile label="Bills" value={count(o.bills)} sub="All workshops, all time" />
-        <Tile label="Complaints" value={count(o.complaints)} sub={`${count(o.open_complaints)} open`} />
-        <Tile label="Billed, last 30 days" value={inr(o.billed_30d)} />
-        <Tile label="Billed, all time" value={inr(o.total_billed)} />
+        <Tile strong to="/admin/billing" label="Monthly revenue" value={inr(b.mrr)} sub={`${count(b.paying)} paying workshops`} />
+        <Tile to="/admin/billing" label="Collected this month" value={inr(b.collected_month)} sub={`${count(b.overdue)} overdue`} />
+        <Tile label="Bills made" value={count(o.bills)} sub={`${count(o.bills_30d)} in the last 30 days`} />
+        <Tile label="Complaints recorded" value={count(o.complaints)} sub="All workshops, all time" />
       </div>
 
       <div className="admin-charts">
         <section className="card">
           <div className="card-head">
-            <h2>Amount billed per month</h2>
+            <h2>Bills made per month</h2>
           </div>
           <MonthBars
-            label="Amount billed by all workshops per month, last 12 months"
+            label="Number of bills made by all workshops per month, last 12 months"
             months={months}
-            value={(i) => rupeesToPaise(o.by_month[i].billed)}
-            format={(v) => formatINR(v)}
-            axis={compactINR}
+            value={(i) => o.by_month[i].bills}
+            format={(v) => `${count(v)} ${v === 1 ? "bill" : "bills"}`}
+            axis={(v) => (Number.isInteger(v) ? count(v) : "")}
             color="#2a78d6"
-            details={(i) => (
-              <span className="muted">
-                {count(o.by_month[i].bills)} {o.by_month[i].bills === 1 ? "bill" : "bills"}
-              </span>
-            )}
           />
         </section>
         <section className="card">

@@ -8,6 +8,7 @@ import { PlatformIcon } from "./marketing/Home";
 import { DOWNLOADS } from "./marketing/Site";
 import AuthLayout from "../components/AuthLayout";
 import { usePageTitle } from "../lib/usePageTitle";
+import PasswordInput from "../components/PasswordInput";
 
 /** Remembered sign-in name: an owner's email, or a staff username (older versions saved <username>@pitstop.invalid). */
 function rememberedLogin(): string {
@@ -99,9 +100,8 @@ export default function Login() {
         </div>
         <div className="field">
           <label htmlFor="password">Password</label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="current-password"
             autoFocus={!!email}
             value={password}

@@ -35,7 +35,41 @@ export const AUDIT_LABELS: Record<AuditAction, string> = {
   disable_login: "Disabled login",
   enable_login: "Enabled login",
   remove_login: "Removed login",
+  save_plan: "Saved plan",
+  update_subscription: "Changed subscription",
+  record_payment: "Recorded payment",
+  delete_payment: "Deleted payment",
 };
+
+export const STATE_LABELS: Record<import("./types").SubscriptionState, string> = {
+  trial: "Free trial",
+  trial_ended: "Trial ended",
+  active: "Active",
+  overdue: "Payment overdue",
+  cancelled: "Cancelled",
+};
+
+export const METHOD_LABELS: Record<import("./types").PaymentMethod, string> = {
+  upi: "UPI",
+  cash: "Cash",
+  bank: "Bank transfer",
+  card: "Card",
+  other: "Other",
+};
+
+/** "₹499 / month" */
+export function planPrice(price: number | null, period: "month" | "year" | null): string {
+  if (price === null) return "-";
+  return `₹${price.toLocaleString("en-IN", { maximumFractionDigits: 2 })}${period ? ` / ${period}` : ""}`;
+}
+
+/** The next "paid until" date after paying one period from `from` (yyyy-mm-dd). */
+export function nextPeriodEnd(from: string, period: "month" | "year"): string {
+  const d = new Date(`${from}T00:00:00`);
+  if (period === "year") d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 /** "Oct 2026" from "2026-10". */
 export function monthLabel(month: string, withYear = true): string {

@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { admin } from "../../lib/admin/api";
 import { timeAgo } from "../../lib/admin/format";
 import type { AdminShop } from "../../lib/admin/types";
-import { formatINR, rupeesToPaise } from "../../lib/money";
 import { useLoad } from "../../lib/useLoad";
 import { usePageTitle } from "../../lib/usePageTitle";
 import { LoadFailed, ShopStatus } from "./parts";
@@ -16,6 +15,19 @@ const FILTERS: { id: Show; label: string; test: (s: AdminShop) => boolean }[] = 
   { id: "suspended", label: "Suspended", test: (s) => !!s.suspended_at },
   { id: "unconfirmed", label: "Email not confirmed", test: (s) => !s.owner_confirmed },
 ];
+
+/** An email that may wrap only just before the "@". */
+function EmailText({ email }: { email: string }) {
+  const at = email.indexOf("@");
+  if (at < 0) return <>{email}</>;
+  return (
+    <>
+      {email.slice(0, at)}
+      <wbr />
+      {email.slice(at)}
+    </>
+  );
+}
 
 export default function AdminWorkshops() {
   usePageTitle("Workshops");
@@ -93,11 +105,8 @@ export default function AdminWorkshops() {
                     <th>Workshop</th>
                     <th>Owner</th>
                     <th>Status</th>
-                    <th>Signed up</th>
-                    <th className="num">Logins</th>
-                    <th className="num">Bills</th>
-                    <th className="num">Billed</th>
-                    <th>Last activity</th>
+                    <th className="num">Usage</th>
+                    <th>Joined</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -111,16 +120,26 @@ export default function AdminWorkshops() {
                       </td>
                       <td>
                         {s.owner_name}
-                        <div className="muted admin-sub">{s.owner_email}</div>
+                        <div className="muted admin-sub">
+                          <EmailText email={s.owner_email} />
+                        </div>
                       </td>
                       <td>
                         <ShopStatus shop={s} />
                       </td>
-                      <td>{new Date(s.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                      <td className="num">{s.logins}</td>
-                      <td className="num">{s.bills.toLocaleString("en-IN")}</td>
-                      <td className="num">{formatINR(rupeesToPaise(s.total_billed))}</td>
-                      <td>{timeAgo(s.last_activity)}</td>
+                      <td className="num">
+                        {s.bills.toLocaleString("en-IN")} {s.bills === 1 ? "bill" : "bills"}
+                        <div className="muted admin-sub">
+                          {s.complaints.toLocaleString("en-IN")} {s.complaints === 1 ? "complaint" : "complaints"} · {s.logins}{" "}
+                          {s.logins === 1 ? "login" : "logins"}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="nowrap">{new Date(s.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                        <div className="muted admin-sub">
+                          {s.last_activity ? `Last active ${timeAgo(s.last_activity).replace(/^Just now$/, "just now")}` : "No activity yet"}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

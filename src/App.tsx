@@ -25,7 +25,7 @@ import { adminDemo } from "./lib/admin/api";
 import AdminActivity from "./pages/admin/AdminActivity";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
-import { AdminBill, AdminComplaint } from "./pages/admin/AdminRecords";
+import AdminBilling from "./pages/admin/Billing";
 import AdminWorkshop from "./pages/admin/AdminWorkshop";
 import AdminWorkshops from "./pages/admin/AdminWorkshops";
 
@@ -90,8 +90,7 @@ const router = createRouter(
         { index: true, element: <AdminOverview /> },
         { path: "workshops", element: <AdminWorkshops /> },
         { path: "workshops/:id", element: <AdminWorkshop /> },
-        { path: "bills/:id", element: <AdminBill /> },
-        { path: "complaints/:id", element: <AdminComplaint /> },
+        { path: "billing", element: <AdminBilling /> },
         { path: "activity", element: <AdminActivity /> },
       ],
     },

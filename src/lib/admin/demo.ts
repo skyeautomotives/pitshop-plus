@@ -3,9 +3,9 @@
 // actions clicked) without a Supabase project. Never part of a build.
 import type { AdminApi } from "./api";
 import { PAGE_SIZE } from "./api";
+import { createDemoBilling } from "./demo-billing";
+import type { BillItemRow, BillRow, ComplaintRow } from "../types";
 import type {
-  AdminBillDetail,
-  AdminComplaintDetail,
   AdminLogin,
   AdminOverview,
   AdminShop,
@@ -45,15 +45,26 @@ const CUSTOMERS = ["Arun Das", "Meera Pillai", "Sajan Thomas", "Fathima Beevi", 
 const PARTS = ["Engine oil change", "Brake pads (front)", "Clutch plate", "Air filter", "Battery replacement", "Wheel alignment", "Coolant top-up", "Spark plugs", "Headlamp bulb", "AC gas refill", "Chain sprocket kit", "Tyre puncture repair", "Wiper blades", "Suspension bush"];
 const PROBLEMS = ["Engine making knocking noise", "Brakes squeaking when stopping", "AC not cooling", "Vehicle pulling to the left", "Battery drains overnight", "Gear shift is hard", "Check engine light on", "Oil leak under the engine", "Starting problem in the morning", "Headlight not working"];
 
-interface DemoBill extends AdminBillDetail {
+// The sample bills and complaints only feed usage counts; admins never see their contents.
+interface DemoBill extends BillRow {
+  shop_id: string;
+  shop_name: string;
+  created_by_name: string | null;
+  vehicle_reg_key: string;
+  bill_items: BillItemRow[];
   complaint_ids: string[];
 }
 
+interface DemoComplaint extends ComplaintRow {
+  shop_id: string;
+  shop_name: string;
+}
+
 interface DemoState {
-  shops: (Omit<AdminShop, "logins" | "bills" | "complaints" | "total_billed" | "last_activity" | "owner_name" | "owner_email" | "owner_confirmed" | "owner_user_id">)[];
+  shops: (Omit<AdminShop, "logins" | "bills" | "complaints" | "last_activity" | "owner_name" | "owner_email" | "owner_confirmed" | "owner_user_id">)[];
   logins: (AdminLogin & { shop_id: string })[];
   bills: DemoBill[];
-  complaints: (Omit<AdminComplaintDetail, "bills">)[];
+  complaints: DemoComplaint[];
   audit: AuditEntry[];
 }
 
@@ -181,7 +192,6 @@ function build(): DemoState {
           created_at: iso(t),
           updated_at: iso(t),
           bill_items: items,
-          complaints: [],
           complaint_ids: complaintIds,
         });
       }
@@ -221,7 +231,6 @@ function summary(state: DemoState, shop: DemoState["shops"][number]): AdminShop 
     logins: logins.length,
     bills: bills.length,
     complaints: complaints.length,
-    total_billed: bills.reduce((a, b) => a + b.grand_total, 0),
     last_activity: times.length ? times.sort().at(-1)! : null,
   };
 }
@@ -230,25 +239,13 @@ function page<T>(rows: T[], n: number): Page<T> {
   return { rows: rows.slice(n * PAGE_SIZE, (n + 1) * PAGE_SIZE), total: rows.length };
 }
 
-function matches(search: string, row: { customer_name: string; phone: string; vehicle_reg_key: string }): boolean {
-  const q = search.trim().toLowerCase();
-  if (!q) return true;
-  const key = regKey(search);
-  const digits = search.replace(/\D/g, "");
-  return (
-    row.customer_name.toLowerCase().includes(q) ||
-    (key !== "" && row.vehicle_reg_key.includes(key)) ||
-    (digits.length >= 3 && row.phone.replace(/\D/g, "").includes(digits))
-  );
-}
-
 const byNewest = <T extends { created_at: string }>(a: T, b: T) => b.created_at.localeCompare(a.created_at);
 
 export function createDemoApi(): AdminApi {
   const state = build();
   const monthOf = (isoDate: string) => isoDate.slice(0, 7);
 
-  const log = (action: AuditAction, shopId: string, target: string, details: Record<string, unknown> = {}) => {
+  const log = (action: AuditAction, shopId: string | null, target: string, details: Record<string, unknown> = {}) => {
     const shop = state.shops.find((s) => s.id === shopId);
     state.audit.unshift({
       id: state.audit.length + 1,
@@ -262,7 +259,15 @@ export function createDemoApi(): AdminApi {
     });
   };
 
+  const billing = createDemoBilling(
+    state.shops,
+    (shopId) => state.logins.find((l) => l.shop_id === shopId && l.role === "owner")?.email ?? "",
+    log,
+  );
+
   return {
+    ...billing,
+
     async isPlatformAdmin() {
       return true;
     },
@@ -284,7 +289,6 @@ export function createDemoApi(): AdminApi {
           month: key,
           signups: state.shops.filter((s) => monthOf(s.created_at) === key).length,
           bills: bills.length,
-          billed: bills.reduce((a, b) => a + b.grand_total, 0),
         });
       }
       const since30 = day(now - 29 * DAY);
@@ -295,10 +299,8 @@ export function createDemoApi(): AdminApi {
         new_30d: state.shops.filter((s) => s.created_at >= since).length,
         logins: state.logins.length,
         bills: state.bills.length,
+        bills_30d: state.bills.filter((b) => b.date_received >= since30).length,
         complaints: state.complaints.length,
-        open_complaints: state.complaints.filter((c) => c.status === "open").length,
-        total_billed: state.bills.reduce((a, b) => a + b.grand_total, 0),
-        billed_30d: state.bills.filter((b) => b.date_received >= since30).reduce((a, b) => a + b.grand_total, 0),
         by_month,
       };
     },
@@ -332,70 +334,6 @@ export function createDemoApi(): AdminApi {
         .filter((l) => l.shop_id === shopId)
         .sort((a, b) => (a.role === b.role ? a.created_at.localeCompare(b.created_at) : a.role === "owner" ? -1 : 1))
         .map(({ shop_id: _s, ...l }) => l);
-    },
-
-    async bills(shopId, search, n) {
-      await pause();
-      const rows = state.bills
-        .filter((b) => b.shop_id === shopId && matches(search, b))
-        .sort((a, b) => b.date_received.localeCompare(a.date_received) || b.bill_number! - a.bill_number!)
-        .map((b) => ({
-          id: b.id,
-          bill_number: b.bill_number!,
-          customer_name: b.customer_name,
-          phone: b.phone,
-          vehicle_reg: b.vehicle_reg,
-          date_received: b.date_received,
-          delivered_on: b.delivered_on,
-          grand_total: b.grand_total,
-          created_at: b.created_at,
-        }));
-      return page(rows, n);
-    },
-
-    async bill(id) {
-      await pause();
-      const b = state.bills.find((x) => x.id === id);
-      if (!b) return null;
-      const { complaint_ids, ...rest } = b;
-      return {
-        ...rest,
-        complaints: state.complaints
-          .filter((c) => complaint_ids.includes(c.id))
-          .map((c) => ({ id: c.id, complaint_number: c.complaint_number, description: c.description, status: c.status, attended_by: c.attended_by, reported_on: c.reported_on })),
-      };
-    },
-
-    async complaints(shopId, search, status, n) {
-      await pause();
-      const rows = state.complaints
-        .filter((c) => c.shop_id === shopId && (!status || c.status === status) && matches(search, c))
-        .sort((a, b) => b.reported_on.localeCompare(a.reported_on) || b.complaint_number! - a.complaint_number!)
-        .map((c) => ({
-          id: c.id,
-          complaint_number: c.complaint_number!,
-          customer_name: c.customer_name,
-          phone: c.phone,
-          vehicle_reg: c.vehicle_reg,
-          description: c.description,
-          reported_on: c.reported_on,
-          attended_by: c.attended_by,
-          status: c.status,
-          bills: state.bills.filter((b) => b.complaint_ids.includes(c.id)).length,
-        }));
-      return page(rows, n);
-    },
-
-    async complaint(id) {
-      await pause();
-      const c = state.complaints.find((x) => x.id === id);
-      if (!c) return null;
-      return {
-        ...c,
-        bills: state.bills
-          .filter((b) => b.complaint_ids.includes(c.id))
-          .map((b) => ({ id: b.id, bill_number: b.bill_number, date_received: b.date_received, grand_total: b.grand_total })),
-      };
     },
 
     async audit(shopId, n) {
