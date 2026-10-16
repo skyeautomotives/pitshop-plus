@@ -1,0 +1,42 @@
+name: Nightly snapshot
+
+on:
+  schedule:
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SNAPSHOT_PASSPHRASE: ${{ secrets.SNAPSHOT_PASSPHRASE }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_DRIVE_REFRESH_TOKEN: ${{ secrets.GOOGLE_DRIVE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check secrets
+        run: |
+          for s in SUPABASE_ACCESS_TOKEN SNAPSHOT_PASSPHRASE GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_DRIVE_REFRESH_TOKEN; do
+            if [ -z "${!s}" ]; then echo "::error::Add the $s repository secret."; missing=1; fi
+          done
+          [ -z "$missing" ]
+      - name: Take snapshot
+        run: node supabase/snapshot/take.mjs "$RUNNER_TEMP/snapshot-$(date -u +%Y-%m-%d).psnap"
+      - name: Upload to Google Drive
+        run: node supabase/snapshot/upload.mjs "$RUNNER_TEMP"/snapshot-*.psnap
+      - name: Clean up
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/snapshot-*.psnap
