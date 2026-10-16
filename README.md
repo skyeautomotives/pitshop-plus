@@ -2,7 +2,7 @@
 
 Billing and service management for automobile workshops, by Skye Automotives.
 
-**Website:** https://skyeautomotives.github.io/pitshop-plus/
+**Website:** https://pitshopplus.com/
 
 ## What it does
 
@@ -22,7 +22,7 @@ Register your workshop on the website, then use it in the browser or download th
 
 - **Settings:** enter the workshop name, address and phone printed on your bills, and add staff logins.
 - **New bill:** customer name, phone, vehicle number, date received and labour charge are required.
-- **Backups:** save a backup at least once a week from **Settings, Backup & restore**, and keep it in your Google Drive. See the [Terms & Conditions](https://skyeautomotives.github.io/pitshop-plus/terms).
+- **Backups:** save a backup at least once a week from **Settings, Backup & restore**, and keep it in your Google Drive. See the [Terms & Conditions](https://pitshopplus.com/terms).
 
 ## Contact
 

@@ -25,7 +25,7 @@ export async function openExternal(url: string): Promise<void> {
 }
 
 /** The public website, used for links in emails (the apps can't receive them). */
-export const SITE_URL: string = import.meta.env.VITE_SITE_URL || "https://skyeautomotives.github.io/pitshop-plus/";
+export const SITE_URL: string = import.meta.env.VITE_SITE_URL || "https://pitshopplus.com/";
 
 /** Where email links (confirm email, reset password) should land. */
 export function authRedirectUrl(): string {
