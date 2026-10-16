@@ -49,8 +49,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # The site is served from https://<user>.github.io/<repo>/
-          BASE_PATH: /${{ github.event.repository.name }}/
+          # The site is served from the root of https://pitshopplus.com/
+          BASE_PATH: /
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://kbglqaagegmsmukaeldv.supabase.co' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_rnEzfJSqiPKBL5xfKenTFg_4TnVPoWH' }}
       # GitHub Pages has no rewrites: serve the app for unknown paths (e.g. /bills/123 after a refresh).

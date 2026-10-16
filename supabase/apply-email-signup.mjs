@@ -10,7 +10,9 @@
 import { readFileSync } from "node:fs";
 
 const ref = "kbglqaagegmsmukaeldv";
-const SITE = "https://skyeautomotives.github.io/pitshop-plus/";
+const SITE = "https://pitshopplus.com/";
+// The old address still redirects here; links in emails already sent keep working.
+const OLD_SITE = "https://skyeautomotives.github.io/pitshop-plus/";
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 if (!token) {
   console.error('Set SUPABASE_ACCESS_TOKEN first:  $env:SUPABASE_ACCESS_TOKEN="sbp_..."');
@@ -44,6 +46,8 @@ await api("PATCH", "/config/auth", {
   site_url: SITE,
   uri_allow_list: [
     `${SITE}**`,
+    "https://www.pitshopplus.com/**",
+    `${OLD_SITE}**`,
     "http://127.0.0.1:5181/**",
     "http://localhost:5181/**",
     "http://localhost:5173/**",
