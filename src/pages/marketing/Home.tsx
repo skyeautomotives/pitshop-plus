@@ -38,7 +38,7 @@ const FEATURES = [
   { icon: "team", title: "Staff logins", text: "Create a login for each staff member. Owners change settings and manage logins. Staff make and send bills." },
   { icon: "shield", title: "Private data", text: "Each workshop sees only its own customers, bills and reports. The database enforces this, not just the app." },
   { icon: "devices", title: "Browser, Windows, Android", text: "Sign in with the same account on any device and see the same bills." },
-  { icon: "clock", title: "Unsaved bills", text: "The app warns you before you leave a bill you have not saved, and keeps an unfinished bill on the device." },
+  { icon: "clock", title: "Works offline", text: "No internet? Keep billing. The apps save bills on the device and sync them when the connection is back, with no duplicates." },
   { icon: "lock", title: "Your own numbering", text: "Bill and complaint numbers start at 1 for your workshop. Set your shop details and billing rules once in Settings." },
 ];
 
@@ -54,7 +54,7 @@ const FAQ = [
   { q: "Do I need to install anything?", a: "No. It works in any web browser. If you prefer an app, install it on Windows or Android from the Download page. Your account and bills are the same on every device." },
   { q: "Can my staff use it?", a: "Yes. As the owner you can create logins for your staff. They can make and send bills. Only the owner can change settings and manage logins." },
   { q: "Who can see my data?", a: "Only the logins of your workshop. Other workshops using Pitstop Plus cannot see your customers, bills or reports." },
-  { q: "Does it need internet?", a: "Yes. An internet connection is needed to save and find bills, so every device shows the same data. Mobile data is enough." },
+  { q: "Does it need internet?", a: "Not all the time. The Windows and Android apps keep working without internet: bills and complaints are saved on the device and sent to your account when the connection is back. Registering, the first sign-in on a device and managing staff logins need internet. The website needs internet." },
   { q: "How do I get help?", a: "Email Skye Automotives at the address at the bottom of this page." },
 ];
 

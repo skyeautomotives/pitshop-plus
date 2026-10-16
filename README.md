@@ -31,8 +31,9 @@ Built with React, TypeScript, Vite and Supabase (Postgres plus Auth).
    - `supabase/migrations/0010_item_quantity.sql`
    - `supabase/migrations/0011_multi_shop.sql`
    - `supabase/migrations/0012_email_signup.sql`
+   - `supabase/migrations/0013_offline_sync.sql`
 
-   Run each file only once.
+   Run each file only once. With `SUPABASE_ACCESS_TOKEN` set in your environment you can also run one from a terminal: `node supabase/apply-migration.mjs supabase/migrations/<file>.sql` (works on networks that block the database port).
 3. **Email signup.** Run `node supabase/apply-email-signup.mjs` with `SUPABASE_ACCESS_TOKEN` set (it turns on sign-ups with email confirmation, sets the site URL and installs the branded confirmation email from `supabase/templates/confirm-signup.html`). Then add a sending mailbox in **Authentication → Emails → SMTP Settings** (Supabase's built-in mailer only sends a few emails per hour). For Gmail: host `smtp.gmail.com`, port `465`, your Gmail address as username, and a Google **App Password** as password.
 4. **Deploy the login-management function.** This lets the owner add and remove logins from **Settings**. Open **Edge Functions → Deploy a new function → Via Editor**, name it `manage-staff`, paste the contents of `supabase/functions/manage-staff/index.ts`, and click **Deploy**. Then open the function's **Settings** and turn **off** "Verify JWT with legacy secret" (the function checks the caller itself). Using the CLI instead: `npx supabase functions deploy manage-staff --no-verify-jwt --project-ref <ref>`.
 5. **Sign-ups stay on** (Authentication → Sign In / Providers) with **Confirm email** enabled. A new login creates its workshop through a database trigger; logins that don't belong to a workshop can't see any bills.
@@ -113,6 +114,15 @@ Every push to `main` redeploys automatically. `public/_redirects` makes page lin
 4. In Supabase, open **Authentication → URL Configuration** and set **Site URL** to your Vercel address.
 
 Netlify, Cloudflare Pages and similar hosts work the same way: build command `npm run build`, output folder `dist`, the same two environment variables, and a rewrite of all paths to `/index.html`.
+
+## Offline mode
+
+Every device keeps a copy of its workshop's bills and complaints (IndexedDB, `src/lib/local`), and screens read from it. Saves go straight to the server when online; offline they are stored on the device and queued, and `src/lib/sync.ts` sends them when the connection is back (complaints first, then bills) and downloads changes from other devices every 30 seconds.
+
+- New bills and complaints get their id on the device. `save_bill` accepts it (`p_new_id`), so a retried upload updates instead of creating a duplicate. Bill and complaint numbers are assigned by the server at sync.
+- The sidebar shows the sync status; **Sync** lists changes waiting to be sent and any the server refused, with Fix / Try again / Discard.
+- Signing out deletes the device's copy (and warns first if changes haven't been sent).
+- Tests: `src/lib/offline.test.ts`.
 
 ## Windows and Android apps
 
