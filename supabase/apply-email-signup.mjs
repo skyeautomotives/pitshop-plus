@@ -60,6 +60,9 @@ if (cfg.smtp_host) {
   await api("PATCH", "/config/auth", {
     mailer_subjects_confirmation: "Confirm your email | Pitstop Plus",
     mailer_templates_confirmation_content: file("./templates/confirm-signup.html"),
+    // Built-in mailer: 2 an hour. With your own mailbox it can go higher
+    // (a personal Gmail sends about 500 a day).
+    rate_limit_email_sent: 30,
   });
   cfg = await api("GET", "/config/auth");
   template = "installed";
@@ -71,4 +74,5 @@ console.log("  email confirmation on: ", !cfg.mailer_autoconfirm);
 console.log("  email links go to:     ", cfg.site_url);
 console.log("  sending mailbox (SMTP):", cfg.smtp_host || "Supabase's built-in mailer (a few emails per hour)");
 console.log("  branded email:         ", template);
+console.log("  emails per hour:       ", cfg.rate_limit_email_sent);
 console.log("Done.");
