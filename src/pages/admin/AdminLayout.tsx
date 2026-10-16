@@ -6,6 +6,7 @@ const ICON = {
   overview: "M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z",
   workshops: "M3 10l9-6 9 6M5 9v11h14V9M9 20v-6h6v6",
   activity: "M4 6h16M4 12h10M4 18h7M18 15v6M15 18h6",
+  billing: "M3 7h18v10H3zM3 10h18M7 14h4",
   signOut: "M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10",
 };
 
@@ -35,6 +36,9 @@ export default function AdminLayout() {
           </NavLink>
           <NavLink to="/admin/workshops">
             <Icon name="workshops" /> Workshops
+          </NavLink>
+          <NavLink to="/admin/billing">
+            <Icon name="billing" /> Billing
           </NavLink>
           <NavLink to="/admin/activity">
             <Icon name="activity" /> Activity log
@@ -70,6 +74,7 @@ export default function AdminLayout() {
               Overview
             </NavLink>
             <NavLink to="/admin/workshops">Workshops</NavLink>
+            <NavLink to="/admin/billing">Billing</NavLink>
             <NavLink to="/admin/activity">Activity log</NavLink>
             {!adminDemo && (
               <button type="button" className="link-button" onClick={() => void signOut()}>

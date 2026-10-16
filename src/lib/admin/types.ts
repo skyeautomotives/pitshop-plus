@@ -1,13 +1,13 @@
-// Shapes returned by the admin_* database functions (supabase/migrations/0014_platform_admin.sql).
-// Amounts are rupees (numeric(12,2)).
-import type { BillItemRow, BillRow, BillSummary, ComplaintRow, ComplaintStatus, ComplaintSummary, StaffRole } from "../types";
+// Shapes returned by the admin_* database functions (supabase/migrations/0014, 0015, 0016).
+// Admins see workshops, logins, usage counts and Skye Automotives' own billing; never a
+// workshop's customers or takings (0016). Amounts are rupees (numeric(12,2)).
+import type { StaffRole } from "../types";
 
 export interface MonthStats {
   /** "2026-10" */
   month: string;
   signups: number;
   bills: number;
-  billed: number;
 }
 
 export interface AdminOverview {
@@ -18,10 +18,8 @@ export interface AdminOverview {
   new_30d: number;
   logins: number;
   bills: number;
+  bills_30d: number;
   complaints: number;
-  open_complaints: number;
-  total_billed: number;
-  billed_30d: number;
   /** The last 12 months, oldest first. */
   by_month: MonthStats[];
 }
@@ -41,7 +39,6 @@ export interface AdminShop {
   logins: number;
   bills: number;
   complaints: number;
-  total_billed: number;
   last_activity: string | null;
 }
 
@@ -57,41 +54,17 @@ export interface AdminLogin {
   banned_until: string | null;
 }
 
-export interface AdminBillRow
-  extends Pick<BillRow, "id" | "customer_name" | "phone" | "vehicle_reg" | "date_received" | "delivered_on" | "grand_total" | "created_at"> {
-  bill_number: number;
-}
-
-export interface AdminComplaintRow
-  extends Pick<ComplaintRow, "id" | "customer_name" | "phone" | "vehicle_reg" | "description" | "reported_on" | "attended_by"> {
-  complaint_number: number;
-  status: ComplaintStatus;
-  /** Number of bills that address it. */
-  bills: number;
-}
-
-export interface AdminBillDetail extends BillRow {
-  shop_id: string;
-  shop_name: string;
-  created_by_name: string | null;
-  vehicle_reg_key: string;
-  bill_items: BillItemRow[];
-  complaints: ComplaintSummary[];
-}
-
-export interface AdminComplaintDetail extends ComplaintRow {
-  shop_id: string;
-  shop_name: string;
-  bills: BillSummary[];
-}
-
 export type AuditAction =
   | "suspend_shop"
   | "reactivate_shop"
   | "reset_password"
   | "disable_login"
   | "enable_login"
-  | "remove_login";
+  | "remove_login"
+  | "save_plan"
+  | "update_subscription"
+  | "record_payment"
+  | "delete_payment";
 
 export interface AuditEntry {
   id: number;
@@ -111,3 +84,103 @@ export interface Page<T> {
 }
 
 export type LoginAction = "reset_password" | "disable" | "enable" | "remove";
+
+// ---------- Billing (0015): what Skye Automotives charges workshops ----------
+
+export type PlanPeriod = "month" | "year";
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  period: PlanPeriod;
+  description: string | null;
+  active: boolean;
+  created_at: string;
+  /** Workshops on this plan (not cancelled). */
+  workshops: number;
+}
+
+export type PlanInput = Pick<Plan, "name" | "price" | "period" | "description" | "active"> & { id: string | null };
+
+export type SubscriptionStatus = "trial" | "active" | "cancelled";
+/** Where a subscription stands today (trial and paid-until dates taken into account). */
+export type SubscriptionState = "trial" | "trial_ended" | "active" | "overdue" | "cancelled";
+
+export interface AdminSubscription {
+  shop_id: string;
+  shop_name: string;
+  owner_email: string;
+  shop_created_at: string;
+  suspended: boolean;
+  plan_id: string | null;
+  plan_name: string | null;
+  plan_period: PlanPeriod | null;
+  plan_price: number | null;
+  /** The price this workshop pays (agreed price, or the plan's). */
+  price: number | null;
+  status: SubscriptionStatus;
+  state: SubscriptionState;
+  trial_ends_at: string | null;
+  paid_until: string | null;
+  notes: string | null;
+  last_payment_on: string | null;
+  total_paid: number;
+}
+
+export interface SubscriptionInput {
+  plan_id: string | null;
+  status: SubscriptionStatus;
+  trial_ends_at: string | null;
+  paid_until: string | null;
+  /** Null = the plan's price. */
+  price: number | null;
+  notes: string | null;
+}
+
+export type PaymentMethod = "upi" | "cash" | "bank" | "card" | "other";
+
+export interface Payment {
+  id: string;
+  shop_id: string;
+  shop_name: string;
+  amount: number;
+  paid_on: string;
+  method: PaymentMethod;
+  reference: string | null;
+  covers_until: string | null;
+  notes: string | null;
+  recorded_by_email: string;
+  created_at: string;
+}
+
+export interface PaymentInput {
+  amount: number;
+  paid_on: string;
+  method: PaymentMethod;
+  reference: string | null;
+  covers_until: string | null;
+  notes: string | null;
+}
+
+export interface BillingMonth {
+  month: string;
+  collected: number;
+  payments: number;
+}
+
+export interface BillingOverview {
+  /** Monthly recurring revenue: active and overdue subscriptions, yearly plans / 12. */
+  mrr: number;
+  paying: number;
+  trials: number;
+  trials_ending_7d: number;
+  trial_ended: number;
+  overdue: number;
+  cancelled: number;
+  renewing_7d: number;
+  collected_month: number;
+  collected_30d: number;
+  collected_total: number;
+  by_month: BillingMonth[];
+}

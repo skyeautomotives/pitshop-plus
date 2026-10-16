@@ -820,3 +820,39 @@
   color: var(--mk-navy);
   font-size: 0.92rem;
 }
+
+/* Terms & Conditions */
+.mk-legal {
+  max-width: 760px;
+  color: var(--mk-text);
+  line-height: 1.65;
+}
+
+.mk-section .mk-legal h2 {
+  margin: 36px 0 8px;
+  font-size: 1.2rem;
+}
+
+.mk-legal ul {
+  padding-left: 22px;
+  display: grid;
+  gap: 6px;
+}
+
+.mk-legal a {
+  color: var(--mk-blue);
+}
+
+.mk-legal-updated {
+  color: var(--mk-muted);
+  margin-top: 0;
+}
+
+.mk-legal-key {
+  font-weight: 700;
+  color: var(--mk-ink);
+  background: #fff7ed;
+  border-left: 4px solid var(--mk-orange);
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+}

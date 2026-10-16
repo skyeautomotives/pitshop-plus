@@ -6,6 +6,9 @@ import { authRedirectUrl } from "../lib/platform";
 import { errorMessage, supabase } from "../lib/supabase";
 import { usePageTitle } from "../lib/usePageTitle";
 import AuthLayout from "../components/AuthLayout";
+import PasswordInput from "../components/PasswordInput";
+import TermsLink from "../components/TermsLink";
+import { TERMS_VERSION } from "./marketing/Terms";
 
 const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,6 +46,8 @@ export default function Register() {
   const [busy, setBusy] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [termsError, setTermsError] = useState<string | undefined>();
 
   if (loading) return <p className="page-status">Loading…</p>;
   if (session) return <Navigate to="/dashboard" replace />;
@@ -56,9 +61,14 @@ export default function Register() {
     e.preventDefault();
     const found = validate(form);
     setErrors(found);
+    setTermsError(agreed ? undefined : "Please read and agree to the Terms & Conditions.");
     const first = Object.keys(found)[0];
     if (first) {
       document.getElementById(`f-${first}`)?.focus();
+      return;
+    }
+    if (!agreed) {
+      document.getElementById("f-terms")?.focus();
       return;
     }
     const email = form.email.trim().toLowerCase();
@@ -69,7 +79,13 @@ export default function Register() {
       password: form.password,
       options: {
         emailRedirectTo: authRedirectUrl(),
-        data: { shop_name: form.shopName.trim(), full_name: form.fullName.trim(), phone: form.phone.trim() },
+        data: {
+          shop_name: form.shopName.trim(),
+          full_name: form.fullName.trim(),
+          phone: form.phone.trim(),
+          terms_version: TERMS_VERSION,
+          terms_accepted_at: new Date().toISOString(),
+        },
       },
     });
     setBusy(false);
@@ -152,11 +168,34 @@ export default function Register() {
           />
         </Field>
         <Field fieldKey="password" label="Password" required error={errors.password} hint={`At least ${MIN_PASSWORD} characters.`}>
-          <input {...fieldProps("password", errors.password)} type="password" autoComplete="new-password" value={form.password} onChange={set("password")} />
+          <PasswordInput {...fieldProps("password", errors.password)} autoComplete="new-password" value={form.password} onChange={set("password")} />
         </Field>
         <Field fieldKey="confirm" label="Confirm password" required error={errors.confirm}>
-          <input {...fieldProps("confirm", errors.confirm)} type="password" autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
+          <PasswordInput {...fieldProps("confirm", errors.confirm)} autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
         </Field>
+        </div>
+        <div className="terms-agree">
+          <label className="check">
+            <input
+              id="f-terms"
+              type="checkbox"
+              checked={agreed}
+              aria-invalid={!!termsError}
+              aria-describedby={termsError ? "f-terms-error" : undefined}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                if (e.target.checked) setTermsError(undefined);
+              }}
+            />
+            <span>
+              I agree to the <TermsLink />, including that I am responsible for keeping backups of my workshop's records.
+            </span>
+          </label>
+          {termsError && (
+            <p className="field-error" id="f-terms-error">
+              {termsError}
+            </p>
+          )}
         </div>
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
           {busy ? "Registering…" : "Register workshop"}

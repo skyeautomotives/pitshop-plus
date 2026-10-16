@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { barPath, niceMax } from "../../lib/chart";
 import { PAGE_SIZE } from "../../lib/admin/api";
@@ -88,7 +88,16 @@ export function MonthBars({
   minMax?: number;
 }) {
   const [hover, setHover] = useState<number | null>(null);
-  const width = 560;
+  // Draw at the card's real width so labels stay readable in narrow cards.
+  const wrap = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(560);
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([entry]) => setWidth(Math.max(240, Math.round(entry.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const plotW = width - M.left - M.right;
   const plotH = HEIGHT - M.top - M.bottom;
   const values = months.map((_, i) => value(i));
@@ -97,9 +106,12 @@ export function MonthBars({
   const gw = plotW / Math.max(months.length, 1);
   const bw = Math.min(28, gw - 8);
   const ticks = [0, 0.5, 1].map((t) => t * max);
+  // When months are packed tight, label every other one (always including the latest).
+  const labelEvery = gw < 30 ? 2 : 1;
+  const last = months.length - 1;
 
   return (
-    <div className="chart-wrap">
+    <div className="chart-wrap" ref={wrap}>
       <svg viewBox={`0 0 ${width} ${HEIGHT}`} width="100%" role="img" aria-label={label} onMouseLeave={() => setHover(null)}>
         {ticks.map((t) => (
           <g key={t}>
@@ -116,9 +128,11 @@ export function MonthBars({
             <g key={m}>
               {hover === i && <rect x={gx + 1} y={M.top} width={gw - 2} height={plotH} rx={4} className="chart-hover" />}
               {v > 0 && <path d={barPath(gx + (gw - bw) / 2, y(v), bw, Math.max(1, (v / max) * plotH))} fill={color} />}
-              <text x={gx + gw / 2} y={HEIGHT - 8} className="chart-axis" textAnchor="middle">
-                {monthLabel(m, false)}
-              </text>
+              {(last - i) % labelEvery === 0 && (
+                <text x={gx + gw / 2} y={HEIGHT - 8} className="chart-axis" textAnchor="middle">
+                  {monthLabel(m, false)}
+                </text>
+              )}
               <rect
                 x={gx}
                 y={M.top}

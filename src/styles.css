@@ -3109,6 +3109,26 @@ a.admin-list-row:hover {
   vertical-align: top;
 }
 
+/* Admin tables: let names and emails wrap so the table fits; keep amounts and badges on one line. */
+.admin-table th,
+.admin-table td {
+  white-space: normal;
+}
+
+.admin-table td {
+  overflow-wrap: break-word;
+}
+
+.admin-table .nowrap {
+  white-space: nowrap;
+}
+
+.admin-table .num,
+.admin-table .badge {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
 .admin-table-static tbody tr {
   cursor: default;
 }
@@ -3229,4 +3249,210 @@ a.admin-list-row:hover {
 .admin-record-head .badge {
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
+}
+
+/* ---------- Admin billing ---------- */
+
+.sub-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sub-trial {
+  background: #eaf0ff;
+  color: #1e40af;
+}
+
+.sub-ended {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sub-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sub-overdue {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sub-cancelled {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.admin-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-form h3 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.admin-form select {
+  width: 100%;
+}
+
+.admin-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.plan-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.plan-row .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.plan-row .admin-sub {
+  display: block;
+}
+
+.plan-active {
+  align-self: end;
+  margin-bottom: 14px;
+}
+
+.danger-link {
+  color: var(--danger);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+
+/* Owner reminder: trial ending / payment due. */
+.sub-reminder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  background: #fff7e8;
+  border-color: #f6d49a;
+  color: #7a4a00;
+}
+
+.sub-reminder a {
+  color: inherit;
+  font-weight: 700;
+}
+
+/* Password box with a show / hide button. */
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle[aria-pressed="true"] {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+/* Settings: backup and restore. */
+.backup {
+  display: grid;
+  gap: 16px;
+}
+
+.backup .card p {
+  margin: 0 0 10px;
+}
+
+.backup-last {
+  font-weight: 600;
+}
+
+.backup-msg {
+  margin: 12px 0 0;
+}
+
+.backup-check {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.backup-check .alert {
+  margin: 0;
+  width: 100%;
+}
+
+.backup-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.backup-reminder {
+  background: var(--info-soft);
+  border-color: var(--info-border);
+  color: inherit;
+}
+
+/* Registration: agree to the terms. */
+.terms-agree {
+  margin: 4px 0 16px;
+}
+
+.terms-agree .check {
+  align-items: flex-start;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.terms-agree .check input {
+  flex-shrink: 0;
+  margin-top: 1px;
 }

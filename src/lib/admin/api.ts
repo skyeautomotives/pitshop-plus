@@ -7,10 +7,13 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import type {
-  AdminBillDetail,
-  AdminBillRow,
-  AdminComplaintDetail,
-  AdminComplaintRow,
+  AdminSubscription,
+  BillingOverview,
+  Payment,
+  PaymentInput,
+  Plan,
+  PlanInput,
+  SubscriptionInput,
   AdminLogin,
   AdminOverview,
   AdminShop,
@@ -30,13 +33,19 @@ export interface AdminApi {
   shops(search?: string): Promise<AdminShop[]>;
   shop(id: string): Promise<AdminShop | null>;
   logins(shopId: string): Promise<AdminLogin[]>;
-  bills(shopId: string, search: string, page: number): Promise<Page<AdminBillRow>>;
-  bill(id: string): Promise<AdminBillDetail | null>;
-  complaints(shopId: string, search: string, status: "open" | "resolved" | null, page: number): Promise<Page<AdminComplaintRow>>;
-  complaint(id: string): Promise<AdminComplaintDetail | null>;
   audit(shopId: string | null, page: number): Promise<Page<AuditEntry>>;
   setSuspended(shopId: string, suspend: boolean, reason?: string): Promise<void>;
   loginAction(userId: string, action: LoginAction, password?: string): Promise<void>;
+  // Billing (0015)
+  billingOverview(): Promise<BillingOverview>;
+  plans(): Promise<Plan[]>;
+  savePlan(plan: PlanInput): Promise<string>;
+  subscriptions(): Promise<AdminSubscription[]>;
+  subscription(shopId: string): Promise<AdminSubscription | null>;
+  updateSubscription(shopId: string, sub: SubscriptionInput): Promise<void>;
+  recordPayment(shopId: string, payment: PaymentInput): Promise<string>;
+  deletePayment(id: string): Promise<void>;
+  payments(shopId: string | null, page: number): Promise<Page<Payment>>;
 }
 
 /** Rows with a window `total_count` column -> one page. */
@@ -60,25 +69,48 @@ const serverApi: AdminApi = {
   shops: (search) => rpc<AdminShop[]>("admin_shops", { p_search: search || null }),
   shop: (id) => rpc<AdminShop[]>("admin_shops", { p_shop: id }).then((rows) => rows[0] ?? null),
   logins: (shopId) => rpc<AdminLogin[]>("admin_shop_logins", { p_shop: shopId }),
-  bills: (shopId, search, page) =>
-    rpc<(AdminBillRow & { total_count: number })[]>("admin_bills", {
-      p_shop: shopId,
-      p_search: search || null,
-      p_limit: PAGE_SIZE,
-      p_offset: page * PAGE_SIZE,
-    }).then(toPage),
-  bill: (id) => rpc<AdminBillDetail | null>("admin_bill", { p_id: id }),
-  complaints: (shopId, search, status, page) =>
-    rpc<(AdminComplaintRow & { total_count: number })[]>("admin_complaints", {
-      p_shop: shopId,
-      p_search: search || null,
-      p_status: status,
-      p_limit: PAGE_SIZE,
-      p_offset: page * PAGE_SIZE,
-    }).then(toPage),
-  complaint: (id) => rpc<AdminComplaintDetail | null>("admin_complaint", { p_id: id }),
   audit: (shopId, page) =>
     rpc<(AuditEntry & { total_count: number })[]>("admin_audit", {
+      p_shop: shopId,
+      p_limit: PAGE_SIZE,
+      p_offset: page * PAGE_SIZE,
+    }).then(toPage),
+  billingOverview: () => rpc<BillingOverview>("admin_billing_overview"),
+  plans: () => rpc<Plan[]>("admin_plans"),
+  savePlan: (p) =>
+    rpc<string>("admin_save_plan", {
+      p_id: p.id,
+      p_name: p.name,
+      p_price: p.price,
+      p_period: p.period,
+      p_description: p.description,
+      p_active: p.active,
+    }),
+  subscriptions: () => rpc<AdminSubscription[]>("admin_subscriptions", { p_shop: null }),
+  subscription: (shopId) => rpc<AdminSubscription[]>("admin_subscriptions", { p_shop: shopId }).then((rows) => rows[0] ?? null),
+  updateSubscription: (shopId, s) =>
+    rpc<void>("admin_update_subscription", {
+      p_shop: shopId,
+      p_plan: s.plan_id,
+      p_status: s.status,
+      p_trial_ends_at: s.trial_ends_at,
+      p_paid_until: s.paid_until,
+      p_price: s.price,
+      p_notes: s.notes,
+    }),
+  recordPayment: (shopId, p) =>
+    rpc<string>("admin_record_payment", {
+      p_shop: shopId,
+      p_amount: p.amount,
+      p_paid_on: p.paid_on,
+      p_method: p.method,
+      p_reference: p.reference,
+      p_covers_until: p.covers_until,
+      p_notes: p.notes,
+    }),
+  deletePayment: (id) => rpc<void>("admin_delete_payment", { p_id: id }),
+  payments: (shopId, page) =>
+    rpc<(Payment & { total_count: number })[]>("admin_payments", {
       p_shop: shopId,
       p_limit: PAGE_SIZE,
       p_offset: page * PAGE_SIZE,

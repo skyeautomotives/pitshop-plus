@@ -14,6 +14,8 @@ import EditBill from "./pages/EditBill";
 import Login from "./pages/Login";
 import Download from "./pages/marketing/Download";
 import Home from "./pages/marketing/Home";
+import Privacy from "./pages/marketing/Privacy";
+import Terms from "./pages/marketing/Terms";
 import NewBill from "./pages/NewBill";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
@@ -25,7 +27,7 @@ import { adminDemo } from "./lib/admin/api";
 import AdminActivity from "./pages/admin/AdminActivity";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
-import { AdminBill, AdminComplaint } from "./pages/admin/AdminRecords";
+import AdminBilling from "./pages/admin/Billing";
 import AdminWorkshop from "./pages/admin/AdminWorkshop";
 import AdminWorkshops from "./pages/admin/AdminWorkshops";
 
@@ -47,6 +49,8 @@ const router = createRouter(
   [
     { path: "/", element: <Home /> },
     { path: "/download", element: <Download /> },
+    { path: "/terms", element: <Terms /> },
+    { path: "/privacy", element: <Privacy /> },
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
     {
@@ -90,8 +94,7 @@ const router = createRouter(
         { index: true, element: <AdminOverview /> },
         { path: "workshops", element: <AdminWorkshops /> },
         { path: "workshops/:id", element: <AdminWorkshop /> },
-        { path: "bills/:id", element: <AdminBill /> },
-        { path: "complaints/:id", element: <AdminComplaint /> },
+        { path: "billing", element: <AdminBilling /> },
         { path: "activity", element: <AdminActivity /> },
       ],
     },
