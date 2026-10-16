@@ -91,6 +91,21 @@ const fakeSupabase = {
   rpc: async (fn: string, args: never) => {
     server.calls.push(fn);
     if (server.down) return netErr();
+    if (fn === "add_bill_payment" || fn === "remove_bill_payment") {
+      const a = args as unknown as { p_bill: string; p_payment: { id: string } | string };
+      const b = server.bills.find((r) => r.id === a.p_bill);
+      if (!b) return { data: null, error: { code: "P0002", message: "Bill not found." } };
+      const list = (b.payments as { id: string }[] | undefined) ?? [];
+      if (fn === "add_bill_payment") {
+        const pay = a.p_payment as { id: string };
+        // Same id again (a retry): recorded once.
+        if (!list.some((x) => x.id === pay.id)) b.payments = [...list, pay];
+      } else {
+        b.payments = list.filter((x) => x.id !== a.p_payment);
+      }
+      b.updated_at = stamp();
+      return { data: null, error: null };
+    }
     if (fn !== "save_bill") return { data: null, error: null };
     if (server.refuseBill) {
       const message = server.refuseBill;
@@ -188,6 +203,13 @@ const complaint: ComplaintPayload = {
   reported_on: "2026-10-16",
   notes: null,
   status: "open",
+  vehicle_name: "Honda Activa",
+  odometer_km: 12500,
+  helmets: 1,
+  documents: ["rc"],
+  other_documents: [],
+  advance_amount: 500,
+  advance_method: "upi",
 };
 
 let n = 0;
@@ -406,5 +428,64 @@ describe("offline mode", () => {
     const rows = await api.salesForRange("2026-10-01", "2026-10-31");
     expect(rows).toHaveLength(1);
     expect(rows[0].grand_total).toBe(1100);
+  });
+});
+
+describe("payments on a bill", () => {
+  const cash = { amount: 400, method: "cash" as const, paid_on: "2026-10-16", note: null };
+
+  it("online, a payment goes straight to the server", async () => {
+    const id = await api.saveBill(bill());
+    await api.addBillPayment(id, cash);
+    expect(server.bills[0].payments).toHaveLength(1);
+    expect((await api.getBill(id))?.payments).toHaveLength(1);
+    expect(await localDb().outbox.count()).toBe(0);
+  });
+
+  it("a bill and its payments, both made offline, sync bill first", async () => {
+    goOffline();
+    const id = await api.saveBill(bill());
+    await api.addBillPayment(id, cash);
+    await api.addBillPayment(id, { ...cash, amount: 200, method: "upi" });
+    expect((await api.getBill(id))?.payments).toHaveLength(2);
+    goOnline();
+    await sync.syncNow();
+    expect(server.calls.lastIndexOf("save_bill")).toBeLessThan(server.calls.indexOf("add_bill_payment"));
+    expect(server.bills[0].payments).toHaveLength(2);
+    const b = await api.getBill(id);
+    expect(b?.payments).toHaveLength(2);
+    expect(b?.pending).toBe(false);
+  });
+
+  it("a payment sent twice is recorded once", async () => {
+    const id = await api.saveBill(bill());
+    goOffline();
+    await api.addBillPayment(id, cash);
+    const { seq: _seq, ...op } = (await localDb().outbox.toArray())[0];
+    await localDb().outbox.add(op);
+    goOnline();
+    await sync.syncNow();
+    expect(server.bills[0].payments).toHaveLength(1);
+  });
+
+  it("removing a payment that wasn't sent yet just drops it", async () => {
+    const id = await api.saveBill(bill());
+    goOffline();
+    await api.addBillPayment(id, cash);
+    const pay = (await api.getBill(id))!.payments![0];
+    await api.removeBillPayment(id, pay.id);
+    expect(await localDb().outbox.count()).toBe(0);
+    expect((await api.getBill(id))?.payments).toHaveLength(0);
+    goOnline();
+    await sync.syncNow();
+    expect(server.calls).not.toContain("add_bill_payment");
+  });
+
+  it("editing a bill offline keeps its payments", async () => {
+    const id = await api.saveBill(bill());
+    await api.addBillPayment(id, cash);
+    goOffline();
+    await api.saveBill(bill({ labour_charge: "800.00" }), id);
+    expect((await api.getBill(id))?.payments).toHaveLength(1);
   });
 });

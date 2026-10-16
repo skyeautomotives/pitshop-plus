@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { complaintToDraft, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
+import { complaintToDraft, documentsText, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
 import { vehicleKey } from "./customer";
 import { buildHistory, filterHistory, historyCounts } from "./history";
 import type { BillWithComplaints, ComplaintWithBills } from "./types";
@@ -29,7 +29,55 @@ describe("validateComplaint", () => {
       reported_on: "2026-10-14",
       notes: null,
       status: "open",
+      vehicle_name: null,
+      odometer_km: null,
+      helmets: 0,
+      documents: [],
+      other_documents: [],
+      advance_amount: null,
+      advance_method: null,
     });
+  });
+
+  it("saves vehicle intake details and the advance", () => {
+    const { errors, payload } = validateComplaint(
+      filled({
+        vehicleName: "  Honda Activa 6G ",
+        odometerKm: "12,500",
+        helmets: 2,
+        documents: ["licence", "rc"],
+        otherDocumentsOn: true,
+        otherDocuments: [" Spare key ", "", "Insurance copy"],
+        advance: "1,000.50",
+        advanceMethod: "upi",
+      }),
+    );
+    expect(errors).toEqual({});
+    expect(payload).toMatchObject({
+      vehicle_name: "Honda Activa 6G",
+      odometer_km: 12500,
+      helmets: 2,
+      documents: ["rc", "licence"],
+      other_documents: ["Spare key", "Insurance copy"],
+      advance_amount: 1000.5,
+      advance_method: "upi",
+    });
+  });
+
+  it("ignores other items when Other is not ticked", () => {
+    const { payload } = validateComplaint(filled({ otherDocumentsOn: false, otherDocuments: ["Spare key"] }));
+    expect(payload?.other_documents).toEqual([]);
+  });
+
+  it("checks km, other items and the advance", () => {
+    const r = validateComplaint(filled({ odometerKm: "12.5k", otherDocumentsOn: true, otherDocuments: [" "], advance: "abc" }));
+    expect(Object.keys(r.errors).sort()).toEqual(["advance", "odometerKm", "otherDocuments"]);
+    expect(validateComplaint(filled({ advance: "0" })).errors.advance).toMatch(/empty/);
+  });
+
+  it("lists documents received", () => {
+    expect(documentsText({ documents: ["rc", "pollution"], other_documents: ["Spare key"] })).toBe("RC book, Pollution certificate, Spare key");
+    expect(documentsText({})).toBe("");
   });
 
   it("starts with any customer details passed in", () => {
@@ -47,7 +95,17 @@ describe("validateComplaint", () => {
   });
 
   it("round-trips a saved complaint", () => {
-    const d = filled({ notes: "Customer waiting" });
+    const d = filled({
+      notes: "Customer waiting",
+      vehicleName: "Maruti Swift",
+      odometerKm: "45210",
+      helmets: 1,
+      documents: ["pollution"],
+      otherDocumentsOn: true,
+      otherDocuments: ["Spare key"],
+      advance: "750",
+      advanceMethod: "cash",
+    });
     const saved = { ...validateComplaint(d).payload!, attended_by: "Ravi", attended_by_user: null, id: "c1", complaint_number: 1, vehicle_reg_key: "KL39W0890", created_at: "", updated_at: "" };
     expect(complaintToDraft(saved)).toEqual({ ...d, vehicleReg: "KL 39 W 0890", address: "" });
   });

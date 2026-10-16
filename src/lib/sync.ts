@@ -4,7 +4,7 @@
 // Runs when the app starts, when the connection comes back, when the window is
 // focused, and every 30 seconds.
 import { useEffect, useState } from "react";
-import { getMeta, localDb, localUserId, openLocalDb, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
+import { getMeta, isBillOp, localDb, localUserId, openLocalDb, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import { digitsOnly } from "./local/model";
 import { errorMessage, supabase } from "./supabase";
 import type { BillItemRow } from "./types";
@@ -167,6 +167,12 @@ async function sendOp(op: OutboxOp) {
       p_new_id: op.entityId,
     });
     if (error) throw error;
+  } else if (op.kind === "bill-payment") {
+    const { error } =
+      "add" in op.payload
+        ? await supabase.rpc("add_bill_payment", { p_bill: op.entityId, p_payment: op.payload.add })
+        : await supabase.rpc("remove_bill_payment", { p_bill: op.entityId, p_payment: op.payload.remove });
+    if (error) throw error;
   } else if (op.kind === "complaint-create") {
     const { error } = await supabase.from("complaints").insert({ id: op.entityId, ...op.payload });
     // Already there: an earlier attempt reached the server before the connection dropped.
@@ -180,8 +186,12 @@ async function sendOp(op: OutboxOp) {
 async function push() {
   const db = localDb();
   const ops = (await db.outbox.orderBy("seq").toArray()).filter((o) => !o.error);
-  // Bills can point at complaints made offline, so complaints go first.
-  const ordered = [...ops.filter((o) => o.kind !== "bill"), ...ops.filter((o) => o.kind === "bill")];
+  // Bills can point at complaints made offline, so complaints go first; payments need their bill.
+  const ordered = [
+    ...ops.filter((o) => !isBillOp(o)),
+    ...ops.filter((o) => o.kind === "bill"),
+    ...ops.filter((o) => o.kind === "bill-payment"),
+  ];
   for (const op of ordered) {
     try {
       await sendOp(op);
@@ -197,7 +207,7 @@ async function push() {
     await db.outbox.delete(op.seq!);
     const stillWaiting = await db.outbox.where("entityId").equals(op.entityId).count();
     if (!stillWaiting) {
-      const table = op.kind === "bill" ? db.bills : db.complaints;
+      const table = isBillOp(op) ? db.bills : db.complaints;
       await table.update(op.entityId, { pending: 0 });
     }
   }
@@ -297,6 +307,11 @@ export async function listWaitingChanges(): Promise<WaitingChange[]> {
         const b = await db.bills.get(op.entityId);
         title = b?.bill_number ? `Bill #${b.bill_number}` : "New bill";
         detail = [op.payload.bill.customer_name, op.payload.bill.vehicle_reg].filter(Boolean).join(" · ");
+      } else if (op.kind === "bill-payment") {
+        const b = await db.bills.get(op.entityId);
+        const bill = b?.bill_number ? `bill #${b.bill_number}` : "a new bill";
+        title = "add" in op.payload ? `Payment on ${bill}` : `Removed payment on ${bill}`;
+        detail = "add" in op.payload ? `₹${op.payload.add.amount} · ${op.payload.add.method.toUpperCase()}` : "";
       } else {
         const c = await db.complaints.get(op.entityId);
         title = op.kind === "complaint-create" ? "New complaint" : c?.complaint_number ? `Complaint #${c.complaint_number}` : "Complaint";
@@ -324,10 +339,15 @@ export async function discardChange(seq: number) {
   const op = await db.outbox.get(seq);
   if (!op) return;
   await db.outbox.delete(seq);
+  if (op.kind === "bill-payment" && "add" in op.payload) {
+    const b = await db.bills.get(op.entityId);
+    const id = op.payload.add.id;
+    if (b) await db.bills.update(op.entityId, { payments: (b.payments ?? []).filter((p) => p.id !== id) });
+  }
   const stillWaiting = await db.outbox.where("entityId").equals(op.entityId).count();
   if (!stillWaiting) {
-    const table = op.kind === "bill" ? "bills" : "complaints";
-    const local = op.kind === "bill" ? await db.bills.get(op.entityId) : await db.complaints.get(op.entityId);
+    const table = isBillOp(op) ? "bills" : "complaints";
+    const local = isBillOp(op) ? await db.bills.get(op.entityId) : await db.complaints.get(op.entityId);
     const number = local ? ("bill_number" in local ? local.bill_number : local.complaint_number) : null;
     // Re-read everything at the next sync, so whatever the server has comes back.
     await setMeta(`checkpoint:${table}`, null);
@@ -335,10 +355,10 @@ export async function discardChange(seq: number) {
       // Made on this device and never numbered by the server: remove it. If an earlier
       // upload did reach the server after all, the next sync downloads it again.
       if (op.kind === "bill") await db.bills.delete(op.entityId);
-      else await db.complaints.delete(op.entityId);
+      else if (op.kind === "complaint-create" || op.kind === "complaint-update") await db.complaints.delete(op.entityId);
     } else if (local) {
       // An edit to a synced record: let the next sync overwrite it with the server's copy.
-      if (op.kind === "bill") await db.bills.update(op.entityId, { pending: 0 });
+      if (isBillOp(op)) await db.bills.update(op.entityId, { pending: 0 });
       else await db.complaints.update(op.entityId, { pending: 0 });
     }
   }

@@ -74,6 +74,8 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
     created_at: prev?.created_at ?? stamp,
     updated_at: stamp,
     bill_items: items,
+    // Edits never touch payments; they are recorded separately.
+    payments: prev?.payments ?? [],
     complaint_ids: [...new Set(p.complaintIds)],
     pending: 1,
   };
@@ -98,6 +100,13 @@ export function complaintFromPayload(id: string, p: ComplaintPayload, me: Me, no
     attended_by_user: me.user_id,
     notes: p.notes,
     status: p.status,
+    vehicle_name: p.vehicle_name,
+    odometer_km: p.odometer_km,
+    helmets: p.helmets,
+    documents: p.documents,
+    other_documents: p.other_documents,
+    advance_amount: p.advance_amount,
+    advance_method: p.advance_method,
     created_at: stamp,
     updated_at: stamp,
     pending: 1,
@@ -170,6 +179,7 @@ export function complaintSummary(c: LocalComplaint): ComplaintSummary {
     status: c.status,
     attended_by: c.attended_by,
     reported_on: c.reported_on,
+    advance_amount: c.advance_amount ?? null,
   };
 }
 

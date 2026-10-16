@@ -61,7 +61,7 @@ export default function SyncPage() {
             </div>
             <div className="sync-item-actions">
               <Link
-                to={c.kind === "bill" ? `/bills/${c.entityId}${c.error ? "/edit" : ""}` : `/complaints/${c.entityId}${c.error ? "/edit" : ""}`}
+                to={c.kind === "bill" || c.kind === "bill-payment" ? `/bills/${c.entityId}${c.error ? "/edit" : ""}` : `/complaints/${c.entityId}${c.error ? "/edit" : ""}`}
                 className="btn btn-outline btn-sm"
               >
                 {c.error ? "Fix" : "Open"}

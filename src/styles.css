@@ -3456,3 +3456,162 @@ a.admin-list-row:hover {
   flex-shrink: 0;
   margin-top: 1px;
 }
+
+/* ---------- Complaint: vehicle received (km, helmets, documents) ---------- */
+
+.intake-group {
+  border: 0;
+  padding: 0;
+  margin: 14px 0 0;
+}
+
+.intake-group legend {
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.intake-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+.intake-others {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-width: 520px;
+}
+
+.intake-others > .btn {
+  justify-self: start;
+}
+
+.intake-other-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.intake-other-row input {
+  flex: 1;
+}
+
+.intake-group.has-error input[aria-invalid] {
+  border-color: var(--danger);
+}
+
+.bill-totals .balance-row {
+  margin-top: 4px;
+}
+
+/* Dropdowns in forms (e.g. how an advance was paid): same look as the text boxes. */
+.bill-form select {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  color: inherit;
+  background: #fbfcfe;
+}
+
+.bill-form select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* ---------- Bill: payments received after billing ---------- */
+
+.bill-payments {
+  margin-top: 16px;
+}
+
+.pay-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.pay-summary > div {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.pay-summary dt {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pay-summary dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-summary .pay-balance {
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+
+.pay-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.pay-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.pay-meta {
+  font-size: 0.85rem;
+}
+
+.pay-form {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.pay-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pay-methods .btn {
+  min-width: 96px;
+}
+
+.pay-methods select {
+  width: auto;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  background: #fbfcfe;
+}
+
+.pay-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.result-details .badge {
+  margin-left: 0;
+}

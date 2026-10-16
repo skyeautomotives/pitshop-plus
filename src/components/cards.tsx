@@ -3,12 +3,24 @@ import { formatDate } from "../lib/format";
 import { formatINR, rupeesToPaise } from "../lib/money";
 import type { BillWithComplaints, ComplaintStatus, ComplaintWithBills } from "../lib/types";
 import { displayNumber, seqNumber } from "../lib/format";
+import { billMoney } from "../lib/payments";
 
 export function StatusBadge({ status }: { status: ComplaintStatus }) {
   return <span className={`badge badge-${status}`}>{status === "open" ? "Open" : "Resolved"}</span>;
 }
 
 const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
+
+/** "Paid" or "Balance ₹…" once anything has been paid on the bill (nothing for older bills). */
+function PaymentTag({ bill }: { bill: BillWithComplaints }) {
+  const m = billMoney(bill.grand_total, bill.complaints, bill.payments ?? []);
+  if (m.status === "unpaid") return null;
+  return m.status === "paid" ? (
+    <span className="badge badge-resolved">Paid</span>
+  ) : (
+    <span className="badge badge-open">Balance {inr(m.balance)}</span>
+  );
+}
 
 /** A bill in a list, with the complaints it addresses. */
 export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplaints; showCustomer?: boolean }) {
@@ -26,6 +38,7 @@ export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplain
         {showCustomer && <span>{bill.phone}</span>}
         <span>Received {formatDate(bill.date_received)}</span>
         <span>Delivered {formatDate(bill.delivered_on)}</span>
+        <PaymentTag bill={bill} />
       </div>
       <div className="result-links">
         {bill.complaints.length === 0 ? (
