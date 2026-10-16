@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { isNativeApp } from "../lib/platform";
 import { HeroMock } from "../pages/marketing/Home";
 import "../marketing.css";
+import UpdateBanner from "./UpdateBanner";
 
 const POINTS = [
   "Bills with parts, labour and discounts",
@@ -43,6 +44,7 @@ export default function AuthLayout({ children, wide = false }: { children: React
       <section className="auth-main">
         <div className={`auth-panel${wide ? " auth-panel-wide" : ""}`}>
           <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus by Skye Automotives" className="auth-mobile-logo" />
+          <UpdateBanner />
           {children}
         </div>
       </section>

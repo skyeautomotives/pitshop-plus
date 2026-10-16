@@ -2,7 +2,8 @@ name: Build apps
 
 # Builds the Windows installer (.exe) and the Android app (.apk).
 # Run it by hand (Actions -> Build apps -> Run workflow) to get test builds,
-# or push a version tag (e.g. v0.1.0) to publish them on the Releases page.
+# or push a version tag (e.g. v0.2.1) to publish them: they are attached to a
+# GitHub Release (storage only) and copied onto the website's downloads/ page.
 
 on:
   workflow_dispatch:
@@ -11,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 # The apps talk to the same Supabase project as the website. These are the public
 # (publishable) values that ship inside every copy of the app anyway; repository
@@ -91,3 +93,8 @@ jobs:
             **Android:** download `PitstopPlus.apk` on the phone and open it. Allow "Install unknown apps" for your browser if asked.
             **Web:** no install needed. Use the website.
           files: out/*
+      # Copy the new apps onto the website, where customers download them.
+      - name: Publish the new apps on the website
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

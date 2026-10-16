@@ -4,6 +4,8 @@ import { useMe } from "../lib/staff";
 import { signOut as signOutAndClear } from "../lib/auth";
 import Logo from "./Logo";
 import SyncStatus from "./SyncStatus";
+import UpdateBanner from "./UpdateBanner";
+import { APP_VERSION } from "../lib/updates";
 import { useSyncState } from "../lib/sync";
 
 /** Line icons for the sidebar (24 x 24, stroke = currentColor). */
@@ -109,6 +111,7 @@ export default function Layout() {
           )}
         </nav>
         <SyncStatus />
+        <p className="sidebar-version">Pitstop Plus {APP_VERSION}</p>
         <div className="sidebar-user">
           <div className="sidebar-avatar" aria-hidden="true">
             {(me.me.full_name || me.me.username || "?").trim().charAt(0).toUpperCase()}
@@ -160,6 +163,7 @@ export default function Layout() {
           </div>
         )}
         <FirstSyncNotice />
+        <UpdateBanner />
         <Outlet />
       </main>
     </div>

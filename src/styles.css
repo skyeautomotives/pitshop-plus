@@ -3001,3 +3001,21 @@ h3 {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* "New version available" in the Windows and Android apps. */
+.update-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  background: #fff7e8;
+  border-color: #f6d49a;
+  color: #7a4a00;
+}
+
+.sidebar-version {
+  margin: 8px 6px 0;
+  font-size: 0.75rem;
+  color: #8ea0cc;
+}

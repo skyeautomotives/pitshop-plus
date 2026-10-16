@@ -129,7 +129,8 @@ Every device keeps a copy of its workshop's bills and complaints (IndexedDB, `sr
 The same app is also built as a Windows installer (Tauri) and an Android APK (Capacitor). Both use the same Supabase project and logins as the website.
 
 - **Build them:** GitHub → **Actions → Build apps → Run workflow**. When it finishes, download `windows-installer` and `android-apk` from the run's **Artifacts**.
-- **Publish a version:** bump `version` in `package.json`, then push a tag such as `v0.1.0`. The workflow attaches `PitstopPlus-Setup.exe` and `PitstopPlus.apk` to a new GitHub Release; the website's Download page always links to the latest one.
+- **Publish a version:** bump `version` in `package.json`, then push a tag such as `v0.2.1`. The workflow builds both apps, stores them on a GitHub Release, and redeploys the website, which serves them from `downloads/` with `downloads/latest.json` (version, date, sizes). Customers only ever see the website.
+- **Updates:** the Windows and Android apps check `downloads/latest.json` when they start and every 6 hours, and show "Pitstop Plus x.y.z is available · Update now". Updating keeps all data.
 - **Locally** (optional): `npm run tauri dev` needs Rust; `npm run android:sync`, then open `android/` in Android Studio.
 
 Notes:

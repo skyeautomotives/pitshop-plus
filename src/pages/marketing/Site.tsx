@@ -2,12 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, NavLink } from "react-router";
 import "../../marketing.css";
 
-const RELEASES = "https://github.com/skyeautomotives/pitshop-plus/releases/latest";
-export const DOWNLOADS = {
-  windows: `${RELEASES}/download/PitstopPlus-Setup.exe`,
-  android: `${RELEASES}/download/PitstopPlus.apk`,
-  all: RELEASES,
-};
+export { DOWNLOADS } from "../../lib/downloads";
 export const CONTACT_EMAIL = "skyeautomotives@gmail.com";
 
 /** Header and footer shared by the public pages (home, download). */
