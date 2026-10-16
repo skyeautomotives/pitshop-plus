@@ -4,7 +4,7 @@
 // Runs when the app starts, when the connection comes back, when the window is
 // focused, and every 30 seconds.
 import { useEffect, useState } from "react";
-import { getMeta, localDb, openLocalDb, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
+import { getMeta, localDb, localUserId, openLocalDb, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import { digitsOnly } from "./local/model";
 import { errorMessage, supabase } from "./supabase";
 import type { BillItemRow } from "./types";
@@ -127,6 +127,7 @@ export function syncNow(): Promise<void> {
 }
 
 async function runOnce() {
+  const uid = userId;
   if (!navigator.onLine) {
     setState({ phase: "offline" });
     return;
@@ -140,6 +141,8 @@ async function runOnce() {
     await refreshCounts();
     setState({ phase: state.failed > 0 ? "error" : "idle", lastSync: now, ready: true });
   } catch (err) {
+    // Signed out (or switched login) while this round was running: nothing left to update.
+    if (userId !== uid) return;
     await refreshCounts();
     if (isNetworkError(err)) setState({ phase: "offline" });
     else setState({ phase: "error", message: errorMessage(err) });
@@ -147,6 +150,7 @@ async function runOnce() {
 }
 
 export async function refreshCounts() {
+  if (!localUserId()) return;
   const ops = await localDb().outbox.toArray();
   setState({ pending: ops.filter((o) => !o.error).length, failed: ops.filter((o) => !!o.error).length });
 }
