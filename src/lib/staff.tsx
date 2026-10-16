@@ -8,6 +8,8 @@ type MeState =
   | { status: "error"; message: string }
   /** Signed in, but not on the workshop's staff list. */
   | { status: "not-staff" }
+  /** On a staff list, but a Pitstop Plus admin has suspended the workshop. */
+  | { status: "suspended"; reason: string | null }
   | { status: "ok"; me: StaffMember };
 
 const MeContext = createContext<MeState>({ status: "loading" });
@@ -60,7 +62,21 @@ export function MeProvider({ children }: { children: ReactNode }) {
           setState(saved ? { status: "ok", me: saved } : { status: "error", message: errorMessage(error) });
         } else {
           saveMe(userId, (data as StaffMember | null) ?? null);
-          setState(data ? { status: "ok", me: data as StaffMember } : { status: "not-staff" });
+          if (!data) {
+            setState({ status: "not-staff" });
+            return;
+          }
+          // Suspended workshops see why instead of an empty app. If this can't be checked
+          // (offline, or the admin migration isn't applied yet), carry on as usual.
+          void supabase.rpc("my_shop_status").then(({ data: shop }) => {
+            if (cancelled) return;
+            const row = (shop as { suspended_at: string | null; suspended_reason: string | null }[] | null)?.[0];
+            setState(
+              row?.suspended_at
+                ? { status: "suspended", reason: row.suspended_reason }
+                : { status: "ok", me: data as StaffMember },
+            );
+          });
         }
       });
     return () => {

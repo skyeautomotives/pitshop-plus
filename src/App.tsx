@@ -20,6 +20,14 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import VehicleHistory from "./pages/VehicleHistory";
 import SyncPage from "./pages/SyncPage";
+import { RequirePlatformAdmin } from "./lib/admin/access";
+import { adminDemo } from "./lib/admin/api";
+import AdminActivity from "./pages/admin/AdminActivity";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOverview from "./pages/admin/AdminOverview";
+import { AdminBill, AdminComplaint } from "./pages/admin/AdminRecords";
+import AdminWorkshop from "./pages/admin/AdminWorkshop";
+import AdminWorkshops from "./pages/admin/AdminWorkshops";
 
 function NotFound() {
   return (
@@ -70,13 +78,31 @@ const router = createRouter(
         { path: "sync", element: <SyncPage /> },
       ],
     },
+    // Platform admin panel (Skye Automotives): every workshop. See 0014_platform_admin.sql.
+    {
+      path: "admin",
+      element: (
+        <RequirePlatformAdmin>
+          <AdminLayout />
+        </RequirePlatformAdmin>
+      ),
+      children: [
+        { index: true, element: <AdminOverview /> },
+        { path: "workshops", element: <AdminWorkshops /> },
+        { path: "workshops/:id", element: <AdminWorkshop /> },
+        { path: "bills/:id", element: <AdminBill /> },
+        { path: "complaints/:id", element: <AdminComplaint /> },
+        { path: "activity", element: <AdminActivity /> },
+      ],
+    },
     { path: "*", element: <NotFound /> },
   ],
   isNativeApp ? {} : { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" },
 );
 
 export default function App() {
-  if (configError) {
+  // The admin demo (npm run dev:admin-demo) runs on sample data without a Supabase project.
+  if (configError && !adminDemo) {
     return (
       <main className="container">
         <div className="alert alert-error" role="alert">
