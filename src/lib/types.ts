@@ -58,16 +58,32 @@ export interface ComplaintRow {
   attended_by_user: string | null;
   notes: string | null;
   status: ComplaintStatus;
+  /** Vehicle intake (0019). Optional: complaints saved before it have none. */
+  vehicle_name?: string | null;
+  /** Km driven, from the odometer. */
+  odometer_km?: number | null;
+  /** Helmets left with the vehicle (0-2). */
+  helmets?: number | null;
+  /** Papers left with the vehicle. */
+  documents?: IntakeDocument[];
+  /** Anything else left with the vehicle, as typed. */
+  other_documents?: string[];
+  /** Advance payment received, rupees. */
+  advance_amount?: number | null;
+  advance_method?: PaymentMethod | null;
   created_at: string;
   updated_at: string;
   /** True while a change made on this device is waiting to be sent. */
   pending?: boolean;
 }
 
+export type IntakeDocument = "rc" | "pollution" | "licence";
+export type PaymentMethod = "cash" | "upi" | "card" | "bank" | "other";
+
 /** A complaint as shown next to a bill. */
 export type ComplaintSummary = Pick<
   ComplaintRow,
-  "id" | "complaint_number" | "description" | "status" | "attended_by" | "reported_on"
+  "id" | "complaint_number" | "description" | "status" | "attended_by" | "reported_on" | "advance_amount"
 >;
 
 /** A bill as shown next to a complaint. */

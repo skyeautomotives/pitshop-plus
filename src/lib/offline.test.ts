@@ -188,6 +188,13 @@ const complaint: ComplaintPayload = {
   reported_on: "2026-10-16",
   notes: null,
   status: "open",
+  vehicle_name: "Honda Activa",
+  odometer_km: 12500,
+  helmets: 1,
+  documents: ["rc"],
+  other_documents: [],
+  advance_amount: 500,
+  advance_method: "upi",
 };
 
 let n = 0;

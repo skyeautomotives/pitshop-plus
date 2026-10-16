@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
 import ComplaintForm from "../components/ComplaintForm";
 import { getComplaint, setComplaintStatus } from "../lib/api";
-import { complaintToDraft, emptyComplaint } from "../lib/complaint";
+import { complaintToDraft, documentsText, emptyComplaint, paymentMethodLabel } from "../lib/complaint";
 import type { CustomerFields } from "../lib/customer";
 import { formatDate } from "../lib/format";
 import { formatINR, rupeesToPaise } from "../lib/money";
@@ -171,10 +171,43 @@ export function ComplaintView() {
             <dt>Vehicle no.</dt>
             <dd className="reg">{c.vehicle_reg}</dd>
           </div>
+          {c.vehicle_name && (
+            <div>
+              <dt>Vehicle</dt>
+              <dd>{c.vehicle_name}</dd>
+            </div>
+          )}
+          {c.odometer_km !== null && c.odometer_km !== undefined && (
+            <div>
+              <dt>Km driven</dt>
+              <dd>{c.odometer_km.toLocaleString("en-IN")} km</dd>
+            </div>
+          )}
+          {c.helmets !== null && c.helmets !== undefined && (
+            <div>
+              <dt>Helmets received</dt>
+              <dd>{c.helmets}</dd>
+            </div>
+          )}
           {c.address && (
             <div className="span-all">
               <dt>Address</dt>
               <dd className="pre-line">{c.address}</dd>
+            </div>
+          )}
+          {((c.helmets !== null && c.helmets !== undefined) || documentsText(c) !== "") && (
+            <div className="span-all">
+              <dt>Documents received</dt>
+              <dd>{documentsText(c) || "None"}</dd>
+            </div>
+          )}
+          {!!c.advance_amount && (
+            <div className="span-all">
+              <dt>Advance received</dt>
+              <dd>
+                <strong>{formatINR(rupeesToPaise(c.advance_amount))}</strong>
+                {c.advance_method && <span className="muted"> · {paymentMethodLabel(c.advance_method)}</span>}
+              </dd>
             </div>
           )}
           {c.notes && (

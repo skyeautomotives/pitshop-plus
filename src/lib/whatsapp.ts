@@ -1,4 +1,5 @@
 import { formatDate } from "./format";
+import { advanceAndBalance } from "./complaint";
 import { formatINR, rupeesToPaise } from "./money";
 import type { BillWithItems, ShopSettings } from "./types";
 import { displayNumber, seqNumber } from "./format";
@@ -51,7 +52,10 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
   if (bill.washing_charge !== null) lines.push(`Washing: ${inr(bill.washing_charge)}`);
   if (Number(bill.discount) > 0)
     lines.push(`Discount${bill.discount_percent !== null ? ` (${Number(bill.discount_percent)}%)` : ""}: -${inr(bill.discount)}`);
-  lines.push(`*Grand total: ${inr(bill.grand_total)}*`, "", "Thank you for your business.");
+  lines.push(`*Grand total: ${inr(bill.grand_total)}*`);
+  const { advance, balance } = advanceAndBalance(bill.grand_total, complaints);
+  if (advance > 0) lines.push(`Advance received: -${inr(advance)}`, `*Balance to pay: ${inr(balance)}*`);
+  lines.push("", "Thank you for your business.");
   if (shop?.phone) lines.push(`Contact: ${shop.phone}`);
   return lines.join("\n");
 }

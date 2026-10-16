@@ -7,6 +7,7 @@ import { formatINR, rupeesToPaise } from "../lib/money";
 import { useShopSettings } from "../lib/shopSettings";
 import { useBill } from "../lib/useBill";
 import { whatsappLink } from "../lib/whatsapp";
+import { advanceAndBalance } from "../lib/complaint";
 import { canPrint, isNativeApp, openExternal } from "../lib/platform";
 import { displayNumber, seqNumber } from "../lib/format";
 
@@ -33,6 +34,8 @@ export default function BillView() {
   const items = [...bill.bill_items].sort((a, b) => a.position - b.position);
   const whatsapp = whatsappLink(bill, settings);
   const complaints = [...(bill.complaints ?? [])].sort((a, b) => seqNumber(a.complaint_number) - seqNumber(b.complaint_number));
+  // Advances taken when the complaints were recorded; the bill's own total is unchanged.
+  const { advance, balance } = advanceAndBalance(bill.grand_total, complaints);
 
   return (
     <div className="bill-page">
@@ -215,6 +218,18 @@ export default function BillView() {
             <dt>Grand total</dt>
             <dd>{inr(bill.grand_total)}</dd>
           </div>
+          {advance > 0 && (
+            <>
+              <div className="discount-row">
+                <dt>Advance received</dt>
+                <dd>−{inr(advance)}</dd>
+              </div>
+              <div className="grand balance-row">
+                <dt>Balance to pay</dt>
+                <dd>{inr(balance)}</dd>
+              </div>
+            </>
+          )}
         </dl>
 
         <p className="bill-foot">Thank you for your business.</p>

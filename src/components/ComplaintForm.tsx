@@ -1,14 +1,27 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { createComplaint, updateComplaint } from "../lib/api";
-import { validateComplaint, type ComplaintDraft } from "../lib/complaint";
+import { INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
 import type { FieldErrors } from "../lib/customer";
 import { errorMessage } from "../lib/supabase";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
 import CustomerInputs from "./CustomerInputs";
-import { Field, fieldProps } from "./fields";
+import { Field, FieldError, fieldProps, MoneyInput } from "./fields";
+import type { PaymentMethod } from "../lib/types";
 
-const FIELD_ORDER = ["vehicleReg", "customerName", "phone", "address", "description", "reportedOn", "notes"];
+const FIELD_ORDER = [
+  "vehicleReg",
+  "customerName",
+  "phone",
+  "address",
+  "vehicleName",
+  "odometerKm",
+  "otherDocuments",
+  "description",
+  "reportedOn",
+  "notes",
+  "advance",
+];
 
 export default function ComplaintForm({
   initial,
@@ -85,6 +98,110 @@ export default function ComplaintForm({
       </section>
 
       <section className="card">
+        <h2>Vehicle received</h2>
+        <div className="grid">
+          <Field fieldKey="vehicleName" label="Vehicle name" error={shown.vehicleName}>
+            <input
+              {...fieldProps("vehicleName", shown.vehicleName)}
+              type="text"
+              placeholder="e.g. Honda Activa 6G, Maruti Swift"
+              maxLength={100}
+              value={draft.vehicleName}
+              onChange={(e) => set({ vehicleName: e.target.value })}
+            />
+          </Field>
+          <Field fieldKey="odometerKm" label="Km driven" hint="As shown on the odometer" error={shown.odometerKm}>
+            <input
+              {...fieldProps("odometerKm", shown.odometerKm)}
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 12500"
+              autoComplete="off"
+              value={draft.odometerKm}
+              onChange={(e) => set({ odometerKm: e.target.value })}
+            />
+          </Field>
+        </div>
+
+        <fieldset className="intake-group">
+          <legend>Helmets received</legend>
+          <div className="segmented" role="group" aria-label="Helmets received">
+            {([0, 1, 2] as const).map((n) => (
+              <button key={n} type="button" aria-pressed={draft.helmets === n} onClick={() => set({ helmets: n })}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className={`intake-group${shown.otherDocuments ? " has-error" : ""}`}>
+          <legend>Documents received</legend>
+          <div className="intake-checks">
+            {INTAKE_DOCUMENTS.map((d) => (
+              <label key={d.id} className="check">
+                <input
+                  type="checkbox"
+                  checked={draft.documents.includes(d.id)}
+                  onChange={(e) =>
+                    set({ documents: e.target.checked ? [...draft.documents, d.id] : draft.documents.filter((x) => x !== d.id) })
+                  }
+                />
+                {d.label}
+              </label>
+            ))}
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={draft.otherDocumentsOn}
+                onChange={(e) => set({ otherDocumentsOn: e.target.checked })}
+              />
+              Other
+            </label>
+          </div>
+          {draft.otherDocumentsOn && (
+            <div className="intake-others">
+              {draft.otherDocuments.map((item, i) => (
+                <div key={i} className="intake-other-row">
+                  <input
+                    {...(i === 0 ? fieldProps("otherDocuments", shown.otherDocuments) : {})}
+                    type="text"
+                    aria-label={`Other item ${i + 1}`}
+                    placeholder={i === 0 ? "e.g. Insurance copy, spare key" : "Another item"}
+                    maxLength={60}
+                    value={item}
+                    autoFocus={i > 0 && i === draft.otherDocuments.length - 1 && item === ""}
+                    onChange={(e) =>
+                      set({ otherDocuments: draft.otherDocuments.map((x, j) => (j === i ? e.target.value : x)) })
+                    }
+                  />
+                  {draft.otherDocuments.length > 1 && (
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      aria-label={`Remove item ${i + 1}`}
+                      onClick={() => set({ otherDocuments: draft.otherDocuments.filter((_, j) => j !== i) })}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              {draft.otherDocuments.length < MAX_OTHER_DOCUMENTS && (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => set({ otherDocuments: [...draft.otherDocuments, ""] })}
+                >
+                  + Add another item
+                </button>
+              )}
+              <FieldError fieldKey="otherDocuments" error={shown.otherDocuments} />
+            </div>
+          )}
+        </fieldset>
+      </section>
+
+      <section className="card">
         <h2>Complaint</h2>
         <Field fieldKey="description" label="What is the problem?" required error={shown.description}>
           <textarea
@@ -125,6 +242,31 @@ export default function ComplaintForm({
             onChange={(e) => set({ notes: e.target.value })}
           />
         </Field>
+        <div className="grid">
+          <Field fieldKey="advance" label="Advance payment received" hint="Shown on the bill as already paid" error={shown.advance}>
+            <MoneyInput
+              {...fieldProps("advance", shown.advance)}
+              invalid={!!shown.advance}
+              value={draft.advance}
+              onChange={(e) => set({ advance: e.target.value })}
+            />
+          </Field>
+          {draft.advance.trim() !== "" && (
+            <Field fieldKey="advanceMethod" label="Paid by" required>
+              <select
+                {...fieldProps("advanceMethod")}
+                value={draft.advanceMethod}
+                onChange={(e) => set({ advanceMethod: e.target.value as PaymentMethod })}
+              >
+                {PAYMENT_METHODS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
+        </div>
         <fieldset className="status-choice">
           <legend>Status</legend>
           {(["open", "resolved"] as const).map((s) => (
