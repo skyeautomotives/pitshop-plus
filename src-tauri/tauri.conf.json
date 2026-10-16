@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Pitstop Plus",
+  "productName": "Pitshop Plus",
   "version": "../package.json",
   "identifier": "com.skyeautomotives.pitstopplus",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Pitstop Plus",
+        "title": "Pitshop Plus",
         "width": 1200,
         "height": 800,
         "minWidth": 380,
@@ -47,7 +47,7 @@
         "installerIcon": "icons/icon.ico",
         "headerImage": "installer/header.bmp",
         "sidebarImage": "installer/sidebar.bmp",
-        "startMenuFolder": "Pitstop Plus",
+        "startMenuFolder": "Pitshop Plus",
         "displayLanguageSelector": false
       }
     },

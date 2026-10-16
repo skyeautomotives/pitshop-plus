@@ -1,4 +1,4 @@
-# Pitstop Plus
+# Pitshop Plus
 
 Billing and service management for automobile workshops, by Skye Automotives.
 

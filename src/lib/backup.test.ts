@@ -101,7 +101,7 @@ describe("making a backup", () => {
 
   it("names the file after the workshop and date", async () => {
     const b = await makeBackup(settings);
-    expect(backupFileName({ ...b, made_at: "2026-10-16T09:00:00.000Z" })).toBe("Pitstop Plus backup - Ravi Motors Sons - 2026-10-16.json");
+    expect(backupFileName({ ...b, made_at: "2026-10-16T09:00:00.000Z" })).toBe("Pitshop Plus backup - Ravi Motors Sons - 2026-10-16.json");
   });
 });
 
@@ -115,8 +115,8 @@ describe("restoring", () => {
   });
 
   it("refuses files that aren't backups", async () => {
-    await expect(readBackupFile(file("not json"))).rejects.toThrow("isn't a Pitstop Plus backup");
-    await expect(readBackupFile(file(JSON.stringify({ bills: [] })))).rejects.toThrow("isn't a Pitstop Plus backup");
+    await expect(readBackupFile(file("not json"))).rejects.toThrow("isn't a Pitshop Plus backup");
+    await expect(readBackupFile(file(JSON.stringify({ bills: [] })))).rejects.toThrow("isn't a Pitshop Plus backup");
     await expect(readBackupFile(file(JSON.stringify({ format: BACKUP_FORMAT, version: 2, bills: [], complaints: [] })))).rejects.toThrow("newer version");
   });
 

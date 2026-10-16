@@ -28,7 +28,7 @@ export default function AdminOverview() {
       <header className="dash-head">
         <div>
           <h1>Platform overview</h1>
-          <p className="muted">All Pitstop Plus workshops</p>
+          <p className="muted">All Pitshop Plus workshops</p>
         </div>
         <div className="dash-head-actions">
           <Link to="/admin/workshops" className="btn btn-primary">

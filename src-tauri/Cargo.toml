@@ -1,7 +1,7 @@
 [package]
 name = "pitstop-plus"
-version = "0.3.1"
-description = "Pitstop Plus: repair billing for automobile workshops"
+version = "0.4.0"
+description = "Pitshop Plus: repair billing for automobile workshops"
 authors = ["Skye Automotives"]
 edition = "2021"
 

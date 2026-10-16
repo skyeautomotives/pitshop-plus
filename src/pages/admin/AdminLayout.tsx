@@ -27,7 +27,7 @@ export default function AdminLayout() {
     <div className="app admin-app">
       <aside className="sidebar no-print">
         <NavLink to="/admin" className="sidebar-logo" aria-label="Admin overview">
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus-dark.svg`} alt="Pitstop Plus" />
+          <img src={`${import.meta.env.BASE_URL}pitshop-plus-dark.svg`} alt="Pitshop Plus" />
         </NavLink>
         <div className="sidebar-shop admin-badge">Platform admin</div>
         <nav className="sidebar-nav">
@@ -66,7 +66,7 @@ export default function AdminLayout() {
           <div className="topbar-brand-row">
             <NavLink to="/admin" className="brand">
               <img src={`${import.meta.env.BASE_URL}app-icon.svg`} alt="" width={30} height={30} />
-              <span>Pitstop Plus admin</span>
+              <span>Pitshop Plus admin</span>
             </NavLink>
           </div>
           <nav className="nav">

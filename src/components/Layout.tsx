@@ -64,14 +64,14 @@ export default function Layout() {
       <main className="login">
         <div className="card login-card">
           <div className="login-brand">
-            <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
+            <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus" className="login-logo" />
           </div>
           {me.status === "not-staff" ? (
             <NotStaff />
           ) : me.status === "suspended" ? (
             <div className="alert alert-error" role="alert">
               <span>
-                <strong>This workshop is suspended.</strong> {me.reason && `Reason: ${me.reason}. `}Contact Pitstop Plus support (Skye Automotives) to restore
+                <strong>This workshop is suspended.</strong> {me.reason && `Reason: ${me.reason}. `}Contact Pitshop Plus support (Skye Automotives) to restore
                 access. Your bills and complaints are kept.
               </span>
             </div>
@@ -96,7 +96,7 @@ export default function Layout() {
       {/* Wide screens (Windows app, PC browser): sidebar. */}
       <aside className="sidebar no-print">
         <NavLink to="/dashboard" className="sidebar-logo" aria-label="Dashboard">
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus-dark.svg`} alt="Pitstop Plus" />
+          <img src={`${import.meta.env.BASE_URL}pitshop-plus-dark.svg`} alt="Pitshop Plus" />
         </NavLink>
         <div className="sidebar-shop" title={shopName}>
           {shopName}
@@ -129,7 +129,7 @@ export default function Layout() {
           )}
         </nav>
         <SyncStatus />
-        <p className="sidebar-version">Pitstop Plus {APP_VERSION}</p>
+        <p className="sidebar-version">Pitshop Plus {APP_VERSION}</p>
         <div className="sidebar-user">
           <div className="sidebar-avatar" aria-hidden="true">
             {(me.me.full_name || me.me.username || "?").trim().charAt(0).toUpperCase()}

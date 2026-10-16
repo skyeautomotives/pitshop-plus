@@ -113,7 +113,7 @@ export default function Register() {
             We sent a confirmation link to <strong>{sentTo}</strong>.
           </p>
           <ol className="steps">
-            <li>Open the email from Pitstop Plus (check Spam or Promotions if you don't see it).</li>
+            <li>Open the email from Pitshop Plus (check Spam or Promotions if you don't see it).</li>
             <li>
               Tap <strong>Confirm my email</strong>.
             </li>

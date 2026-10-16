@@ -16,8 +16,8 @@ export default function Privacy() {
           <p className="mk-legal-updated">Last updated {UPDATED}</p>
 
           <p>
-            This policy explains what information Pitstop Plus (the website, the Windows app and the Android app) keeps,
-            why, and who can see it. Pitstop Plus is provided by Skye Automotives ("we", "us"). Questions:{" "}
+            This policy explains what information Pitshop Plus (the website, the Windows app and the Android app) keeps,
+            why, and who can see it. Pitshop Plus is provided by Skye Automotives ("we", "us"). Questions:{" "}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
           </p>
 
@@ -43,7 +43,7 @@ export default function Privacy() {
 
           <h2>2. Why we keep it</h2>
           <ul>
-            <li>To run Pitstop Plus for you: sign-in, saving and showing your records, printing and sharing bills.</li>
+            <li>To run Pitshop Plus for you: sign-in, saving and showing your records, printing and sharing bills.</li>
             <li>To send emails you need, such as confirming your email address and resetting a password.</li>
             <li>To manage your free trial, plan and payments.</li>
             <li>To keep the service secure and working, and to help when you contact us.</li>
@@ -62,7 +62,7 @@ export default function Privacy() {
               except when you ask us for help with a record, or when the law requires it.
             </li>
             <li>
-              We use service providers that host and run parts of Pitstop Plus for us, such as Supabase (database and
+              We use service providers that host and run parts of Pitshop Plus for us, such as Supabase (database and
               sign-in) and Google (email and file storage). They may only use the information to provide their service
               to us.
             </li>
@@ -72,21 +72,21 @@ export default function Privacy() {
           <h2>4. Your customers' information</h2>
           <p>
             Your workshop decides what customer information to record and is responsible for it. We store and process
-            it on your behalf, only to run Pitstop Plus for you. If one of your customers asks us about their
+            it on your behalf, only to run Pitshop Plus for you. If one of your customers asks us about their
             information, we will refer them to you and help you respond.
           </p>
 
           <h2>5. On your devices</h2>
           <p>
             The Windows and Android apps, and the website, keep a copy of your workshop's records on the device so
-            Pitstop Plus works without an internet connection. Backup files you save are kept wherever you choose, such
-            as your own Google Drive. Keep your devices and backup files secure, and remove Pitstop Plus from a device
+            Pitshop Plus works without an internet connection. Backup files you save are kept wherever you choose, such
+            as your own Google Drive. Keep your devices and backup files secure, and remove Pitshop Plus from a device
             you no longer use.
           </p>
 
           <h2>6. How long we keep it</h2>
           <p>
-            We keep your information while your workshop uses Pitstop Plus. When a workshop is closed, we delete its
+            We keep your information while your workshop uses Pitshop Plus. When a workshop is closed, we delete its
             records; copies held by our service providers for security are removed on their normal schedule. We may keep
             payment records for as long as the law requires.
           </p>
@@ -100,7 +100,7 @@ export default function Privacy() {
 
           <h2>8. Your choices and rights</h2>
           <ul>
-            <li>You can see and correct your workshop's details and records in Pitstop Plus.</li>
+            <li>You can see and correct your workshop's details and records in Pitshop Plus.</li>
             <li>The owner can save a full copy of the workshop's records at any time (Settings, Backup &amp; restore).</li>
             <li>
               You can ask us to correct or delete your information, or to close your workshop, by emailing{" "}
@@ -110,7 +110,7 @@ export default function Privacy() {
           </ul>
 
           <h2>9. Children</h2>
-          <p>Pitstop Plus is for businesses and is not meant for anyone under 18.</p>
+          <p>Pitshop Plus is for businesses and is not meant for anyone under 18.</p>
 
           <h2>10. Changes</h2>
           <p>

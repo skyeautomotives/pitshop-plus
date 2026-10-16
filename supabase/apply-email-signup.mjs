@@ -62,7 +62,7 @@ let cfg = await api("GET", "/config/auth");
 let template = "not installed yet: set up SMTP first, then run this script again";
 if (cfg.smtp_host) {
   await api("PATCH", "/config/auth", {
-    mailer_subjects_confirmation: "Confirm your email | Pitstop Plus",
+    mailer_subjects_confirmation: "Confirm your email | Pitshop Plus",
     mailer_templates_confirmation_content: file("./templates/confirm-signup.html"),
     // Built-in mailer: 2 an hour. With your own mailbox it can go higher
     // (a personal Gmail sends about 500 a day).

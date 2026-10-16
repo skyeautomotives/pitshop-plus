@@ -15,7 +15,7 @@ export default function AdminActivity() {
   return (
     <div>
       <h1>Activity log</h1>
-      <p className="muted">Every change made by Pitstop Plus admins: suspensions, password resets and login changes.</p>
+      <p className="muted">Every change made by Pitshop Plus admins: suspensions, password resets and login changes.</p>
       {log.status === "loading" && <p className="page-status">Loading…</p>}
       {log.status === "error" && <LoadFailed what="the activity log" message={log.message} onRetry={log.retry} />}
       {log.status === "ok" &&

@@ -10,7 +10,7 @@ export default function UpdateBanner() {
   return (
     <div className="alert update-banner no-print" role="status">
       <span>
-        <strong>Pitstop Plus {update.version} is available.</strong>{" "}
+        <strong>Pitshop Plus {update.version} is available.</strong>{" "}
         {started
           ? isAndroidApp
             ? "When the download finishes, open it and tap Install. Your data is kept."

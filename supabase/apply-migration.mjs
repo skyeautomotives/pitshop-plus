@@ -1,4 +1,4 @@
-// Runs one SQL migration file on the Pitstop Plus database through the Supabase
+// Runs one SQL migration file on the Pitshop Plus database through the Supabase
 // Management API (HTTPS), for networks that block the database port.
 // Usage (PowerShell):
 //   $env:SUPABASE_ACCESS_TOKEN="sbp_..."; node supabase/apply-migration.mjs supabase/migrations/0013_offline_sync.sql

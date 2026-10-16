@@ -129,7 +129,7 @@ export default function BackupSection() {
       <section className="card">
         <h2>Save a backup</h2>
         <p>
-          Saves all your bills, complaints and shop details in one file. Keep it somewhere safe outside Pitstop Plus,
+          Saves all your bills, complaints and shop details in one file. Keep it somewhere safe outside Pitshop Plus,
           such as your Google Drive, and save a new one at least once a week.
         </p>
         <p className="hint">{WHERE}</p>

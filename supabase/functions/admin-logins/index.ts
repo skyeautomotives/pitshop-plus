@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
   const { data: userData, error: userError } = await caller.auth.getUser(token);
   if (userError || !userData.user) return json({ error: "Please sign in again." }, 401);
   const { data: isAdmin, error: roleError } = await caller.rpc("is_platform_admin");
-  if (roleError || isAdmin !== true) return json({ error: "Only Pitstop Plus admins can do this." }, 403);
+  if (roleError || isAdmin !== true) return json({ error: "Only Pitshop Plus admins can do this." }, 403);
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 

@@ -49,7 +49,7 @@ export default function SubscriptionReminder() {
   } else if (sub.state === "trial_ended") {
     text = "Your free trial has ended.";
   } else if (sub.state === "overdue") {
-    text = sub.paid_until ? `Your Pitstop Plus payment is due (paid until ${formatDate(sub.paid_until)}).` : "Your Pitstop Plus payment is due.";
+    text = sub.paid_until ? `Your Pitshop Plus payment is due (paid until ${formatDate(sub.paid_until)}).` : "Your Pitshop Plus payment is due.";
   }
   if (!text) return null;
   try {
@@ -61,8 +61,8 @@ export default function SubscriptionReminder() {
   return (
     <div className="alert sub-reminder no-print" role="status">
       <span>
-        <strong>{text}</strong> To keep using Pitstop Plus, contact Skye Automotives at{" "}
-        <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Pitstop Plus subscription")}`}>{CONTACT_EMAIL}</a>.
+        <strong>{text}</strong> To keep using Pitshop Plus, contact Skye Automotives at{" "}
+        <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Pitshop Plus subscription")}`}>{CONTACT_EMAIL}</a>.
       </span>
       <button
         type="button"

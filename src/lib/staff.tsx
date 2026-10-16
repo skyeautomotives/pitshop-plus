@@ -8,7 +8,7 @@ type MeState =
   | { status: "error"; message: string }
   /** Signed in, but not on the workshop's staff list. */
   | { status: "not-staff" }
-  /** On a staff list, but a Pitstop Plus admin has suspended the workshop. */
+  /** On a staff list, but a Pitshop Plus admin has suspended the workshop. */
   | { status: "suspended"; reason: string | null }
   | { status: "ok"; me: StaffMember };
 

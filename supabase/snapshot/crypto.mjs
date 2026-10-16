@@ -19,7 +19,7 @@ export function encrypt(json, passphrase) {
 }
 
 export function decrypt(buf, passphrase) {
-  if (!buf.subarray(0, MAGIC.length).equals(MAGIC)) throw new Error("This isn't a Pitstop Plus snapshot.");
+  if (!buf.subarray(0, MAGIC.length).equals(MAGIC)) throw new Error("This isn't a Pitshop Plus snapshot.");
   const salt = buf.subarray(6, 22);
   const iv = buf.subarray(22, 34);
   const tag = buf.subarray(buf.length - 16);

@@ -1,4 +1,4 @@
-// Runs supabase-setup.sql on the Pitstop Plus project through the Supabase
+// Runs supabase-setup.sql on the Pitshop Plus project through the Supabase
 // Management API (HTTPS), for networks that block the database port.
 // Usage (PowerShell):  $env:SUPABASE_ACCESS_TOKEN="sbp_..."; node supabase/apply-setup.mjs
 import { readFileSync } from "node:fs";
