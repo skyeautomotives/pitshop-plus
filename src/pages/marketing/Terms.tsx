@@ -18,14 +18,14 @@ export default function Terms() {
           <p className="mk-legal-updated">Last updated {UPDATED}</p>
 
           <p>
-            These terms apply to Pitstop Plus (the website, the Windows app and the Android app), provided by Skye
-            Automotives ("we", "us"). By registering a workshop or using Pitstop Plus, you ("you", the workshop owner)
-            agree to them. If you don't agree, please don't use Pitstop Plus.
+            These terms apply to Pitshop Plus (the website, the Windows app and the Android app), provided by Skye
+            Automotives ("we", "us"). By registering a workshop or using Pitshop Plus, you ("you", the workshop owner)
+            agree to them. If you don't agree, please don't use Pitshop Plus.
           </p>
 
           <h2>1. The service</h2>
           <p>
-            Pitstop Plus lets your workshop make bills, record complaints, keep vehicle history and see reports. We may
+            Pitshop Plus lets your workshop make bills, record complaints, keep vehicle history and see reports. We may
             improve, change or remove features over time. We will tell you in advance about changes that take away
             something important you rely on.
           </p>
@@ -41,7 +41,7 @@ export default function Terms() {
           <h2>3. Free trial, plans and payment</h2>
           <ul>
             <li>New workshops get a free trial. We tell you before it ends.</li>
-            <li>After the trial, using Pitstop Plus needs a paid plan. Prices are agreed with you before you pay.</li>
+            <li>After the trial, using Pitshop Plus needs a paid plan. Prices are agreed with you before you pay.</li>
             <li>Payments cover the period agreed when you pay. Payments already made are not refunded, except where the law requires it.</li>
             <li>If a payment is overdue, we may limit or suspend your workshop's access until it is paid.</li>
           </ul>
@@ -52,12 +52,12 @@ export default function Terms() {
           </p>
           <ul>
             <li>
-              Your bills, complaints and other records belong to you. Pitstop Plus gives you a way to save a backup file of
+              Your bills, complaints and other records belong to you. Pitshop Plus gives you a way to save a backup file of
               them (Settings, Backup &amp; restore), which you can keep in your own Google Drive, on your computer or on
               your phone.
             </li>
             <li>
-              Save a backup regularly, at least once a week, and keep it somewhere safe outside Pitstop Plus. Check that
+              Save a backup regularly, at least once a week, and keep it somewhere safe outside Pitshop Plus. Check that
               you can open it.
             </li>
             <li>
@@ -82,7 +82,7 @@ export default function Terms() {
               are responsible for having your customers' permission and for following the law when you collect and use it.
             </li>
             <li>
-              We store this information to run Pitstop Plus for you. We do not sell it and do not look at it, except
+              We store this information to run Pitshop Plus for you. We do not sell it and do not look at it, except
               when you ask us for help, to keep the service secure and working, or when the law requires it.
             </li>
             <li>
@@ -94,11 +94,11 @@ export default function Terms() {
           </ul>
 
           <h2>6. Acceptable use</h2>
-          <p>Don't use Pitstop Plus to break the law, to send spam, or to try to get into another workshop's records or disrupt the service.</p>
+          <p>Don't use Pitshop Plus to break the law, to send spam, or to try to get into another workshop's records or disrupt the service.</p>
 
           <h2>7. Availability</h2>
           <p>
-            We work to keep Pitstop Plus available and working correctly, but it is provided "as is" and "as available".
+            We work to keep Pitshop Plus available and working correctly, but it is provided "as is" and "as available".
             It may sometimes be unavailable, for example for maintenance or because of problems with the internet or
             services we depend on. Check bills before you hand them to customers.
           </p>
@@ -107,17 +107,17 @@ export default function Terms() {
           <ul>
             <li>
               To the extent the law allows, we are not responsible for any loss of records, loss of business, profit or
-              income, or any indirect loss arising from your use of Pitstop Plus or from it being unavailable.
+              income, or any indirect loss arising from your use of Pitshop Plus or from it being unavailable.
             </li>
             <li>
               To the extent the law allows, our total responsibility to you is limited to the amount you paid us for
-              Pitstop Plus in the three months before the problem happened.
+              Pitshop Plus in the three months before the problem happened.
             </li>
           </ul>
 
           <h2>9. Ending the service</h2>
           <ul>
-            <li>You can stop using Pitstop Plus at any time. Save a backup of your records first.</li>
+            <li>You can stop using Pitshop Plus at any time. Save a backup of your records first.</li>
             <li>
               We may suspend or close a workshop that breaks these terms or does not pay. Where we can, we will tell you
               first so you can save a backup.
@@ -128,7 +128,7 @@ export default function Terms() {
           <h2>10. Changes to these terms</h2>
           <p>
             We may update these terms. We will show the date of the latest version on this page and let you know about
-            important changes. Using Pitstop Plus after a change means you accept the updated terms.
+            important changes. Using Pitshop Plus after a change means you accept the updated terms.
           </p>
 
           <h2>11. Law</h2>

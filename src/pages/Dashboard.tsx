@@ -68,7 +68,7 @@ function GettingStarted({ isOwner, hasDetails, hasBill, hasStaff }: { isOwner: b
   // All set: point to the apps this person is not using yet.
   return (
     <section className="card dash-side dash-apps">
-      <h2>Pitstop Plus everywhere</h2>
+      <h2>Pitshop Plus everywhere</h2>
       <p className="muted">Sign in with the same account on your other devices. Every bill shows up on all of them.</p>
       <div className="dash-app-links">
         {!isDesktopApp && (

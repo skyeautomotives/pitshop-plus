@@ -182,7 +182,7 @@ function SuspendButton({ shop, onDone }: { shop: AdminShop; onDone: (n: Notice) 
       {open && suspended && (
         <ConfirmDialog
           title="Reactivate this workshop?"
-          message={`${shop.shop_name}'s logins can use Pitstop Plus again straight away.`}
+          message={`${shop.shop_name}'s logins can use Pitshop Plus again straight away.`}
           confirmLabel={busy ? "Reactivating…" : "Reactivate"}
           cancelLabel="Cancel"
           onConfirm={() => void run(false)}

@@ -6,7 +6,7 @@ import { admin, adminDemo } from "./api";
 
 type AdminCheck = { status: "loading" } | { status: "error"; message: string } | { status: "ok"; isAdmin: boolean };
 
-/** Whether the signed-in login is a Pitstop Plus platform admin. */
+/** Whether the signed-in login is a Pitshop Plus platform admin. */
 export function usePlatformAdmin(): AdminCheck {
   const { session } = useAuth();
   const userId = session?.user.id;
@@ -39,14 +39,14 @@ function AdminCheckGate({ children }: { children: ReactNode }) {
     <main className="login">
       <div className="card login-card">
         <div className="login-brand">
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="login-logo" />
+          <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus" className="login-logo" />
         </div>
         {check.status === "error" ? (
           <div className="alert alert-error" role="alert">
             Couldn't check your access. {check.message}
           </div>
         ) : (
-          <p>This area is only for Pitstop Plus admins. Your login doesn't have admin access.</p>
+          <p>This area is only for Pitshop Plus admins. Your login doesn't have admin access.</p>
         )}
         <Link to="/dashboard" className="btn btn-primary btn-block">
           Go to the workshop app

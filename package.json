@@ -1,7 +1,7 @@
 {
   "name": "pitstop-plus",
   "private": true,
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,5 +42,5 @@
     "vite": "^7.1.0",
     "vitest": "^3.2.4"
   },
-  "description": "Pitstop Plus: repair billing for automobile workshops, by Skye Automotives"
+  "description": "Pitshop Plus: repair billing for automobile workshops, by Skye Automotives"
 }

@@ -72,6 +72,6 @@ const backup = {
     .map((c) => drop(c, ["shop_id", "phone_digits", "vehicle_reg_key"])),
 };
 const name = (backup.workshop || shopId).replace(/[^A-Za-z0-9 ]+/g, "").trim();
-const out = outArg ?? `Pitstop Plus backup - ${name} - ${snap.made_at.slice(0, 10)}.json`;
+const out = outArg ?? `Pitshop Plus backup - ${name} - ${snap.made_at.slice(0, 10)}.json`;
 writeFileSync(out, JSON.stringify(backup, null, 1));
 console.log(`${out}: ${backup.bills.length} bills, ${backup.complaints.length} complaints`);

@@ -1,6 +1,6 @@
 {
-  "name": "Pitstop Plus",
-  "short_name": "Pitstop Plus",
+  "name": "Pitshop Plus",
+  "short_name": "Pitshop Plus",
   "description": "Billing for automobile workshops, by Skye Automotives",
   "start_url": "./login",
   "scope": "./",

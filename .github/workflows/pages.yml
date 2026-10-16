@@ -63,10 +63,16 @@ jobs:
         run: |
           mkdir -p dist/downloads
           if gh release view --repo "$GITHUB_REPOSITORY" --json tagName > /dev/null 2>&1; then
-            gh release download --repo "$GITHUB_REPOSITORY" --pattern 'PitstopPlus*' --dir dist/downloads
+            gh release download --repo "$GITHUB_REPOSITORY" --pattern 'Pit*Plus*' --dir dist/downloads
+            # Apps from version 0.3.0 and earlier download the old file names.
+            (cd dist/downloads
+             for pair in "PitshopPlus-Setup.exe PitstopPlus-Setup.exe" "PitshopPlus.apk PitstopPlus.apk"; do
+               set -- $pair
+               if [ -f "$1" ]; then cp "$1" "$2"; elif [ -f "$2" ]; then cp "$2" "$1"; fi
+             done)
             gh release view --repo "$GITHUB_REPOSITORY" --json tagName,publishedAt > release.json
-            win=$(stat -c %s dist/downloads/PitstopPlus-Setup.exe 2>/dev/null || echo 0)
-            apk=$(stat -c %s dist/downloads/PitstopPlus.apk 2>/dev/null || echo 0)
+            win=$(stat -c %s dist/downloads/PitshopPlus-Setup.exe 2>/dev/null || echo 0)
+            apk=$(stat -c %s dist/downloads/PitshopPlus.apk 2>/dev/null || echo 0)
             jq --argjson w "$win" --argjson a "$apk"               '{version: (.tagName | ltrimstr("v")), published: .publishedAt, windowsSize: $w, androidSize: $a}'               release.json > dist/downloads/latest.json
             cat dist/downloads/latest.json
           fi

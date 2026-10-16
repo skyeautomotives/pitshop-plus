@@ -1,12 +1,12 @@
-// Downloads are served from the Pitstop Plus website (copied there from each release),
+// Downloads are served from the Pitshop Plus website (copied there from each release),
 // together with downloads/latest.json describing the current version.
 import { SITE_URL } from "./platform";
 
 const BASE = `${SITE_URL}downloads/`;
 
 export const DOWNLOADS = {
-  windows: `${BASE}PitstopPlus-Setup.exe`,
-  android: `${BASE}PitstopPlus.apk`,
+  windows: `${BASE}PitshopPlus-Setup.exe`,
+  android: `${BASE}PitshopPlus.apk`,
   manifest: `${BASE}latest.json`,
 };
 

@@ -50,10 +50,10 @@ const STEPS = [
 ];
 
 const FAQ = [
-  { q: "Who is Pitstop Plus for?", a: "Two-wheeler and four-wheeler workshops, service centres and garages that want proper bills and a record of every vehicle they have worked on." },
+  { q: "Who is Pitshop Plus for?", a: "Two-wheeler and four-wheeler workshops, service centres and garages that want proper bills and a record of every vehicle they have worked on." },
   { q: "Do I need to install anything?", a: "No. It works in any web browser. If you prefer an app, install it on Windows or Android from the Download page. Your account and bills are the same on every device." },
   { q: "Can my staff use it?", a: "Yes. As the owner you can create logins for your staff. They can make and send bills. Only the owner can change settings and manage logins." },
-  { q: "Who can see my data?", a: "Only the logins of your workshop. Other workshops using Pitstop Plus cannot see your customers, bills or reports." },
+  { q: "Who can see my data?", a: "Only the logins of your workshop. Other workshops using Pitshop Plus cannot see your customers, bills or reports." },
   { q: "Does it need internet?", a: "Not all the time. The Windows and Android apps keep working without internet: bills and complaints are saved on the device and sent to your account when the connection is back. Registering, the first sign-in on a device and managing staff logins need internet. The website needs internet." },
   { q: "How do I get help?", a: "Email Skye Automotives at the address at the bottom of this page." },
 ];
@@ -105,7 +105,7 @@ export default function Home() {
       <section id="features" className="mk-section">
         <div className="mk-wrap">
           <p className="mk-eyebrow">Features</p>
-          <h2>What Pitstop Plus does</h2>
+          <h2>What Pitshop Plus does</h2>
           <p className="mk-sub">From the customer's complaint to the final bill, and the sales report at the end of the month.</p>
           <div className="mk-grid">
             {FEATURES.map((f) => (

@@ -98,7 +98,7 @@ export async function makeBackup(settings: ShopSettings | null): Promise<BackupF
 
 export function backupFileName(b: BackupFile): string {
   const name = b.workshop.replace(/[^A-Za-z0-9 ]+/g, "").trim().replace(/\s+/g, " ").slice(0, 40);
-  return `Pitstop Plus backup${name ? ` - ${name}` : ""} - ${b.made_at.slice(0, 10)}.json`;
+  return `Pitshop Plus backup${name ? ` - ${name}` : ""} - ${b.made_at.slice(0, 10)}.json`;
 }
 
 /**
@@ -111,7 +111,7 @@ export async function saveBackupFile(b: BackupFile): Promise<boolean> {
   const text = JSON.stringify(b, null, 1);
   if (isDesktopApp) {
     const { save } = await import("@tauri-apps/plugin-dialog");
-    const path = await save({ defaultPath: name, filters: [{ name: "Pitstop Plus backup", extensions: ["json"] }] });
+    const path = await save({ defaultPath: name, filters: [{ name: "Pitshop Plus backup", extensions: ["json"] }] });
     if (!path) return false;
     const { writeTextFile } = await import("@tauri-apps/plugin-fs");
     await writeTextFile(path, text);
@@ -186,14 +186,14 @@ export async function readBackupFile(file: File): Promise<BackupFile> {
   try {
     data = JSON.parse(await file.text());
   } catch {
-    throw new Error("This file isn't a Pitstop Plus backup.");
+    throw new Error("This file isn't a Pitshop Plus backup.");
   }
   const b = data as Partial<BackupFile> | null;
   if (!b || b.format !== BACKUP_FORMAT || !Array.isArray(b.bills) || !Array.isArray(b.complaints)) {
-    throw new Error("This file isn't a Pitstop Plus backup.");
+    throw new Error("This file isn't a Pitshop Plus backup.");
   }
   if (typeof b.version !== "number" || b.version > 1) {
-    throw new Error("This backup was made by a newer version of Pitstop Plus. Update the app, then try again.");
+    throw new Error("This backup was made by a newer version of Pitshop Plus. Update the app, then try again.");
   }
   return b as BackupFile;
 }

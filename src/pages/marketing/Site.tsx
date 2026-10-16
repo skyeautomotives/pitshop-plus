@@ -12,8 +12,8 @@ export default function Site({ children }: { children: ReactNode }) {
     <div className="mk">
       <header className="mk-nav">
         <div className="mk-wrap mk-nav-inner">
-          <Link to="/" className="mk-brand" aria-label="Pitstop Plus home">
-            <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus by Skye Automotives" />
+          <Link to="/" className="mk-brand" aria-label="Pitshop Plus home">
+            <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus by Skye Automotives" />
           </Link>
           <button type="button" className="mk-menu" aria-expanded={open} aria-label="Menu" onClick={() => setOpen(!open)}>
             <span />
@@ -38,7 +38,7 @@ export default function Site({ children }: { children: ReactNode }) {
       <footer className="mk-footer">
         <div className="mk-wrap mk-footer-inner">
           <div>
-            <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus" className="mk-footer-logo" />
+            <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus" className="mk-footer-logo" />
             <p>Billing and service management for automobile workshops.</p>
           </div>
           <div className="mk-footer-cols">

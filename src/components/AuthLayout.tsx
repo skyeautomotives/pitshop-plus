@@ -17,15 +17,15 @@ const POINTS = [
  * on the left, form on the right. Narrow screens (phones): just the form, logo on top.
  */
 export default function AuthLayout({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
-  const logo = `${import.meta.env.BASE_URL}pitstop-plus-dark.svg`;
+  const logo = `${import.meta.env.BASE_URL}pitshop-plus-dark.svg`;
   return (
     <main className="auth">
       <aside className="auth-brand">
         {isNativeApp ? (
-          <img src={logo} alt="Pitstop Plus by Skye Automotives" className="auth-brand-logo" />
+          <img src={logo} alt="Pitshop Plus by Skye Automotives" className="auth-brand-logo" />
         ) : (
-          <Link to="/" aria-label="Pitstop Plus home">
-            <img src={logo} alt="Pitstop Plus by Skye Automotives" className="auth-brand-logo" />
+          <Link to="/" aria-label="Pitshop Plus home">
+            <img src={logo} alt="Pitshop Plus by Skye Automotives" className="auth-brand-logo" />
           </Link>
         )}
         <div className="auth-brand-copy">
@@ -43,7 +43,7 @@ export default function AuthLayout({ children, wide = false }: { children: React
       </aside>
       <section className="auth-main">
         <div className={`auth-panel${wide ? " auth-panel-wide" : ""}`}>
-          <img src={`${import.meta.env.BASE_URL}pitstop-plus.svg`} alt="Pitstop Plus by Skye Automotives" className="auth-mobile-logo" />
+          <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus by Skye Automotives" className="auth-mobile-logo" />
           <UpdateBanner />
           {children}
         </div>

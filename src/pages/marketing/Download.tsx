@@ -21,7 +21,7 @@ export default function Download() {
       <section className="mk-section mk-download">
         <div className="mk-wrap">
           <p className="mk-eyebrow">Download</p>
-          <h1 className="mk-h1">Get Pitstop Plus</h1>
+          <h1 className="mk-h1">Get Pitshop Plus</h1>
           <p className="mk-sub">Use the same account on all your devices.</p>
           {release && (
             <p className="mk-version">
@@ -39,11 +39,11 @@ export default function Download() {
                 Download for Windows
               </a>
               <ol>
-                <li>Open <b>PitstopPlus-Setup.exe</b>.</li>
+                <li>Open <b>PitshopPlus-Setup.exe</b>.</li>
                 <li>
                   If Windows says <i>“Windows protected your PC”</i>, click <b>More info → Run anyway</b>.
                 </li>
-                <li>Open Pitstop Plus from the Start menu and sign in.</li>
+                <li>Open Pitshop Plus from the Start menu and sign in.</li>
               </ol>
             </article>
 
@@ -57,9 +57,9 @@ export default function Download() {
               <ol>
                 <li>Open this page on your phone and tap the button.</li>
                 <li>
-                  Open <b>PitstopPlus.apk</b>. If asked, allow <b>Install unknown apps</b> for your browser.
+                  Open <b>PitshopPlus.apk</b>. If asked, allow <b>Install unknown apps</b> for your browser.
                 </li>
-                <li>Open Pitstop Plus and sign in.</li>
+                <li>Open Pitshop Plus and sign in.</li>
               </ol>
             </article>
 
@@ -68,7 +68,7 @@ export default function Download() {
               <h2>Web</h2>
               <p className="mk-dl-meta">Chrome, Edge, Safari, Firefox · nothing to install</p>
               <Link className="mk-btn mk-btn-orange mk-btn-block" to="/login">
-                Open Pitstop Plus
+                Open Pitshop Plus
               </Link>
               <ol>
                 <li>Works on any computer, tablet or phone.</li>
