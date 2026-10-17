@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { jobLabel } from "../lib/jobCard";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
 import ComplaintForm from "../components/ComplaintForm";
@@ -149,7 +150,14 @@ export function ComplaintView() {
             Complaint {displayNumber(c.complaint_number)} <StatusBadge status={status} />
           </h1>
         </div>
-        <p className="complaint-description pre-line">{c.description}</p>
+        {(c.jobs ?? []).length > 0 && (
+          <ul className="job-ticked" aria-label="Jobs ticked">
+            {(c.jobs ?? []).map((id) => (
+              <li key={id}>{jobLabel(id)}</li>
+            ))}
+          </ul>
+        )}
+        {c.description.trim() && <p className="complaint-description pre-line">{c.description}</p>}
         <dl className="bill-customer">
           <div>
             <dt>Reported</dt>

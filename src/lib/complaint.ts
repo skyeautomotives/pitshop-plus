@@ -25,6 +25,9 @@ export const MAX_OTHER_DOCUMENTS = 10;
  * not part of it: the database records the signed-in staff member.
  */
 export interface ComplaintDraft extends CustomerFields {
+  /** Ticked job card items. */
+  jobs: string[];
+  /** Other problems or comments (optional when jobs are ticked). */
   description: string;
   reportedOn: string;
   notes: string;
@@ -46,6 +49,7 @@ export function emptyComplaint(customer: Partial<CustomerFields> = {}): Complain
   return {
     ...emptyCustomer(),
     ...customer,
+    jobs: [],
     description: "",
     reportedOn: todayISO(),
     notes: "",
@@ -62,6 +66,7 @@ export function emptyComplaint(customer: Partial<CustomerFields> = {}): Complain
 }
 
 export interface ComplaintPayload {
+  jobs: string[];
   customer_name: string;
   address: string | null;
   phone: string;
@@ -85,7 +90,7 @@ export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; pay
   const customer = validateCustomer(d, errors);
 
   const description = d.description.trim();
-  if (!description) errors.description = "Describe the customer's complaint.";
+  if (!description && d.jobs.length === 0) errors.description = "Tick what needs doing, or describe the problem.";
   else if (description.length > 1000) errors.description = "Too long (1000 characters max).";
 
   if (!ISO_DATE.test(d.reportedOn)) errors.reportedOn = "Choose the date the complaint was reported.";
@@ -125,6 +130,7 @@ export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; pay
     payload: {
       ...customer,
       address: customer.address || null,
+      jobs: [...new Set(d.jobs)],
       description,
       reported_on: d.reportedOn,
       notes: notes || null,
@@ -148,6 +154,7 @@ export function complaintToDraft(c: ComplaintRow): ComplaintDraft {
     phone: c.phone,
     address: c.address ?? "",
     vehicleReg: c.vehicle_reg,
+    jobs: c.jobs ?? [],
     description: c.description,
     reportedOn: c.reported_on,
     notes: c.notes ?? "",

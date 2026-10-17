@@ -74,6 +74,8 @@ export interface ComplaintRow {
   /** Advance payment received, rupees. */
   advance_amount?: number | null;
   advance_method?: PaymentMethod | null;
+  /** Ticked job card items (ids from lib/jobCard). */
+  jobs?: string[];
   created_at: string;
   updated_at: string;
   /** True while a change made on this device is waiting to be sent. */

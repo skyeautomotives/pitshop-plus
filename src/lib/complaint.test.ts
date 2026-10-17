@@ -21,6 +21,7 @@ describe("validateComplaint", () => {
     const { errors, payload } = validateComplaint(filled({ notes: "" }));
     expect(errors).toEqual({});
     expect(payload).toEqual({
+      jobs: [],
       customer_name: "Thomas",
       address: null,
       phone: "97440 60485",
@@ -37,6 +38,19 @@ describe("validateComplaint", () => {
       advance_amount: null,
       advance_method: null,
     });
+  });
+
+  it("accepts ticked jobs without a written problem", () => {
+    const { errors, payload } = validateComplaint(filled({ description: "  ", jobs: ["oil_change", "brakes", "oil_change"] }));
+    expect(errors).toEqual({});
+    expect(payload?.jobs).toEqual(["oil_change", "brakes"]);
+    expect(payload?.description).toBe("");
+  });
+
+  it("needs a ticked job or a written problem", () => {
+    expect(validateComplaint(filled({ description: "", jobs: [] })).errors.description).toBe(
+      "Tick what needs doing, or describe the problem.",
+    );
   });
 
   it("saves vehicle intake details and the advance", () => {
