@@ -7,13 +7,16 @@ import { useLoad } from "../../lib/useLoad";
 import { usePageTitle } from "../../lib/usePageTitle";
 import { LoadFailed, ShopStatus } from "./parts";
 
-type Show = "all" | "active" | "suspended" | "unconfirmed";
+type Show = "all" | "active" | "suspended" | "unconfirmed" | "bike" | "car" | "no-type";
 
 const FILTERS: { id: Show; label: string; test: (s: AdminShop) => boolean }[] = [
   { id: "all", label: "All", test: () => true },
   { id: "active", label: "Active", test: (s) => !s.suspended_at },
   { id: "suspended", label: "Suspended", test: (s) => !!s.suspended_at },
   { id: "unconfirmed", label: "Email not confirmed", test: (s) => !s.owner_confirmed },
+  { id: "bike", label: "Bikes", test: (s) => s.vehicle_type === "bike" },
+  { id: "car", label: "Cars", test: (s) => s.vehicle_type === "car" },
+  { id: "no-type", label: "Type not set", test: (s) => !s.vehicle_type },
 ];
 
 /** An email that may wrap only just before the "@". */
@@ -116,7 +119,9 @@ export default function AdminWorkshops() {
                         <Link to={`/admin/workshops/${s.id}`} onClick={(e) => e.stopPropagation()} className="admin-row-link">
                           {s.shop_name || "(no name)"}
                         </Link>
-                        <div className="muted admin-sub">{s.phone || "No phone"}</div>
+                        <div className="muted admin-sub">
+                          {s.vehicle_type === "bike" ? "Bikes" : s.vehicle_type === "car" ? "Cars" : "Type not set"} · {s.phone || "No phone"}
+                        </div>
                       </td>
                       <td>
                         {s.owner_name}

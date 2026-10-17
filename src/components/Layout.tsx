@@ -8,6 +8,7 @@ import SyncStatus from "./SyncStatus";
 import UpdateBanner from "./UpdateBanner";
 import SubscriptionReminder from "./SubscriptionReminder";
 import BackupReminder from "./BackupReminder";
+import WorkshopTypePrompt from "./WorkshopTypePrompt";
 import { APP_VERSION } from "../lib/updates";
 import { useSyncState } from "../lib/sync";
 
@@ -184,6 +185,7 @@ export default function Layout() {
         <UpdateBanner />
         {isOwner && <SubscriptionReminder />}
         {isOwner && <BackupReminder />}
+        {isOwner && <WorkshopTypePrompt />}
         <Outlet />
       </main>
     </div>

@@ -3,7 +3,9 @@ import { Link, useNavigate } from "react-router";
 import { createComplaint, updateComplaint } from "../lib/api";
 import { INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
 import type { FieldErrors } from "../lib/customer";
+import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
+import { vehicleExamples } from "../lib/vehicleType";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
 import CustomerInputs from "./CustomerInputs";
 import { Field, FieldError, fieldProps, MoneyInput } from "./fields";
@@ -37,6 +39,7 @@ export default function ComplaintForm({
   attendedBy: string;
 }) {
   const navigate = useNavigate();
+  const examples = vehicleExamples(useShopSettings().settings?.vehicle_type);
   const [draft, setDraft] = useState(initial);
   const [baseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
@@ -104,7 +107,7 @@ export default function ComplaintForm({
             <input
               {...fieldProps("vehicleName", shown.vehicleName)}
               type="text"
-              placeholder="e.g. Honda Activa 6G, Maruti Swift"
+              placeholder={examples.vehicleName}
               maxLength={100}
               value={draft.vehicleName}
               onChange={(e) => set({ vehicleName: e.target.value })}
@@ -207,7 +210,7 @@ export default function ComplaintForm({
           <textarea
             {...fieldProps("description", shown.description)}
             rows={3}
-            placeholder="e.g. Brake noise when stopping, engine warning light on"
+            placeholder={examples.complaint}
             value={draft.description}
             onChange={(e) => set({ description: e.target.value })}
           />

@@ -87,6 +87,7 @@ function build(): DemoState {
       created_at: iso(created),
       suspended_at: si === 2 ? iso(now - 4 * DAY) : null,
       suspended_reason: si === 2 ? "Subscription payment overdue" : null,
+      vehicle_type: si === 4 ? null : si % 2 ? "car" : "bike",
     });
 
     const username = s.email.split("@")[0].replace(/[^a-z0-9._-]/g, "");

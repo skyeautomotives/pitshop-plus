@@ -8,6 +8,8 @@ import { usePageTitle } from "../lib/usePageTitle";
 import AuthLayout from "../components/AuthLayout";
 import PasswordInput from "../components/PasswordInput";
 import TermsLink from "../components/TermsLink";
+import VehicleTypeChoice from "../components/VehicleTypeChoice";
+import type { VehicleType } from "../lib/vehicleType";
 import { TERMS_VERSION } from "./marketing/Terms";
 
 const MIN_PASSWORD = 8;
@@ -47,6 +49,8 @@ export default function Register() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [vehicleType, setVehicleType] = useState<VehicleType | null>(null);
+  const [typeError, setTypeError] = useState<string | undefined>();
   const [termsError, setTermsError] = useState<string | undefined>();
 
   if (loading) return <p className="page-status">Loading…</p>;
@@ -62,6 +66,11 @@ export default function Register() {
     const found = validate(form);
     setErrors(found);
     setTermsError(agreed ? undefined : "Please read and agree to the Terms & Conditions.");
+    setTypeError(vehicleType ? undefined : "Choose bikes or cars.");
+    if (!vehicleType) {
+      document.getElementById("f-vehicleType")?.focus();
+      return;
+    }
     const first = Object.keys(found)[0];
     if (first) {
       document.getElementById(`f-${first}`)?.focus();
@@ -83,6 +92,7 @@ export default function Register() {
           shop_name: form.shopName.trim(),
           full_name: form.fullName.trim(),
           phone: form.phone.trim(),
+          vehicle_type: vehicleType,
           terms_version: TERMS_VERSION,
           terms_accepted_at: new Date().toISOString(),
         },
@@ -145,6 +155,26 @@ export default function Register() {
             {error}
           </div>
         )}
+        <div className="field">
+          <span className="label-like">
+            What does your workshop work on?<span className="required"> *</span>
+          </span>
+          <VehicleTypeChoice
+            id="f-vehicleType"
+            value={vehicleType}
+            invalid={!!typeError}
+            describedBy={typeError ? "f-vehicleType-error" : undefined}
+            onChange={(v) => {
+              setVehicleType(v);
+              setTypeError(undefined);
+            }}
+          />
+          {typeError && (
+            <p className="field-error" id="f-vehicleType-error">
+              {typeError}
+            </p>
+          )}
+        </div>
         <div className="form-grid">
         <Field fieldKey="shopName" label="Workshop name" required error={errors.shopName} hint="Printed on your bills.">
           <input {...fieldProps("shopName", errors.shopName)} type="text" autoComplete="organization" autoFocus value={form.shopName} onChange={set("shopName")} />
