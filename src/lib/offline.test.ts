@@ -195,6 +195,7 @@ function bill(overrides: Partial<SaveBillPayload["bill"]> = {}, complaintIds: st
 }
 
 const complaint: ComplaintPayload = {
+  jobs: [],
   customer_name: "Ravi Kumar",
   address: null,
   phone: "98765 43210",

@@ -7,6 +7,7 @@
 //
 // Staff management and shop settings changes need a connection.
 import { FunctionsHttpError } from "@supabase/supabase-js";
+import { complaintText } from "./jobCard";
 import type { SaveBillPayload } from "./bill";
 import type { ComplaintPayload } from "./complaint";
 import type { PaymentInput } from "./payments";
@@ -373,7 +374,7 @@ const brief = (c: LocalComplaint): ComplaintBrief => ({
   complaint_number: c.complaint_number,
   vehicle_reg: c.vehicle_reg,
   vehicle_reg_key: c.vehicle_reg_key,
-  description: c.description,
+  description: complaintText(c),
   reported_on: c.reported_on,
 });
 

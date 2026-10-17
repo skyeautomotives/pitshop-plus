@@ -5,6 +5,7 @@ import { INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplai
 import type { FieldErrors } from "../lib/customer";
 import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
+import { jobLabel, jobList } from "../lib/jobCard";
 import { vehicleExamples } from "../lib/vehicleType";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
 import CustomerInputs from "./CustomerInputs";
@@ -39,7 +40,8 @@ export default function ComplaintForm({
   attendedBy: string;
 }) {
   const navigate = useNavigate();
-  const examples = vehicleExamples(useShopSettings().settings?.vehicle_type);
+  const vehicleType = useShopSettings().settings?.vehicle_type;
+  const examples = vehicleExamples(vehicleType);
   const [draft, setDraft] = useState(initial);
   const [baseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
@@ -54,6 +56,14 @@ export default function ComplaintForm({
   const guard = useUnsavedGuard(dirty, "This complaint has not been saved and will be lost.");
 
   const set = (patch: Partial<ComplaintDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  // This workshop's list, plus anything ticked earlier that isn't on it (e.g. after changing the workshop type).
+  const jobs = useMemo(() => {
+    const list = jobList(vehicleType);
+    const extra = draft.jobs.filter((id) => !list.some((j) => j.id === id)).map((id) => ({ id, label: jobLabel(id) }));
+    return [...list, ...extra];
+  }, [vehicleType, draft.jobs]);
+  const toggleJob = (id: string, on: boolean) =>
+    set({ jobs: on ? [...draft.jobs, id] : draft.jobs.filter((x) => x !== id) });
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -205,8 +215,25 @@ export default function ComplaintForm({
       </section>
 
       <section className="card">
-        <h2>Complaint</h2>
-        <Field fieldKey="description" label="What is the problem?" required error={shown.description}>
+        <h2>Job card</h2>
+        <fieldset className={`job-list${shown.description ? " has-error" : ""}`}>
+          <legend>What needs to be done?</legend>
+          <p className="hint">Tick everything that applies.</p>
+          <div className="job-checks">
+            {jobs.map((j) => (
+              <label key={j.id} className={`check job-check${draft.jobs.includes(j.id) ? " checked" : ""}`}>
+                <input type="checkbox" checked={draft.jobs.includes(j.id)} onChange={(e) => toggleJob(j.id, e.target.checked)} />
+                {j.label}
+              </label>
+            ))}
+          </div>
+          {draft.jobs.length > 0 && (
+            <p className="job-count muted">
+              {draft.jobs.length} {draft.jobs.length === 1 ? "job" : "jobs"} ticked
+            </p>
+          )}
+        </fieldset>
+        <Field fieldKey="description" label="Other problems or comments" error={shown.description}>
           <textarea
             {...fieldProps("description", shown.description)}
             rows={3}

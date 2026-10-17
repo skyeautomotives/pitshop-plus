@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { complaintText } from "../lib/jobCard";
 import { Link } from "react-router";
 import { complaintsByIds, complaintsForVehicle, openComplaintsForPhoneElsewhere, type ComplaintBrief } from "../lib/api";
 import { isLookupKey, vehicleKey, type CustomerFields } from "../lib/customer";
@@ -190,7 +191,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
                         <StatusBadge status={c.status} />
                         <span className="muted">{formatDate(c.reported_on)}</span>
                       </span>
-                      <span className="picker-desc">{c.description}</span>
+                      <span className="picker-desc">{complaintText(c)}</span>
                       <span className="muted picker-meta">
                         Attended by {c.attended_by || "not recorded"}
                         {otherBills.length > 0 && ` · Already on bill ${otherBills.map((b) => displayNumber(b.bill_number)).join(", ")}`}

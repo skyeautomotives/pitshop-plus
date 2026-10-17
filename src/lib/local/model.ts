@@ -10,6 +10,7 @@ import type {
   ComplaintSummary,
   ComplaintWithBills,
 } from "../types";
+import { complaintText } from "../jobCard";
 import type { LocalBill, LocalComplaint } from "./db";
 
 export const digitsOnly = (s: string) => s.replace(/\D/g, "");
@@ -94,6 +95,7 @@ export function complaintFromPayload(id: string, p: ComplaintPayload, me: Me, no
     phone_digits: digitsOnly(p.phone),
     vehicle_reg: vehicleReg,
     vehicle_reg_key: vehicleKey(vehicleReg),
+    jobs: p.jobs,
     description: p.description,
     reported_on: p.reported_on,
     attended_by: me.name,
@@ -175,7 +177,7 @@ export function complaintSummary(c: LocalComplaint): ComplaintSummary {
   return {
     id: c.id,
     complaint_number: c.complaint_number,
-    description: c.description,
+    description: complaintText(c),
     status: c.status,
     attended_by: c.attended_by,
     reported_on: c.reported_on,

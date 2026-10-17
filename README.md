@@ -7,7 +7,7 @@ Billing and service management for automobile workshops, by Skye Automotives.
 ## What it does
 
 - **Bills:** parts and work items, labour, painting and washing, discounts. Print, save as PDF or send on WhatsApp. Record what the customer pays after billing (cash, UPI and more, in one go or in parts); the bill shows the advance, payments and the balance still to pay.
-- **Complaints:** record what the customer reports and link the bills that fix it. Note what came in with the vehicle (vehicle name, km driven, helmets, RC book, pollution certificate, licence, insurance and anything else) and any advance payment, which the bill then shows as already paid.
+- **Job cards:** tick the common jobs for bikes or cars (or write your own) when a vehicle comes in, and link the bills that fix it. Note what came in with the vehicle (vehicle name, km driven, helmets, RC book, pollution certificate, licence, insurance and anything else) and any advance payment, which the bill then shows as already paid.
 - **Find and history:** search by customer name, phone or vehicle number, and see each vehicle's complaints and bills in one place.
 - **Reports:** daily and monthly sales.
 - **Staff logins:** the owner adds logins for the team.

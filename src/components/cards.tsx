@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { complaintText } from "../lib/jobCard";
 import { formatDate } from "../lib/format";
 import { formatINR, rupeesToPaise } from "../lib/money";
 import type { BillWithComplaints, ComplaintStatus, ComplaintWithBills } from "../lib/types";
@@ -72,7 +73,7 @@ export function ComplaintCard({ complaint, showCustomer = true }: { complaint: C
         </span>
         <StatusBadge status={c.status} />
       </div>
-      <p className="result-description">{c.description}</p>
+      <p className="result-description">{complaintText(c)}</p>
       <div className="result-details">
         <span className="reg">{c.vehicle_reg}</span>
         {showCustomer && <span>{c.phone}</span>}
