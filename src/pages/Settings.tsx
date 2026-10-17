@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
+import DisplaySection from "../components/DisplaySection";
 import StaffSection from "../components/StaffSection";
 import VehicleTypeChoice from "../components/VehicleTypeChoice";
 import { updateShopSettings } from "../lib/api";
@@ -30,10 +31,13 @@ const GROUPS = [
     label: "Your data",
     items: [{ id: "backup", label: "Backup & restore", hint: "Keep a copy in your Google Drive" }],
   },
+  {
+    label: "This device",
+    items: [{ id: "display", label: "Display", hint: "Text size and spacing" }],
+  },
 ] as const;
 
 type SectionId = (typeof GROUPS)[number]["items"][number]["id"];
-const SECTION_IDS = GROUPS.flatMap((g) => g.items.map((i) => i.id)) as SectionId[];
 
 export default function Settings() {
   const me = useMe();
@@ -41,14 +45,10 @@ export default function Settings() {
   const { section } = useParams();
 
   if (me.status === "loading") return <p className="page-status">Loading…</p>;
-  if (!isOwner)
-    return (
-      <div className="empty">
-        <h1>Settings</h1>
-        <p>Only the workshop owner can change settings and manage logins.</p>
-      </div>
-    );
-  if (!section || !SECTION_IDS.includes(section as SectionId)) return <Navigate to="/settings/shop" replace />;
+  // Staff can change how the app looks on their device; everything else is for the owner.
+  const groups = isOwner ? GROUPS : GROUPS.filter((g) => g.label === "This device");
+  const allowed = groups.flatMap((g) => g.items.map((i) => i.id)) as SectionId[];
+  if (!section || !allowed.includes(section as SectionId)) return <Navigate to={isOwner ? "/settings/shop" : "/settings/display"} replace />;
   const current = section as SectionId;
 
   return (
@@ -56,7 +56,7 @@ export default function Settings() {
       <h1>Settings</h1>
       <div className="settings-layout">
         <nav className="settings-nav card" aria-label="Settings sections">
-          {GROUPS.map((g) => (
+          {groups.map((g) => (
             <div key={g.label} className="settings-group">
               <p className="settings-group-label">{g.label}</p>
               <ul>
@@ -78,6 +78,7 @@ export default function Settings() {
           {current === "staff" && <StaffSection show="list" />}
           {current === "add-staff" && <StaffSection show="add" />}
           {current === "backup" && <BackupSection />}
+          {current === "display" && <DisplaySection />}
         </div>
       </div>
     </div>
