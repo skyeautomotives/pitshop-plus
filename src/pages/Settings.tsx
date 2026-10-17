@@ -3,6 +3,7 @@ import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
 import StaffSection from "../components/StaffSection";
+import VehicleTypeChoice from "../components/VehicleTypeChoice";
 import { updateShopSettings } from "../lib/api";
 import { useShopSettings } from "../lib/shopSettings";
 import { useIsOwner, useMe } from "../lib/staff";
@@ -119,6 +120,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         address: form.address?.trim() || null,
         phone: form.phone?.trim() || null,
         allow_zero_labour: form.allow_zero_labour,
+        vehicle_type: form.vehicle_type,
       });
       await reload();
       setStatus({ kind: "saved" });
@@ -136,6 +138,11 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         <section className="card">
           <h2>Shop details</h2>
           <p className="hint">Printed at the top of every bill and included in WhatsApp messages.</p>
+          <div className="field">
+            <span className="label-like">Workshop type</span>
+            <VehicleTypeChoice value={form.vehicle_type} onChange={(v) => update({ vehicle_type: v })} />
+            <p className="hint">Sets the job lists and examples you see when taking a vehicle in.</p>
+          </div>
           <Field fieldKey="shopName" label="Workshop name" required error={nameError}>
             <input
               {...fieldProps("shopName", nameError)}

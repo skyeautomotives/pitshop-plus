@@ -39,7 +39,7 @@ export default function Site({ children }: { children: ReactNode }) {
         <div className="mk-wrap mk-footer-inner">
           <div>
             <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus" className="mk-footer-logo" />
-            <p>Billing and service management for automobile workshops.</p>
+            <p>Billing and service management for bike and car workshops.</p>
           </div>
           <div className="mk-footer-cols">
             <div>

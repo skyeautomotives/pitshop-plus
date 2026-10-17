@@ -17,6 +17,7 @@ import { formatINR } from "../lib/money";
 import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
+import { vehicleExamples } from "../lib/vehicleType";
 import ComplaintPicker from "./ComplaintPicker";
 import { Field, FieldError, MoneyInput, fieldProps } from "./fields";
 import CustomerInputs from "./CustomerInputs";
@@ -233,7 +234,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                     {...fieldProps(descKey, shown[descKey])}
                     type="text"
                     autoComplete="off"
-                    placeholder="e.g. Brake pads replaced"
+                    placeholder={vehicleExamples(settings?.vehicle_type).billItem}
                     value={item.description}
                     onChange={(e) => setItem(item.key, { description: e.target.value })}
                     onKeyDown={(e) => {

@@ -70,11 +70,11 @@ export default function Home() {
       <section className="mk-hero">
         <div className="mk-wrap mk-hero-inner">
           <div className="mk-hero-copy">
-            <p className="mk-eyebrow">Billing software for vehicle workshops</p>
+            <p className="mk-eyebrow">For bike and car workshops</p>
             <h1>
               Billing for
               <br />
-              <span>automobile workshops</span>
+              <span>bike &amp; car workshops</span>
             </h1>
             <p className="mk-lead">
               Make a bill in under a minute, send it to the customer on WhatsApp, and look up any vehicle's past work by its number plate. Works in a browser, on Windows and on Android.

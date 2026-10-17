@@ -29,7 +29,7 @@ export default function AuthLayout({ children, wide = false }: { children: React
           </Link>
         )}
         <div className="auth-brand-copy">
-          <h2>Billing for automobile workshops</h2>
+          <h2>Billing for bike and car workshops</h2>
           <ul>
             {POINTS.map((p) => (
               <li key={p}>{p}</li>

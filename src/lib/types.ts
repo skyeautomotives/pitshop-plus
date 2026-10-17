@@ -1,3 +1,4 @@
+import type { VehicleType } from "./vehicleType";
 // Row shapes as returned by Supabase. Amounts are rupees (numeric(12,2)).
 
 export interface BillRow {
@@ -139,4 +140,6 @@ export interface ShopSettings {
   address: string | null;
   phone: string | null;
   allow_zero_labour: boolean;
+  /** Bike or car workshop; null until the owner chooses. */
+  vehicle_type: VehicleType | null;
 }

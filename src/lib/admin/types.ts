@@ -40,6 +40,8 @@ export interface AdminShop {
   bills: number;
   complaints: number;
   last_activity: string | null;
+  /** Bike or car workshop; null if the owner hasn't chosen yet. */
+  vehicle_type: "bike" | "car" | null;
 }
 
 export interface AdminLogin {
