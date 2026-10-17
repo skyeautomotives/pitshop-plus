@@ -79,7 +79,7 @@ export interface ComplaintRow {
   pending?: boolean;
 }
 
-export type IntakeDocument = "rc" | "pollution" | "licence";
+export type IntakeDocument = "rc" | "pollution" | "licence" | "insurance";
 
 /** Money the customer paid on a bill after billing (0020). */
 export interface BillPayment {

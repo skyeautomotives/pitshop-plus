@@ -45,7 +45,7 @@ describe("validateComplaint", () => {
         vehicleName: "  Honda Activa 6G ",
         odometerKm: "12,500",
         helmets: 2,
-        documents: ["licence", "rc"],
+        documents: ["insurance", "licence", "rc"],
         otherDocumentsOn: true,
         otherDocuments: [" Spare key ", "", "Insurance copy"],
         advance: "1,000.50",
@@ -57,7 +57,7 @@ describe("validateComplaint", () => {
       vehicle_name: "Honda Activa 6G",
       odometer_km: 12500,
       helmets: 2,
-      documents: ["rc", "licence"],
+      documents: ["rc", "licence", "insurance"],
       other_documents: ["Spare key", "Insurance copy"],
       advance_amount: 1000.5,
       advance_method: "upi",
@@ -77,6 +77,7 @@ describe("validateComplaint", () => {
 
   it("lists documents received", () => {
     expect(documentsText({ documents: ["rc", "pollution"], other_documents: ["Spare key"] })).toBe("RC book, Pollution certificate, Spare key");
+    expect(documentsText({ documents: ["insurance"] })).toBe("Insurance");
     expect(documentsText({})).toBe("");
   });
 
