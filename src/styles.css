@@ -29,6 +29,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Text size from Settings > Display; everything sized in rem follows it. */
+  font-size: var(--text-base, 16px);
 }
 
 body {
@@ -36,7 +38,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -3677,4 +3679,41 @@ a.admin-list-row:hover {
 
 .workshop-type-prompt .vehicle-type {
   max-width: 420px;
+}
+
+/* Settings > Display: compact spacing. */
+html[data-density="compact"] {
+  --tap: 40px;
+}
+
+html[data-density="compact"] .card {
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+html[data-density="compact"] h1 {
+  margin-bottom: 12px;
+}
+
+.display-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+
+.display-preview {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+
+.display-preview strong {
+  color: var(--text);
+}
+
+.display-reset {
+  margin-top: 12px;
 }

@@ -123,11 +123,9 @@ export default function Layout() {
               <Icon name="reports" /> Reports
             </NavLink>
           )}
-          {isOwner && (
-            <NavLink to="/settings">
-              <Icon name="settings" /> Settings
-            </NavLink>
-          )}
+          <NavLink to="/settings">
+            <Icon name="settings" /> Settings
+          </NavLink>
         </nav>
         <SyncStatus />
         <p className="sidebar-version">Pitshop Plus {APP_VERSION}</p>
@@ -168,7 +166,7 @@ export default function Layout() {
               Find bills
             </NavLink>
             {isOwner && <NavLink to="/reports">Reports</NavLink>}
-            {isOwner && <NavLink to="/settings">Settings</NavLink>}
+            <NavLink to="/settings">Settings</NavLink>
             <button type="button" className="link-button" onClick={signOut}>
               Sign out
             </button>
