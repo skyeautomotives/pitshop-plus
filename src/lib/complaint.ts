@@ -7,6 +7,7 @@ export const INTAKE_DOCUMENTS: { id: IntakeDocument; label: string }[] = [
   { id: "rc", label: "Registration certificate (RC book)" },
   { id: "pollution", label: "Pollution certificate" },
   { id: "licence", label: "Driving licence" },
+  { id: "insurance", label: "Insurance" },
 ];
 
 export const PAYMENT_METHODS: { id: PaymentMethod; label: string }[] = [
@@ -164,7 +165,12 @@ export function complaintToDraft(c: ComplaintRow): ComplaintDraft {
 
 /** "RC book, Pollution certificate, Spare key" for display; empty when nothing was left. */
 export function documentsText(c: Pick<ComplaintRow, "documents" | "other_documents">): string {
-  const short: Record<IntakeDocument, string> = { rc: "RC book", pollution: "Pollution certificate", licence: "Driving licence" };
+  const short: Record<IntakeDocument, string> = {
+    rc: "RC book",
+    pollution: "Pollution certificate",
+    licence: "Driving licence",
+    insurance: "Insurance",
+  };
   return [...(c.documents ?? []).map((d) => short[d] ?? d), ...(c.other_documents ?? [])].join(", ");
 }
 
