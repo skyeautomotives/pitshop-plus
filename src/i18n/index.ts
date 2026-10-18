@@ -2,6 +2,8 @@
 // phrases out while they are being translated, and those show in English.
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import en from "./en";
+import ta from "./ta";
+import te from "./te";
 import mr from "./mr";
 import bn from "./bn";
 import hi from "./hi";
@@ -45,7 +47,7 @@ type PluralKeys<T, P extends string = ""> = {
 export type Key = Keys<Messages>;
 export type PluralKey = PluralKeys<Messages>;
 
-const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree, bn: bn as unknown as Tree, mr: mr as unknown as Tree };
+const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree, bn: bn as unknown as Tree, mr: mr as unknown as Tree, te: te as unknown as Tree, ta: ta as unknown as Tree };
 const LOCALES = Object.fromEntries(ALL_LANGUAGES.map((l) => [l.id, l.locale])) as Record<Lang, string>;
 
 export const LANGUAGES = ALL_LANGUAGES.map((l) => ({ ...l, ready: l.id in BUNDLES }));
