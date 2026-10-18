@@ -114,6 +114,8 @@ const en = {
     point4: "Daily and monthly sales reports",
     madeBy: "Made by Skye Automotives",
     language: "Language",
+    termsShort: "Terms",
+    privacyShort: "Privacy",
   },
   errors: {
     generic: "Something went wrong.",

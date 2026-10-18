@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { LANGUAGES, useT, type Key } from "../i18n";
+import { LANGUAGES, useT, type Key, type Lang } from "../i18n";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
@@ -168,24 +168,21 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
             <input id="f-shopPhone" type="tel" value={form.phone ?? ""} onChange={(e) => update({ phone: e.target.value })} />
           </Field>
           <div className="field">
-            <span className="label-like" id="customer-language-label">
+            <label className="label-like" htmlFor="f-customerLanguage">
               {t("customerLanguage.label")}
-            </span>
-            <div className="display-options" role="radiogroup" aria-labelledby="customer-language-label">
+            </label>
+            <select
+              id="f-customerLanguage"
+              className="lang-select"
+              value={form.customer_language}
+              onChange={(e) => update({ customer_language: e.target.value as Lang })}
+            >
               {LANGUAGES.filter((l) => l.ready).map((l) => (
-                <button
-                  key={l.id}
-                  type="button"
-                  role="radio"
-                  lang={l.id}
-                  aria-checked={form.customer_language === l.id}
-                  className={`chip${form.customer_language === l.id ? " chip-active" : ""}`}
-                  onClick={() => update({ customer_language: l.id })}
-                >
-                  {l.native}
-                </button>
+                <option key={l.id} value={l.id} lang={l.id}>
+                  {l.id === "en" ? l.native : `${l.native} (${l.english})`}
+                </option>
               ))}
-            </div>
+            </select>
             <p className="hint">{t("customerLanguage.hint")}</p>
           </div>
           <SaveRow saving={saving} status={status} />

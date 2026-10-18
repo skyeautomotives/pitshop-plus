@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Slot from "../components/Slot";
-import LanguageSwitch from "../components/LanguageSwitch";
 import { t, useT } from "../i18n";
 import { Link, Navigate } from "react-router";
 import { Field, fieldProps } from "../components/fields";
@@ -156,7 +155,6 @@ export default function Register() {
   return (
     <AuthLayout wide>
       <form onSubmit={onSubmit} noValidate>
-        <LanguageSwitch />
         <h1 className="auth-title">{t("register.title")}</h1>
         <p className="auth-sub">{t("register.subtitle")}</p>
         {error && (
