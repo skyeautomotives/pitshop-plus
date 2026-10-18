@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { LANGUAGES, useT, type Key, type Lang } from "../i18n";
+import { useT, type Key } from "../i18n";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
@@ -125,7 +125,6 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         phone: form.phone?.trim() || null,
         allow_zero_labour: form.allow_zero_labour,
         vehicle_type: form.vehicle_type,
-        customer_language: form.customer_language,
       });
       await reload();
       setStatus({ kind: "saved" });
@@ -167,24 +166,6 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
           <Field fieldKey="shopPhone" label={t("settings.phone")}>
             <input id="f-shopPhone" type="tel" value={form.phone ?? ""} onChange={(e) => update({ phone: e.target.value })} />
           </Field>
-          <div className="field">
-            <label className="label-like" htmlFor="f-customerLanguage">
-              {t("customerLanguage.label")}
-            </label>
-            <select
-              id="f-customerLanguage"
-              className="lang-select"
-              value={form.customer_language}
-              onChange={(e) => update({ customer_language: e.target.value as Lang })}
-            >
-              {LANGUAGES.filter((l) => l.ready).map((l) => (
-                <option key={l.id} value={l.id} lang={l.id}>
-                  {l.id === "en" ? l.native : `${l.native} (${l.english})`}
-                </option>
-              ))}
-            </select>
-            <p className="hint">{t("customerLanguage.hint")}</p>
-          </div>
           <SaveRow saving={saving} status={status} />
         </section>
         <aside className="card bill-preview" aria-label={t("settings.previewAria")}>
@@ -196,11 +177,11 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
                 <span>{form.address?.trim() || t("settings.yourAddress")}</span>
                 <span>
                   {form.phone?.trim()
-                    ? t("doc.phoneLine", { phone: form.phone.trim() }, form.customer_language)
+                    ? t("doc.phoneLine", { phone: form.phone.trim() }, "en")
                     : t("settings.yourPhone")}
                 </span>
               </div>
-              <em>{t("doc.invoice", undefined, form.customer_language).toUpperCase()}</em>
+              <em>{t("doc.invoice", undefined, "en").toUpperCase()}</em>
             </div>
             <div className="bill-preview-lines" aria-hidden="true">
               <span />

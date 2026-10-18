@@ -1,5 +1,4 @@
 import type { VehicleType } from "./vehicleType";
-import type { Lang } from "../i18n";
 // Row shapes as returned by Supabase. Amounts are rupees (numeric(12,2)).
 
 export interface BillRow {
@@ -107,6 +106,9 @@ export type ComplaintSummary = Pick<
   /** Ticked jobs and the written text, to show the complaint in another language (bills, WhatsApp). */
   jobs?: string[];
   note?: string;
+  /** Shown on the bill. */
+  vehicle_name?: string | null;
+  odometer_km?: number | null;
 };
 
 /** A bill as shown next to a complaint. */
@@ -149,6 +151,4 @@ export interface ShopSettings {
   allow_zero_labour: boolean;
   /** Bike or car workshop; null until the owner chooses. */
   vehicle_type: VehicleType | null;
-  /** Language of printed bills and WhatsApp messages. */
-  customer_language: Lang;
 }

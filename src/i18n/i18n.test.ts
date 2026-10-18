@@ -22,7 +22,8 @@ function leaves(node: Node, prefix = ""): Map<string, Node> {
 
 const placeholders = (n: Node) => [...JSON.stringify(n).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
 const dashes = new RegExp("[\\u2013\\u2014]");
-const english = leaves(en as unknown as Node);
+// Bills to customers are always in English, so the "doc" phrases are not translated.
+const english = new Map([...leaves(en as unknown as Node)].filter(([k]) => !k.startsWith("doc.")));
 
 describe.each([
   ["Malayalam", ml],
@@ -56,7 +57,7 @@ describe("t and tn", () => {
   afterEach(() => setLang("en"));
 
   it("has no em or en dashes in English", () => {
-    for (const [k, v] of english) expect(JSON.stringify(v), k).not.toMatch(dashes);
+    for (const [k, v] of leaves(en as unknown as Node)) expect(JSON.stringify(v), k).not.toMatch(dashes);
   });
 
   it("translates, fills in values and counts", () => {
@@ -74,9 +75,14 @@ describe("t and tn", () => {
     expect(tn("dashboard.billCount", 1200)).toBe("1,200 bills");
   });
 
-  it("can use another language for one phrase (customer documents)", () => {
+  it("can use another language for one phrase", () => {
     setLang("ml");
-    expect(t("doc.invoice", undefined, "hi")).toBe("इनवॉइस");
+    expect(t("nav.newBill", undefined, "hi")).toBe("नया बिल");
+    expect(t("doc.invoice", undefined, "en")).toBe("Invoice");
+  });
+
+  it("keeps bill phrases in English whatever the app language", () => {
+    setLang("ml");
     expect(t("doc.invoice", undefined, "en")).toBe("Invoice");
   });
 });

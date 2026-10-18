@@ -999,11 +999,6 @@ textarea[aria-invalid="true"],
   vertical-align: 4px;
 }
 
-.complaint-description {
-  font-size: 1.1rem;
-  margin: 0 0 16px;
-}
-
 .linked-list {
   list-style: none;
   margin: 0;
@@ -3778,24 +3773,6 @@ html[data-density="compact"] h1 {
   font-size: 0.9rem;
 }
 
-.job-ticked {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
-}
-
-.job-ticked li {
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 0.92rem;
-  font-weight: 600;
-}
-
 html[data-density="compact"] .job-checks {
   gap: 6px;
 }
@@ -3917,4 +3894,475 @@ html:not(:lang(en)) body {
 
 .lang-select {
   max-width: 320px;
+}
+
+/* ---------- Customer bill (screen, print and PDF) ---------- */
+.invoice {
+  --inv-ink: #1c2333;
+  --inv-muted: #667085;
+  --inv-line: #e3e7ef;
+  --inv-accent: #2350d8;
+  --inv-head: #0f1f4b;
+  --inv-soft: #f5f7fb;
+  color: var(--inv-ink);
+  padding: 32px;
+  line-height: 1.45;
+}
+
+.invoice p {
+  margin: 0;
+}
+
+.invoice h2 {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--inv-muted);
+}
+
+.inv-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 18px 32px;
+  padding-bottom: 18px;
+  border-bottom: 3px solid var(--inv-head);
+}
+
+.inv-shop {
+  max-width: 360px;
+  color: var(--inv-muted);
+  font-size: 0.92rem;
+}
+
+.inv-shop-name {
+  margin: 0 0 6px;
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--inv-head);
+}
+
+.inv-title {
+  text-align: right;
+  margin-left: auto;
+}
+
+.inv-doc {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--inv-accent);
+  line-height: 1;
+  margin-bottom: 12px !important;
+}
+
+.inv-facts {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.inv-facts > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.inv-facts dt {
+  color: var(--inv-muted);
+}
+
+.inv-facts dd {
+  margin: 0;
+  min-width: 110px;
+  text-align: right;
+}
+
+.inv-strong {
+  font-weight: 700;
+  color: var(--inv-ink);
+}
+
+.inv-muted {
+  color: var(--inv-muted);
+}
+
+.inv-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.inv-box {
+  padding: 12px 14px;
+  background: var(--inv-soft);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.inv-reg {
+  letter-spacing: 0.04em;
+}
+
+.inv-complaints {
+  margin: 0 0 18px;
+}
+
+.inv-complaints ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.inv-complaints li {
+  margin: 2px 0;
+}
+
+.inv-complaints .inv-muted {
+  font-size: 0.85rem;
+}
+
+.inv-items {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.inv-items th {
+  background: var(--inv-head);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 9px 10px;
+}
+
+.inv-items td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--inv-line);
+  vertical-align: top;
+}
+
+.inv-items tbody tr:nth-child(even) td {
+  background: var(--inv-soft);
+}
+
+.inv-items .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.inv-items .col-no {
+  width: 2.4em;
+  color: var(--inv-muted);
+}
+
+.inv-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.inv-stamp-area {
+  flex: 1;
+  padding-top: 18px;
+}
+
+.inv-stamp {
+  display: inline-block;
+  padding: 6px 18px;
+  border: 3px solid #15803d;
+  border-radius: 8px;
+  color: #15803d;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+  opacity: 0.85;
+}
+
+.inv-totals {
+  width: 320px;
+  max-width: 100%;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.inv-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 10px;
+}
+
+.inv-totals dt {
+  color: var(--inv-muted);
+}
+
+.inv-totals dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.inv-totals .inv-grand {
+  margin: 4px 0;
+  padding: 10px;
+  background: var(--inv-head);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.inv-totals .inv-grand dt {
+  color: #fff;
+}
+
+.inv-totals .inv-balance {
+  border-top: 2px solid var(--inv-ink);
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: 1.02rem;
+}
+
+.inv-totals .inv-balance dt {
+  color: var(--inv-ink);
+}
+
+.inv-totals .inv-paid,
+.inv-totals .inv-paid dt {
+  color: #15803d;
+}
+
+.inv-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--inv-line);
+}
+
+.inv-thanks {
+  color: var(--inv-muted);
+  font-style: italic;
+}
+
+.inv-sign {
+  text-align: center;
+  font-size: 0.9rem;
+  min-width: 200px;
+}
+
+.inv-powered {
+  margin-top: 14px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #98a2b3;
+  letter-spacing: 0.04em;
+}
+
+.inv-sign-line {
+  display: block;
+  height: 40px;
+  border-bottom: 1px solid var(--inv-ink);
+  margin-bottom: 6px;
+}
+
+/* The PDF copy: fixed A4 width and type size, drawn off screen. */
+.invoice-pdf-host {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 794px;
+  pointer-events: none;
+}
+
+.invoice-pdf {
+  width: 794px;
+  padding: 36px 44px;
+  background: #fff;
+  font-family: Inter, "Noto Sans", "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.invoice-pdf .inv-top {
+  padding-bottom: 14px;
+}
+
+.invoice-pdf .inv-parties {
+  margin: 14px 0;
+}
+
+.invoice-pdf .inv-box {
+  padding: 9px 12px;
+}
+
+.invoice-pdf .inv-complaints {
+  margin-bottom: 12px;
+}
+
+.invoice-pdf .inv-items th {
+  padding: 7px 10px;
+}
+
+.invoice-pdf .inv-items td {
+  padding: 6px 10px;
+}
+
+.invoice-pdf .inv-summary {
+  margin-top: 10px;
+}
+
+.invoice-pdf .inv-totals > div {
+  padding: 3px 10px;
+}
+
+.invoice-pdf .inv-totals .inv-grand {
+  padding: 8px 10px;
+}
+
+.invoice-pdf .inv-foot {
+  margin-top: 22px;
+}
+
+.invoice-pdf .inv-sign-line {
+  height: 34px;
+}
+
+@media (max-width: 560px) {
+  .invoice:not(.invoice-pdf) {
+    padding: 18px;
+  }
+  .invoice:not(.invoice-pdf) .inv-parties {
+    grid-template-columns: 1fr;
+  }
+  .invoice:not(.invoice-pdf) .inv-items {
+    font-size: 0.85rem;
+  }
+  .invoice:not(.invoice-pdf) .inv-items th,
+  .invoice:not(.invoice-pdf) .inv-items td {
+    padding: 7px 5px;
+    letter-spacing: 0;
+  }
+  .invoice:not(.invoice-pdf) .inv-items .col-no {
+    width: 1.6em;
+  }
+  .invoice:not(.invoice-pdf) .inv-title {
+    text-align: left;
+    margin-left: 0;
+  }
+  .invoice:not(.invoice-pdf) .inv-facts > div {
+    justify-content: flex-start;
+  }
+  .invoice:not(.invoice-pdf) .inv-facts dd {
+    min-width: 0;
+    text-align: left;
+  }
+  .invoice:not(.invoice-pdf) .inv-summary {
+    flex-direction: column-reverse;
+  }
+  .invoice:not(.invoice-pdf) .inv-totals {
+    width: 100%;
+  }
+  .invoice:not(.invoice-pdf) .inv-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media print {
+  .invoice {
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .inv-items tr,
+  .inv-summary,
+  .inv-foot {
+    break-inside: avoid;
+  }
+}
+
+/* Ticked jobs on the complaint page */
+.job-sheet {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.job-sheet h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.job-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.job-table th {
+  background: var(--primary-soft);
+  color: var(--nav-bg);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.job-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.job-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.job-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.job-table .col-no {
+  width: 3em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.job-notes {
+  margin-top: 14px;
+}
+
+.job-notes h3 {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.job-notes p {
+  margin: 0;
 }

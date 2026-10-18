@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BillWithItems } from "./types";
+import { setLang } from "../i18n";
 import { billMessage, whatsappLink, whatsappNumber } from "./whatsapp";
 
 const bill: BillWithItems = {
@@ -29,7 +30,7 @@ const bill: BillWithItems = {
   ],
 };
 
-const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null, customer_language: "en" as const };
+const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null };
 
 describe("whatsappNumber", () => {
   it("adds India's country code to 10-digit numbers", () => {
@@ -46,55 +47,35 @@ describe("whatsappNumber", () => {
 });
 
 describe("billMessage", () => {
-  it("lists items in order, only the charges that apply, and the total", () => {
+  it("is a short note to go with the PDF: workshop, bill, vehicle and total", () => {
     const msg = billMessage(bill, shop);
-    expect(msg).toContain("*Sharma Motors*\nBill #12");
-    expect(msg).toContain("1. Brake pads: ₹1,250.00\n2. Engine oil 3L: ₹899.50");
-    expect(msg).toContain("Washing: ₹250.00");
-    expect(msg).not.toContain("Painting");
-    expect(msg).not.toContain("Expected pickup");
-    expect(msg).toContain("*Grand total: ₹2,999.50*");
-    expect(msg).toContain("Contact: 080 1234 5678");
+    expect(msg).toBe(
+      "*Sharma Motors*\nBill SM-0012\nVehicle: KA 01 AB 1234\n*Grand total: ₹2,999.50*\n\nThank you for your business.\nContact: 080 1234 5678",
+    );
+  });
+
+  it("adds the balance when part is paid, or says it is paid in full", () => {
+    const part = { ...bill, payments: [{ id: "p1", amount: 1000, method: "cash" as const, paid_on: "2026-10-15", note: null, recorded_by: null, recorded_by_name: null, created_at: "" }] };
+    expect(billMessage(part, shop)).toContain("*Balance to pay: ₹1,999.50*");
+    const full = { ...bill, payments: [{ ...part.payments[0], amount: 2999.5 }] };
+    expect(billMessage(full, shop)).toContain("Paid in full. Thank you!");
+  });
+
+  it("stays in English whatever language the app is in", () => {
+    setLang("ml");
+    expect(billMessage(bill, shop)).toContain("*Grand total: ₹2,999.50*");
+    setLang("en");
   });
 });
 
 describe("whatsappLink", () => {
-  it("builds a wa.me link with the encoded message", () => {
-    const link = whatsappLink(bill, shop)!;
+  it("opens the customer's chat with the encoded message", () => {
+    const link = whatsappLink(bill, shop);
     expect(link.startsWith("https://wa.me/919876543210?text=")).toBe(true);
     expect(decodeURIComponent(link.split("?text=")[1])).toBe(billMessage(bill, shop));
   });
-});
 
-describe("billMessage with quantities", () => {
-  it("shows quantity x rate for items bought more than once", () => {
-    const withQty = {
-      ...bill,
-      bill_items: [{ id: "1", bill_id: "b1", position: 0, description: "Spark plug", quantity: 4, price: 180, line_total: 720 }],
-    };
-    expect(billMessage(withQty, shop)).toContain("1. Spark plug: 4 × ₹180.00 = ₹720.00");
-  });
-});
-
-describe("billMessage in the workshop's language for customers", () => {
-  const withJob = {
-    ...bill,
-    complaints: [
-      { id: "c1", complaint_number: 4, description: "Brakes. Squeaks", jobs: ["brakes"], note: "Squeaks", status: "resolved" as const, attended_by: "Anu", reported_on: "2026-10-14", advance_amount: null },
-    ],
-  };
-
-  it("writes the message in Malayalam, including the ticked jobs", () => {
-    const msg = billMessage(withJob, { ...shop, customer_language: "ml" });
-    expect(msg).toContain("ബിൽ #12");
-    expect(msg).toContain("- ബ്രേക്ക്. Squeaks");
-    expect(msg).toContain("*ആകെ തുക: ₹2,999.50*");
-    expect(msg).not.toContain("Grand total");
-  });
-
-  it("stays in English when the workshop chose English, whatever the app language", () => {
-    const msg = billMessage(withJob, shop);
-    expect(msg).toContain("- Brakes. Squeaks");
-    expect(msg).toContain("*Grand total: ₹2,999.50*");
+  it("lets the person pick the contact when the number can't be used", () => {
+    expect(whatsappLink({ ...bill, phone: "12345" }, shop).startsWith("https://wa.me/?text=")).toBe(true);
   });
 });
