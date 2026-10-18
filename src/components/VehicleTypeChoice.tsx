@@ -1,7 +1,5 @@
-import car from "../assets/vehicles/car.png";
-import motorcycle from "../assets/vehicles/motorcycle.png";
-import scooter from "../assets/vehicles/scooter.png";
-import suv from "../assets/vehicles/suv.png";
+import car from "../assets/vehicles/car.svg";
+import scooter from "../assets/vehicles/scooter.svg";
 import { VEHICLE_TYPES, type VehicleType } from "../lib/vehicleType";
 import { useT } from "../i18n";
 
@@ -41,13 +39,6 @@ export default function VehicleTypeChoice({
   );
 }
 
-/** Two vehicles of the kind, slightly overlapping: motorcycle and scooter, or car and SUV. */
 function VehicleIcon({ type }: { type: VehicleType }) {
-  const [main, second] = type === "bike" ? [motorcycle, scooter] : [car, suv];
-  return (
-    <span className="vehicle-art" aria-hidden="true">
-      <img src={second} alt="" className="vehicle-art-back" width={60} height={60} />
-      <img src={main} alt="" className="vehicle-art-front" width={80} height={80} />
-    </span>
-  );
+  return <img src={type === "bike" ? scooter : car} alt="" className="vehicle-art" width={72} height={72} aria-hidden="true" />;
 }
