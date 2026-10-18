@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT, type Key } from "../i18n";
 import { Link } from "react-router";
 import MiniSalesChart from "../components/MiniSalesChart";
 import { countAllBills, countBillsOn, countOpenComplaints, listStaff, salesForRange } from "../lib/api";
@@ -14,13 +15,6 @@ import { DOWNLOADS } from "./marketing/Site";
 
 const CHART_DAYS = 14;
 
-function greeting(now = new Date()): string {
-  const h = now.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
-
 function Stat({ to, label, value, sub, strong }: { to: string; label: string; value: ReactNode; sub?: string; strong?: boolean }) {
   return (
     <Link to={to} className={`tile tile-link${strong ? " tile-strong" : ""}`}>
@@ -31,29 +25,28 @@ function Stat({ to, label, value, sub, strong }: { to: string; label: string; va
   );
 }
 
-const ACTIONS = [
-  { to: "/complaints/new", icon: "📝", label: "New complaint" },
-  { to: "/bills/new", icon: "🧾", label: "New bill" },
-  { to: "/complaints", icon: "🔧", label: "Complaints" },
-  { to: "/bills", icon: "🔍", label: "Find bills" },
+const ACTIONS: { to: string; icon: string; label: Key }[] = [
+  { to: "/complaints/new", icon: "📝", label: "nav.newComplaint" },
+  { to: "/bills/new", icon: "🧾", label: "nav.newBill" },
+  { to: "/complaints", icon: "🔧", label: "nav.complaints" },
+  { to: "/bills", icon: "🔍", label: "nav.findBills" },
 ];
 
 /** First steps for a new workshop; once they are done, a card about the other apps. */
 function GettingStarted({ isOwner, hasDetails, hasBill, hasStaff }: { isOwner: boolean; hasDetails: boolean; hasBill: boolean; hasStaff: boolean }) {
+  const { t, tn } = useT();
   const steps = [
-    { done: true, label: "Register your workshop", to: null },
-    ...(isOwner ? [{ done: hasDetails, label: "Add your address and phone", to: "/settings/shop" }] : []),
-    { done: hasBill, label: "Make your first bill", to: "/bills/new" },
-    ...(isOwner ? [{ done: hasStaff, label: "Add a staff login (optional)", to: "/settings/add-staff" }] : []),
+    { done: true, label: t("dashboard.stepRegister"), to: null },
+    ...(isOwner ? [{ done: hasDetails, label: t("dashboard.stepDetails"), to: "/settings/shop" }] : []),
+    { done: hasBill, label: t("dashboard.stepFirstBill"), to: "/bills/new" },
+    ...(isOwner ? [{ done: hasStaff, label: t("dashboard.stepStaff"), to: "/settings/add-staff" }] : []),
   ];
   const left = steps.filter((s) => !s.done).length;
   if (left > 0) {
     return (
       <section className="card dash-side">
-        <h2>Getting started</h2>
-        <p className="muted">
-          {left} {left === 1 ? "step" : "steps"} left
-        </p>
+        <h2>{t("dashboard.gettingStarted")}</h2>
+        <p className="muted">{tn("dashboard.stepsLeft", left)}</p>
         <ol className="checklist">
           {steps.map((s) => (
             <li key={s.label} className={s.done ? "done" : ""}>
@@ -68,17 +61,17 @@ function GettingStarted({ isOwner, hasDetails, hasBill, hasStaff }: { isOwner: b
   // All set: point to the apps this person is not using yet.
   return (
     <section className="card dash-side dash-apps">
-      <h2>Pitshop Plus everywhere</h2>
-      <p className="muted">Sign in with the same account on your other devices. Every bill shows up on all of them.</p>
+      <h2>{t("dashboard.everywhereTitle")}</h2>
+      <p className="muted">{t("dashboard.everywhereBody")}</p>
       <div className="dash-app-links">
         {!isDesktopApp && (
           <a href={DOWNLOADS.windows} className="btn btn-outline">
-            Windows app
+            {t("dashboard.windowsApp")}
           </a>
         )}
         {!isAndroidApp && (
           <a href={DOWNLOADS.android} className="btn btn-outline">
-            Android app
+            {t("dashboard.androidApp")}
           </a>
         )}
       </div>
@@ -91,6 +84,7 @@ export default function Dashboard() {
   const me = useMe();
   const isOwner = useIsOwner();
   const { settings } = useShopSettings();
+  const { t, tn } = useT();
   const today = todayISO();
   const name = me.status === "ok" ? me.me.full_name || me.me.username : "";
 
@@ -114,10 +108,7 @@ export default function Dashboard() {
     <div className="dashboard">
       <header className="dash-head">
         <div>
-          <h1 className="dash-greet">
-            {greeting()}
-            {name && `, ${name}`}
-          </h1>
+          <h1 className="dash-greet">{name ? t("dashboard.greeting", { name }) : t("dashboard.greetingNoName")}</h1>
           <p className="muted">
             {settings?.shop_name ? `${settings.shop_name} · ` : ""}
             {formatDate(today)}
@@ -125,28 +116,28 @@ export default function Dashboard() {
         </div>
         <div className="dash-head-actions">
           <Link to="/complaints/new" className="btn btn-outline">
-            New complaint
+            {t("nav.newComplaint")}
           </Link>
           <Link to="/bills/new" className="btn btn-primary">
-            New bill
+            {t("nav.newBill")}
           </Link>
         </div>
       </header>
 
-      <nav className="dash-actions" aria-label="Quick actions">
+      <nav className="dash-actions" aria-label={t("nav.quickActions")}>
         {ACTIONS.map((a) => (
           <Link key={a.to} to={a.to} className="dash-action">
             <span className="dash-action-icon" aria-hidden="true">
               {a.icon}
             </span>
-            {a.label}
+            {t(a.label)}
           </Link>
         ))}
       </nav>
 
       {(counts.status === "error" || sales.status === "error") && (
         <div className="alert alert-error" role="alert">
-          <span>Couldn't load today's numbers. {counts.status === "error" ? counts.message : sales.status === "error" ? sales.message : ""}</span>
+          <span>{t("dashboard.loadFailed", { message: counts.status === "error" ? counts.message : sales.status === "error" ? sales.message : "" })}</span>
           <button
             type="button"
             className="btn btn-outline btn-sm"
@@ -155,7 +146,7 @@ export default function Dashboard() {
               sales.retry();
             }}
           >
-            Try again
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
@@ -163,25 +154,25 @@ export default function Dashboard() {
       <div className="tiles dash-tiles">
         <Stat
           to="/complaints?show=open"
-          label="Open complaints"
+          label={t("dashboard.openComplaints")}
           value={counts.status === "ok" ? counts.data[0] : "…"}
-          sub="Waiting for work or a bill"
+          sub={t("dashboard.openComplaintsSub")}
         />
-        <Stat to="/bills" label="Bills today" value={counts.status === "ok" ? counts.data[1] : "…"} sub={formatDate(today)} />
+        <Stat to="/bills" label={t("dashboard.billsToday")} value={counts.status === "ok" ? counts.data[1] : "…"} sub={formatDate(today)} />
         {isOwner && (
           <>
             <Stat
               strong
               to="/reports/daily"
-              label="Today's sales"
+              label={t("dashboard.todaysSales")}
               value={loadingSales ? "…" : formatINR(todaySales.total)}
-              sub={loadingSales ? undefined : `Labour ${formatINR(todaySales.labour)}`}
+              sub={loadingSales ? undefined : t("dashboard.labourAmount", { amount: formatINR(todaySales.labour) })}
             />
             <Stat
               to="/reports/monthly"
-              label="This month"
+              label={t("dashboard.thisMonth")}
               value={loadingSales ? "…" : formatINR(month.total)}
-              sub={loadingSales ? undefined : `${month.bills} ${month.bills === 1 ? "bill" : "bills"}`}
+              sub={loadingSales ? undefined : tn("dashboard.billCount", month.bills)}
             />
           </>
         )}
@@ -191,13 +182,13 @@ export default function Dashboard() {
       {isOwner && (
         <section className="card dash-main">
           <div className="card-head">
-            <h2>Daily sales · last {CHART_DAYS} days</h2>
+            <h2>{t("dashboard.dailySales", { n: CHART_DAYS })}</h2>
             <Link to="/reports/chart" className="link-button">
-              Full reports →
+              {t("dashboard.fullReports")}
             </Link>
           </div>
           {loadingSales ? (
-            <p className="muted">Loading chart…</p>
+            <p className="muted">{t("dashboard.loadingChart")}</p>
           ) : sales.status === "error" ? null : periodTotal === 0 ? (
             <div className="chart-empty">
               <div className="chart-ghost" aria-hidden="true">
@@ -206,18 +197,18 @@ export default function Dashboard() {
                 ))}
               </div>
               <p>
-                <strong>Your daily sales will appear here.</strong>
+                <strong>{t("dashboard.chartEmptyTitle")}</strong>
                 <br />
-                <span className="muted">Make a bill and it shows up on this chart straight away.</span>
+                <span className="muted">{t("dashboard.chartEmptyBody")}</span>
               </p>
               <Link to="/bills/new" className="btn btn-primary btn-sm">
-                Make a bill
+                {t("dashboard.makeBill")}
               </Link>
             </div>
           ) : (
             <>
               <p className="muted mini-chart-total">
-                {formatINR(periodTotal)} total, including labour
+                {t("dashboard.periodTotal", { amount: formatINR(periodTotal) })}
               </p>
               <MiniSalesChart days={days} today={today} />
             </>

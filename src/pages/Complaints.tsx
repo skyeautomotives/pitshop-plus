@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT, type Key } from "../i18n";
 import { Link, useSearchParams } from "react-router";
 import { ComplaintCard } from "../components/cards";
 import { COMPLAINT_LIST_LIMIT, listComplaints, searchComplaints } from "../lib/api";
@@ -7,18 +8,18 @@ import { useLoad } from "../lib/useLoad";
 
 type Filter = "all" | "open" | "resolved" | "no-bill";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "open", label: "Open" },
-  { id: "no-bill", label: "No bill yet" },
-  { id: "resolved", label: "Resolved" },
-  { id: "all", label: "All" },
+const FILTERS: { id: Filter; label: Key }[] = [
+  { id: "open", label: "lists.filterOpen" },
+  { id: "no-bill", label: "lists.filterNoBill" },
+  { id: "resolved", label: "lists.filterResolved" },
+  { id: "all", label: "lists.filterAll" },
 ];
 
-const EMPTY: Record<Filter, string> = {
-  all: "No complaints recorded yet.",
-  open: "No open complaints. Everything is resolved.",
-  resolved: "No resolved complaints yet.",
-  "no-bill": "Every complaint has a bill.",
+const EMPTY: Record<Filter, Key> = {
+  all: "lists.emptyAll",
+  open: "lists.emptyOpen",
+  resolved: "lists.emptyResolved",
+  "no-bill": "lists.emptyNoBill",
 };
 
 function isFilter(v: string | null): v is Filter {
@@ -63,29 +64,30 @@ export default function Complaints() {
   });
 
   const searching = input.trim() !== query;
+  const { t, tn } = useT();
 
   return (
     <div>
       <div className="sales-head">
-        <h1>Complaints</h1>
+        <h1>{t("nav.complaints")}</h1>
         <Link to="/complaints/new" className="btn btn-primary">
-          + New complaint
+          {t("lists.newComplaintButton")}
         </Link>
       </div>
 
       <div className="card search-card">
-        <label htmlFor="complaint-search">Search by customer name, phone number or vehicle number</label>
+        <label htmlFor="complaint-search">{t("lists.searchLabel")}</label>
         <input
           id="complaint-search"
           type="search"
           autoComplete="off"
-          placeholder="e.g. Ravi, 98765 or KA01AB1234"
+          placeholder={t("lists.searchPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
       </div>
 
-      <div className="filter-bar" role="group" aria-label="Show">
+      <div className="filter-bar" role="group" aria-label={t("lists.show")}>
         {FILTERS.map((f) => (
           <button
             key={f.id}
@@ -94,7 +96,7 @@ export default function Complaints() {
             aria-pressed={filter === f.id}
             onClick={() => setFilter(f.id)}
           >
-            {f.label}
+            {t(f.label)}
           </button>
         ))}
       </div>
@@ -102,26 +104,28 @@ export default function Complaints() {
       <div aria-live="polite">
         {state.status === "error" ? (
           <div className="alert alert-error" role="alert">
-            <span>Couldn't load complaints. {state.message}</span>
+            <span>{t("lists.complaintsLoadFailed", { message: state.message })}</span>
             <button type="button" className="btn btn-outline btn-sm" onClick={state.retry}>
-              Try again
+              {t("common.tryAgain")}
             </button>
           </div>
         ) : state.status === "loading" ? (
-          <p className="page-status">Loading complaints…</p>
+          <p className="page-status">{t("lists.loadingComplaints")}</p>
         ) : (
           <div className={searching ? "stale" : undefined}>
             <p className="results-heading">
               {searching
-                ? "Searching…"
-                : `${state.data.length} ${state.data.length === 1 ? "complaint" : "complaints"}${query ? ` matching “${query}”` : ""}`}
+                ? t("lists.searching")
+                : query
+                  ? tn("lists.complaintCountMatching", state.data.length, { query })
+                  : tn("lists.complaintCount", state.data.length)}
             </p>
             {state.data.length === 0 && !searching ? (
               <div className="empty empty-list">
-                <p>{query ? `No complaints match “${query}” in this list.` : EMPTY[filter]}</p>
+                <p>{query ? t("lists.noComplaintsMatchList", { query }) : t(EMPTY[filter])}</p>
                 {filter !== "all" && (
                   <button type="button" className="btn btn-outline" onClick={() => setFilter("all")}>
-                    Show all complaints
+                    {t("lists.showAllComplaints")}
                   </button>
                 )}
               </div>
@@ -135,7 +139,7 @@ export default function Complaints() {
               </ul>
             )}
             {!query && state.data.length >= COMPLAINT_LIST_LIMIT && (
-              <p className="hint">Showing the latest {COMPLAINT_LIST_LIMIT}. Search to find older complaints.</p>
+              <p className="hint">{t("lists.showingLatest", { n: COMPLAINT_LIST_LIMIT })}</p>
             )}
           </div>
         )}

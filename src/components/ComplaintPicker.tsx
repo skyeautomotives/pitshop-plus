@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 import { complaintText } from "../lib/jobCard";
 import { Link } from "react-router";
 import { complaintsByIds, complaintsForVehicle, openComplaintsForPhoneElsewhere, type ComplaintBrief } from "../lib/api";
@@ -104,33 +105,34 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
     onChange(on ? [...selected, id] : selected.filter((s) => s !== id));
   }
 
+  const { t, tn } = useT();
   const newComplaintLink = (
     <Link to="/complaints/new" state={{ prefill: customer }} className="link-button">
-      Record a new complaint
+      {t("picker.recordNew")}
     </Link>
   );
 
   return (
     <section className="card">
-      <h2>Complaints this bill fixes</h2>
-      <p className="hint">
-        Optional. Tick the customer's complaints that this work addresses. Ticked complaints are marked{" "}
-        <strong>Resolved</strong> when you save the bill.
-      </p>
+      <h2>{t("picker.title")}</h2>
+      <p className="hint">{t("picker.hint")}</p>
 
       {mismatched.length > 0 && (
         <div className="alert alert-error" role="alert">
           <div>
             {mismatched.map((c) => (
               <p key={c.id} className="mismatch-line">
-                Complaint <strong>{displayNumber(c.complaint_number)}</strong> is for vehicle <strong>{c.vehicle_reg}</strong>, but this bill
-                is for <strong>{customer.vehicleReg.toUpperCase() || "no vehicle number"}</strong>.{" "}
+                {t("picker.mismatch", {
+                  number: displayNumber(c.complaint_number),
+                  reg: c.vehicle_reg,
+                  billReg: customer.vehicleReg.toUpperCase() || t("picker.noVehicle"),
+                })}{" "}
                 <button type="button" className="link-button" onClick={() => onUseVehicle(c.vehicle_reg)}>
-                  Use {c.vehicle_reg}
+                  {t("picker.use", { reg: c.vehicle_reg })}
                 </button>{" "}
-                or{" "}
+                {t("picker.or")}{" "}
                 <button type="button" className="link-button" onClick={() => onChange(selected.filter((id) => id !== c.id))}>
-                  unlink it
+                  {t("picker.unlink")}
                 </button>
                 .
               </p>
@@ -143,14 +145,13 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
         <div className="alert alert-info">
           <div>
             <p className="mismatch-line">
-              This customer's phone number has an open complaint under a <strong>different vehicle number</strong>. Is
-              the number right?
+              {t("picker.elsewhere")}
             </p>
             {elsewhere.map((c) => (
               <p key={c.id} className="mismatch-line">
                 <strong>{displayNumber(c.complaint_number)}</strong> · {c.vehicle_reg} · {c.description}{" "}
                 <button type="button" className="btn btn-outline btn-sm" onClick={() => onUseVehicle(c.vehicle_reg)}>
-                  Use {c.vehicle_reg}
+                  {t("picker.use", { reg: c.vehicle_reg })}
                 </button>
               </p>
             ))}
@@ -158,25 +159,25 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
         </div>
       )}
 
-      {load.status === "idle" && <p className="muted">Enter the vehicle number above to see complaints for that vehicle.</p>}
-      {load.status === "loading" && <p className="muted">Looking for complaints for {key}…</p>}
+      {load.status === "idle" && <p className="muted">{t("picker.idle")}</p>}
+      {load.status === "loading" && <p className="muted">{t("picker.looking", { reg: key })}</p>}
       {load.status === "error" && (
         <div className="alert alert-error" role="alert">
-          <span>Couldn't load complaints. {load.message}</span>
+          <span>{t("lists.complaintsLoadFailed", { message: load.message })}</span>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setAttempt((a) => a + 1)}>
-            Try again
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
       {load.status === "ok" && load.list.length === 0 && (
         <p className="muted">
-          No complaints recorded for {key}. You can save the bill without one. {newComplaintLink}?
+          {t("picker.none", { reg: key })} {newComplaintLink}?
         </p>
       )}
       {load.status === "ok" && load.list.length > 0 && (
         <>
           <p className="picker-scope">
-            Showing complaints for <span className="reg">{key}</span>
+            {t("picker.showingFor")} <span className="reg">{key}</span>
           </p>
           <ul className="picker">
             {load.list.map((c) => {
@@ -193,8 +194,8 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
                       </span>
                       <span className="picker-desc">{complaintText(c)}</span>
                       <span className="muted picker-meta">
-                        Attended by {c.attended_by || "not recorded"}
-                        {otherBills.length > 0 && ` · Already on bill ${otherBills.map((b) => displayNumber(b.bill_number)).join(", ")}`}
+                        {t("lists.attendedBy", { name: c.attended_by || t("lists.notRecorded") })}
+                        {otherBills.length > 0 && t("picker.alreadyOn", { numbers: otherBills.map((b) => displayNumber(b.bill_number)).join(", ") })}
                       </span>
                     </span>
                   </label>
@@ -203,7 +204,7 @@ export default function ComplaintPicker({ customer, selected, onChange, billId, 
             })}
           </ul>
           <p className="hint">
-            {selected.length === 0 ? "No complaint selected." : `${selected.length} selected.`} Not listed? {newComplaintLink}.
+            {selected.length === 0 ? t("picker.noneSelected") : tn("picker.selected", selected.length)} {t("picker.notListed")} {newComplaintLink}.
           </p>
         </>
       )}

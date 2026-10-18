@@ -2,6 +2,7 @@
 // on the complaints the bill addresses (0019). The bill's own grand total never changes:
 // these only work out what is still to pay.
 import { paiseToInput, parseAmount, rupeesToPaise } from "./money";
+import { t } from "../i18n";
 import { todayISO } from "./customer";
 import type { BillPayment, PaymentMethod } from "./types";
 
@@ -58,13 +59,13 @@ export function emptyPayment(balance: number): PaymentDraft {
 
 export function validatePayment(d: PaymentDraft, balance: number): { error: string | null; input: PaymentInput | null } {
   const a = parseAmount(d.amount);
-  if (!a.ok) return { error: a.reason === "too-large" ? "That amount is too large." : "Enter the amount paid, e.g. 500.", input: null };
-  if (a.paise === 0) return { error: "Enter the amount paid, e.g. 500.", input: null };
+  if (!a.ok) return { error: a.reason === "too-large" ? t("payments.tooLarge") : t("payments.amountMissing"), input: null };
+  if (a.paise === 0) return { error: t("payments.amountMissing"), input: null };
   if (a.paise > rupeesToPaise(balance))
-    return { error: `That's more than the balance of ₹${paiseToInput(rupeesToPaise(balance))}.`, input: null };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.paidOn)) return { error: "Choose the date it was paid.", input: null };
-  if (d.paidOn > todayISO()) return { error: "The payment date can't be in the future.", input: null };
+    return { error: t("payments.moreThanBalance", { balance: paiseToInput(rupeesToPaise(balance)) }), input: null };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.paidOn)) return { error: t("payments.dateMissing"), input: null };
+  if (d.paidOn > todayISO()) return { error: t("payments.dateFuture"), input: null };
   const note = d.note.trim();
-  if (note.length > 200) return { error: "Keep the note under 200 characters.", input: null };
+  if (note.length > 200) return { error: t("payments.noteTooLong"), input: null };
   return { error: null, input: { amount: a.paise / 100, method: d.method, paid_on: d.paidOn, note: note || null } };
 }

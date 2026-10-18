@@ -1,4 +1,5 @@
 import type { CustomerFields, FieldErrors } from "../lib/customer";
+import { t } from "../i18n";
 import { Field, fieldProps } from "./fields";
 import PreviousCustomer from "./PreviousCustomer";
 
@@ -17,7 +18,7 @@ export default function CustomerInputs({
 }) {
   return (
     <>
-      <Field fieldKey="vehicleReg" label="Vehicle registration number" required error={errors.vehicleReg}>
+      <Field fieldKey="vehicleReg" label={t("customer.vehicleReg")} required error={errors.vehicleReg}>
         <input
           {...fieldProps("vehicleReg", errors.vehicleReg)}
           type="text"
@@ -29,7 +30,7 @@ export default function CustomerInputs({
           onChange={(e) => onChange({ vehicleReg: e.target.value })}
         />
       </Field>
-      <Field fieldKey="customerName" label="Customer name" required error={errors.customerName}>
+      <Field fieldKey="customerName" label={t("customer.name")} required error={errors.customerName}>
         <input
           {...fieldProps("customerName", errors.customerName)}
           type="text"
@@ -42,7 +43,7 @@ export default function CustomerInputs({
       <div className="span-2">
         <PreviousCustomer fields={value} onUse={onChange} />
       </div>
-      <Field fieldKey="phone" label="Phone number" required error={errors.phone}>
+      <Field fieldKey="phone" label={t("customer.phone")} required error={errors.phone}>
         <input
           {...fieldProps("phone", errors.phone)}
           type="tel"
@@ -53,7 +54,7 @@ export default function CustomerInputs({
           onChange={(e) => onChange({ phone: e.target.value })}
         />
       </Field>
-      <Field fieldKey="address" label="Address" error={errors.address}>
+      <Field fieldKey="address" label={t("customer.address")} error={errors.address}>
         <textarea
           {...fieldProps("address", errors.address)}
           rows={1}

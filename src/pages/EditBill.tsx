@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { t } from "../i18n";
 import { useParams } from "react-router";
 import BillForm from "../components/BillForm";
 import { BillNotFound, LoadError } from "../components/states";
@@ -11,10 +12,10 @@ export default function EditBill() {
   const state = useBill(id);
   const initial = useMemo(() => (state.status === "ok" ? billToDraft(state.bill) : null), [state]);
 
-  if (state.status === "loading") return <p className="page-status">Loading bill…</p>;
+  if (state.status === "loading") return <p className="page-status">{t("billView.loading")}</p>;
   if (state.status === "not-found") return <BillNotFound />;
   if (state.status === "error") return <LoadError message={state.message} onRetry={state.retry} />;
   if (!initial) return null;
 
-  return <BillForm initial={initial} billId={state.bill.id} title={`Edit bill ${displayNumber(state.bill.bill_number)}`} />;
+  return <BillForm initial={initial} billId={state.bill.id} title={t("billView.editTitle", { number: displayNumber(state.bill.bill_number) })} />;
 }

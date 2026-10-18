@@ -1,22 +1,19 @@
 import { emptyCustomer, ISO_DATE, todayISO, validateCustomer, type CustomerFields, type FieldErrors } from "./customer";
+import { t, type Lang } from "../i18n";
 import { paiseToInput, parseAmount, rupeesToPaise } from "./money";
 import type { ComplaintRow, ComplaintStatus, IntakeDocument, PaymentMethod } from "./types";
 
 /** Papers a customer may leave with the vehicle, in the order shown on the form. */
-export const INTAKE_DOCUMENTS: { id: IntakeDocument; label: string }[] = [
-  { id: "rc", label: "Registration certificate (RC book)" },
-  { id: "pollution", label: "Pollution certificate" },
-  { id: "licence", label: "Driving licence" },
-  { id: "insurance", label: "Insurance" },
+export const INTAKE_DOCUMENTS: { id: IntakeDocument; readonly label: string }[] = [
+  { id: "rc", get label() { return t("documents.rc"); } },
+  { id: "pollution", get label() { return t("documents.pollution"); } },
+  { id: "licence", get label() { return t("documents.licence"); } },
+  { id: "insurance", get label() { return t("documents.insurance"); } },
 ];
 
-export const PAYMENT_METHODS: { id: PaymentMethod; label: string }[] = [
-  { id: "cash", label: "Cash" },
-  { id: "upi", label: "UPI" },
-  { id: "card", label: "Card" },
-  { id: "bank", label: "Bank transfer" },
-  { id: "other", label: "Other" },
-];
+export const PAYMENT_METHODS: { id: PaymentMethod; readonly label: string }[] = (["cash", "upi", "card", "bank", "other"] as const).map(
+  (id) => ({ id, get label() { return t(`payment.${id}`); } }),
+);
 
 export const MAX_OTHER_DOCUMENTS = 10;
 
@@ -90,37 +87,37 @@ export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; pay
   const customer = validateCustomer(d, errors);
 
   const description = d.description.trim();
-  if (!description && d.jobs.length === 0) errors.description = "Tick what needs doing, or describe the problem.";
-  else if (description.length > 1000) errors.description = "Too long (1000 characters max).";
+  if (!description && d.jobs.length === 0) errors.description = t("complaint.describeOrTick");
+  else if (description.length > 1000) errors.description = t("complaint.tooLong1000");
 
-  if (!ISO_DATE.test(d.reportedOn)) errors.reportedOn = "Choose the date the complaint was reported.";
-  else if (d.reportedOn > todayISO()) errors.reportedOn = "The reported date can't be in the future.";
+  if (!ISO_DATE.test(d.reportedOn)) errors.reportedOn = t("complaint.reportedDate");
+  else if (d.reportedOn > todayISO()) errors.reportedOn = t("complaint.reportedFuture");
 
   const notes = d.notes.trim();
-  if (notes.length > 1000) errors.notes = "Notes are too long (1000 characters max).";
+  if (notes.length > 1000) errors.notes = t("complaint.notesTooLong");
 
   const vehicleName = d.vehicleName.trim();
-  if (vehicleName.length > 100) errors.vehicleName = "Too long (100 characters max).";
+  if (vehicleName.length > 100) errors.vehicleName = t("complaint.tooLong100");
 
   const km = d.odometerKm.replace(/[,\s]/g, "");
   let odometerKm: number | null = null;
   if (km !== "") {
-    if (!/^\d{1,7}$/.test(km)) errors.odometerKm = "Enter the km as a whole number, e.g. 12500.";
+    if (!/^\d{1,7}$/.test(km)) errors.odometerKm = t("complaint.kmInvalid");
     else odometerKm = Number(km);
   }
 
   const otherDocuments = d.otherDocumentsOn ? d.otherDocuments.map((x) => x.trim()).filter(Boolean) : [];
   if (d.otherDocumentsOn) {
-    if (otherDocuments.length === 0) errors.otherDocuments = "Type what was left, or untick Other.";
-    else if (otherDocuments.some((x) => x.length > 60)) errors.otherDocuments = "Keep each item under 60 characters.";
-    else if (otherDocuments.length > MAX_OTHER_DOCUMENTS) errors.otherDocuments = `Up to ${MAX_OTHER_DOCUMENTS} items.`;
+    if (otherDocuments.length === 0) errors.otherDocuments = t("complaint.otherMissing");
+    else if (otherDocuments.some((x) => x.length > 60)) errors.otherDocuments = t("complaint.otherTooLong");
+    else if (otherDocuments.length > MAX_OTHER_DOCUMENTS) errors.otherDocuments = t("complaint.otherTooMany", { n: MAX_OTHER_DOCUMENTS });
   }
 
   let advanceAmount: number | null = null;
   if (d.advance.trim() !== "") {
     const a = parseAmount(d.advance);
-    if (!a.ok) errors.advance = a.reason === "too-large" ? "That amount is too large." : "Enter the amount in rupees, e.g. 500.";
-    else if (a.paise === 0) errors.advance = "Leave it empty if no advance was paid.";
+    if (!a.ok) errors.advance = a.reason === "too-large" ? t("complaint.advanceTooLarge") : t("complaint.advanceInvalid");
+    else if (a.paise === 0) errors.advance = t("complaint.advanceZero");
     else advanceAmount = a.paise / 100;
   }
 
@@ -173,14 +170,14 @@ export function complaintToDraft(c: ComplaintRow): ComplaintDraft {
 /** "RC book, Pollution certificate, Spare key" for display; empty when nothing was left. */
 export function documentsText(c: Pick<ComplaintRow, "documents" | "other_documents">): string {
   const short: Record<IntakeDocument, string> = {
-    rc: "RC book",
-    pollution: "Pollution certificate",
-    licence: "Driving licence",
-    insurance: "Insurance",
+    rc: t("documents.rcShort"),
+    pollution: t("documents.pollution"),
+    licence: t("documents.licence"),
+    insurance: t("documents.insurance"),
   };
   return [...(c.documents ?? []).map((d) => short[d] ?? d), ...(c.other_documents ?? [])].join(", ");
 }
 
-export function paymentMethodLabel(m: PaymentMethod | null | undefined): string {
-  return PAYMENT_METHODS.find((x) => x.id === m)?.label ?? "";
+export function paymentMethodLabel(m: PaymentMethod | null | undefined, lang?: Lang): string {
+  return m && PAYMENT_METHODS.some((x) => x.id === m) ? t(`payment.${m}`, undefined, lang) : "";
 }

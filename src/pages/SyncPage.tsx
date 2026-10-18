@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { locale, useLang, useT } from "../i18n";
 import { Link } from "react-router";
 import { useLoad } from "../lib/useLoad";
 import { discardChange, listWaitingChanges, retryChange, syncNow, useSyncState } from "../lib/sync";
@@ -7,16 +8,18 @@ import { discardChange, listWaitingChanges, retryChange, syncNow, useSyncState }
 export default function SyncPage() {
   const s = useSyncState();
   const [busy, setBusy] = useState(false);
-  const list = useLoad(`waiting|${s.pending}|${s.failed}|${s.phase}`, listWaitingChanges);
+  const [lang] = useLang();
+  const list = useLoad(`waiting|${s.pending}|${s.failed}|${s.phase}|${lang}`, listWaitingChanges);
+  const { t } = useT();
 
   const statusText =
     s.phase === "offline"
-      ? "You're offline. Bills and complaints you save are kept on this device and sent when you're back online."
+      ? t("syncPage.offline")
       : s.phase === "syncing"
-        ? "Syncing with the server…"
+        ? t("syncPage.syncing")
         : s.failed > 0
-          ? "The server couldn't accept some changes. Open each one to fix it, then try again."
-          : "Everything on this device is saved to the server.";
+          ? t("syncPage.refused")
+          : t("syncPage.allSaved");
 
   async function runSync() {
     setBusy(true);
@@ -26,24 +29,24 @@ export default function SyncPage() {
 
   return (
     <div>
-      <h1>Sync</h1>
+      <h1>{t("syncPage.title")}</h1>
       <section className="card">
         <div className="card-head">
-          <h2>Status</h2>
+          <h2>{t("syncPage.status")}</h2>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void runSync()} disabled={busy || s.phase === "offline"}>
-            {busy ? "Syncing…" : "Sync now"}
+            {busy ? t("sync.syncing") : t("syncPage.syncNow")}
           </button>
         </div>
         <p>{statusText}</p>
         <p className="muted">
-          Last synced: {s.lastSync ? new Date(s.lastSync).toLocaleString("en-IN") : "not yet"}
+          {t("syncPage.lastSynced", { when: s.lastSync ? new Date(s.lastSync).toLocaleString(locale()) : t("sync.notYet") })}
         </p>
       </section>
 
-      <h2 className="results-heading">Waiting to sync</h2>
+      <h2 className="results-heading">{t("syncPage.waiting")}</h2>
       {list.status === "ok" && list.data.length === 0 && (
         <div className="empty empty-list">
-          <p>Nothing waiting. All your changes are on the server.</p>
+          <p>{t("syncPage.nothingWaiting")}</p>
         </div>
       )}
       {list.status === "ok" &&
@@ -52,11 +55,13 @@ export default function SyncPage() {
             <div className="sync-item-main">
               <strong>{c.title}</strong>
               {c.detail && <span className="muted"> · {c.detail}</span>}
-              <p className="muted sync-item-when">Saved on this device {new Date(c.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</p>
+              <p className="muted sync-item-when">
+                {t("syncPage.savedOn", { when: new Date(c.createdAt).toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" }) })}
+              </p>
               {c.error ? (
-                <p className="sync-item-error">The server didn't accept this: {c.error}</p>
+                <p className="sync-item-error">{t("syncPage.notAccepted", { message: c.error })}</p>
               ) : (
-                <p className="muted">Waiting for a connection.</p>
+                <p className="muted">{t("syncPage.waitingConnection")}</p>
               )}
             </div>
             <div className="sync-item-actions">
@@ -64,21 +69,21 @@ export default function SyncPage() {
                 to={c.kind === "bill" || c.kind === "bill-payment" ? `/bills/${c.entityId}${c.error ? "/edit" : ""}` : `/complaints/${c.entityId}${c.error ? "/edit" : ""}`}
                 className="btn btn-outline btn-sm"
               >
-                {c.error ? "Fix" : "Open"}
+                {c.error ? t("syncPage.fix") : t("syncPage.open")}
               </Link>
               {c.error && (
                 <button type="button" className="btn btn-outline btn-sm" onClick={() => void retryChange(c.seq)}>
-                  Try again
+                  {t("common.tryAgain")}
                 </button>
               )}
               <button
                 type="button"
                 className="btn btn-danger btn-sm"
                 onClick={() => {
-                  if (window.confirm("Discard this change? It will not be sent to the server.")) void discardChange(c.seq);
+                  if (window.confirm(t("syncPage.discardConfirm"))) void discardChange(c.seq);
                 }}
               >
-                Discard
+                {t("syncPage.discard")}
               </button>
             </div>
           </div>

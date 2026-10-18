@@ -1,4 +1,5 @@
 import { Navigate, NavLink, Outlet } from "react-router";
+import { useT } from "../i18n";
 import { usePlatformAdmin } from "../lib/admin/access";
 import { useShopSettings } from "../lib/shopSettings";
 import { useMe } from "../lib/staff";
@@ -36,12 +37,11 @@ function Icon({ name }: { name: keyof typeof ICON }) {
 /** Shown on a new device until the workshop's data has been downloaded once. */
 function FirstSyncNotice() {
   const s = useSyncState();
+  const { t } = useT();
   if (s.ready) return null;
   return (
     <div className="alert first-sync no-print" role="status">
-      {s.phase === "offline"
-        ? "This device hasn't downloaded your workshop's data yet. Connect to the internet once to download it; after that it works offline."
-        : "Downloading your workshop's data to this device so it also works offline…"}
+      {s.phase === "offline" ? t("layout.firstSyncOffline") : t("layout.firstSyncBusy")}
     </div>
   );
 }
@@ -49,17 +49,19 @@ function FirstSyncNotice() {
 /** Not on any workshop's staff list: platform admins go to the admin panel. */
 function NotStaff() {
   const check = usePlatformAdmin();
-  if (check.status === "loading") return <p className="page-status">Loading…</p>;
+  const { t } = useT();
+  if (check.status === "loading") return <p className="page-status">{t("common.loading")}</p>;
   if (check.status === "ok" && check.isAdmin) return <Navigate to="/admin" replace />;
-  return <p>Your login isn't on the workshop's staff list yet. Ask the owner to add you in Settings.</p>;
+  return <p>{t("layout.notStaff")}</p>;
 }
 
 export default function Layout() {
   const { settings, error } = useShopSettings();
   const me = useMe();
   const signOut = () => void signOutAndClear();
+  const { t } = useT();
 
-  if (me.status === "loading") return <p className="page-status">Loading…</p>;
+  if (me.status === "loading") return <p className="page-status">{t("common.loading")}</p>;
   if (me.status !== "ok") {
     return (
       <main className="login">
@@ -72,17 +74,17 @@ export default function Layout() {
           ) : me.status === "suspended" ? (
             <div className="alert alert-error" role="alert">
               <span>
-                <strong>This workshop is suspended.</strong> {me.reason && `Reason: ${me.reason}. `}Contact Pitshop Plus support (Skye Automotives) to restore
-                access. Your bills and complaints are kept.
+                <strong>{t("layout.suspendedTitle")}</strong> {me.reason && `${t("layout.suspendedReason", { reason: me.reason })} `}
+                {t("layout.suspendedBody")}
               </span>
             </div>
           ) : (
             <div className="alert alert-error" role="alert">
-              Couldn't check your login. {me.message}
+              {t("layout.loginCheckFailed", { message: me.message })}
             </div>
           )}
           <button type="button" className="btn btn-outline btn-block" onClick={signOut}>
-            Sign out
+            {t("common.signOut")}
           </button>
         </div>
       </main>
@@ -90,41 +92,41 @@ export default function Layout() {
   }
 
   const isOwner = me.me.role === "owner";
-  const shopName = settings?.shop_name || "Your workshop";
+  const shopName = settings?.shop_name || t("common.yourWorkshop");
 
   return (
     <div className="app">
       {/* Wide screens (Windows app, PC browser): sidebar. */}
       <aside className="sidebar no-print">
-        <NavLink to="/dashboard" className="sidebar-logo" aria-label="Dashboard">
+        <NavLink to="/dashboard" className="sidebar-logo" aria-label={t("nav.dashboard")}>
           <img src={`${import.meta.env.BASE_URL}pitshop-plus-dark.svg`} alt="Pitshop Plus" />
         </NavLink>
         <div className="sidebar-shop" title={shopName}>
           {shopName}
         </div>
         <NavLink to="/bills/new" className="sidebar-new">
-          <Icon name="plus" /> New bill
+          <Icon name="plus" /> {t("nav.newBill")}
         </NavLink>
         <nav className="sidebar-nav">
           <NavLink to="/dashboard" end>
-            <Icon name="dashboard" /> Dashboard
+            <Icon name="dashboard" /> {t("nav.dashboard")}
           </NavLink>
           <NavLink to="/bills" end>
-            <Icon name="bills" /> Bills
+            <Icon name="bills" /> {t("nav.bills")}
           </NavLink>
           <NavLink to="/complaints" end>
-            <Icon name="complaints" /> Complaints
+            <Icon name="complaints" /> {t("nav.complaints")}
           </NavLink>
           <NavLink to="/complaints/new">
-            <Icon name="newComplaint" /> New complaint
+            <Icon name="newComplaint" /> {t("nav.newComplaint")}
           </NavLink>
           {isOwner && (
             <NavLink to="/reports">
-              <Icon name="reports" /> Reports
+              <Icon name="reports" /> {t("nav.reports")}
             </NavLink>
           )}
           <NavLink to="/settings">
-            <Icon name="settings" /> Settings
+            <Icon name="settings" /> {t("nav.settings")}
           </NavLink>
         </nav>
         <SyncStatus />
@@ -135,9 +137,9 @@ export default function Layout() {
           </div>
           <div className="sidebar-who">
             <strong>{me.me.full_name || me.me.username}</strong>
-            <span>{isOwner ? "Owner" : "Staff"}</span>
+            <span>{isOwner ? t("common.owner") : t("common.staff")}</span>
           </div>
-          <button type="button" className="sidebar-signout" onClick={signOut} title="Sign out" aria-label="Sign out">
+          <button type="button" className="sidebar-signout" onClick={signOut} title={t("common.signOut")} aria-label={t("common.signOut")}>
             <Icon name="signOut" />
           </button>
         </div>
@@ -155,20 +157,20 @@ export default function Layout() {
           </div>
           <nav className="nav">
             <NavLink to="/dashboard" end>
-              Dashboard
+              {t("nav.dashboard")}
             </NavLink>
-            <NavLink to="/complaints/new">New complaint</NavLink>
-            <NavLink to="/bills/new">New bill</NavLink>
+            <NavLink to="/complaints/new">{t("nav.newComplaint")}</NavLink>
+            <NavLink to="/bills/new">{t("nav.newBill")}</NavLink>
             <NavLink to="/complaints" end>
-              Complaints
+              {t("nav.complaints")}
             </NavLink>
             <NavLink to="/bills" end>
-              Find bills
+              {t("nav.findBills")}
             </NavLink>
-            {isOwner && <NavLink to="/reports">Reports</NavLink>}
-            <NavLink to="/settings">Settings</NavLink>
+            {isOwner && <NavLink to="/reports">{t("nav.reports")}</NavLink>}
+            <NavLink to="/settings">{t("nav.settings")}</NavLink>
             <button type="button" className="link-button" onClick={signOut}>
-              Sign out
+              {t("common.signOut")}
             </button>
           </nav>
         </div>
@@ -176,7 +178,7 @@ export default function Layout() {
       <main className="container">
         {error && (
           <div className="alert alert-error no-print" role="alert">
-            Couldn't load shop settings: {error}
+            {t("layout.settingsLoadFailed", { message: error })}
           </div>
         )}
         <FirstSyncNotice />

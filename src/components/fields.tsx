@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
+import { t } from "../i18n";
 
 /** id, aria-invalid and aria-describedby for the input of field `key`. */
 export function fieldProps(key: string, error?: string) {
@@ -33,7 +34,7 @@ export function Field({ fieldKey, label, required, hint, error, className, child
     <div className={`field${error ? " has-error" : ""}${className ? ` ${className}` : ""}`}>
       <label htmlFor={`f-${fieldKey}`}>
         {label}
-        {required ? <span className="required"> *</span> : <span className="optional"> (optional)</span>}
+        {required ? <span className="required"> *</span> : <span className="optional"> {t("common.optional")}</span>}
       </label>
       {children}
       {hint && <p className="hint">{hint}</p>}

@@ -1,23 +1,26 @@
 import { Link } from "react-router";
+import { useT } from "../i18n";
 
 export function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useT();
   return (
     <div className="alert alert-error" role="alert">
-      <span>Couldn't load the bill. {message}</span>
+      <span>{t("billView.loadFailed", { message })}</span>
       <button type="button" className="btn btn-outline btn-sm" onClick={onRetry}>
-        Try again
+        {t("common.tryAgain")}
       </button>
     </div>
   );
 }
 
 export function BillNotFound() {
+  const { t } = useT();
   return (
     <div className="empty">
-      <h1>Bill not found</h1>
-      <p>This bill doesn't exist or the link is wrong.</p>
+      <h1>{t("billView.notFoundTitle")}</h1>
+      <p>{t("billView.notFoundBody")}</p>
       <Link to="/bills" className="btn btn-primary">
-        Find bills
+        {t("nav.findBills")}
       </Link>
     </div>
   );

@@ -57,7 +57,7 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
   const payments = bill.payments ?? [];
   const money = billMoney(bill.grand_total, complaints, payments);
   if (money.advance > 0) lines.push(`Advance received: -${inr(money.advance)}`);
-  payments.forEach((p) => lines.push(`Paid ${formatDate(p.paid_on)} (${paymentMethodLabel(p.method)}): -${inr(p.amount)}`));
+  payments.forEach((p) => lines.push(`Paid ${formatDate(p.paid_on)} (${paymentMethodLabel(p.method, "en")}): -${inr(p.amount)}`));
   if (money.advance > 0 || payments.length > 0)
     lines.push(money.status === "paid" ? "*Paid in full. Thank you!*" : `*Balance to pay: ${inr(money.balance)}*`);
   lines.push("", "Thank you for your business.");

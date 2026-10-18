@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
+import { useT } from "../i18n";
 import { Link, useNavigate } from "react-router";
 import { createComplaint, updateComplaint } from "../lib/api";
 import { INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
@@ -53,7 +54,8 @@ export default function ComplaintForm({
   const shown: FieldErrors = submitted ? errors : {};
   const errorCount = Object.keys(shown).length;
 
-  const guard = useUnsavedGuard(dirty, "This complaint has not been saved and will be lost.");
+  const { t, tn } = useT();
+  const guard = useUnsavedGuard(dirty, t("complaint.unsaved"));
 
   const set = (patch: Partial<ComplaintDraft>) => setDraft((d) => ({ ...d, ...patch }));
   // This workshop's list, plus anything ticked earlier that isn't on it (e.g. after changing the workshop type).
@@ -94,26 +96,26 @@ export default function ComplaintForm({
       <h1>{title}</h1>
       {errorCount > 0 && (
         <div className="alert alert-error" role="alert">
-          Please fix the {errorCount === 1 ? "highlighted field" : `${errorCount} highlighted fields`} below.
+          {tn("form.fixFields", errorCount)}
         </div>
       )}
       {saveError && (
         <div className="alert alert-error" role="alert">
-          Couldn't save the complaint. {saveError}
+          {t("complaint.saveFailed", { message: saveError })}
         </div>
       )}
 
       <section className="card">
-        <h2>Customer & vehicle</h2>
+        <h2>{t("form.customerVehicle")}</h2>
         <div className="grid">
           <CustomerInputs value={draft} errors={shown} onChange={set} />
         </div>
       </section>
 
       <section className="card">
-        <h2>Vehicle received</h2>
+        <h2>{t("complaint.vehicleReceived")}</h2>
         <div className="grid">
-          <Field fieldKey="vehicleName" label="Vehicle name" error={shown.vehicleName}>
+          <Field fieldKey="vehicleName" label={t("complaint.vehicleName")} error={shown.vehicleName}>
             <input
               {...fieldProps("vehicleName", shown.vehicleName)}
               type="text"
@@ -123,7 +125,7 @@ export default function ComplaintForm({
               onChange={(e) => set({ vehicleName: e.target.value })}
             />
           </Field>
-          <Field fieldKey="odometerKm" label="Km driven" hint="As shown on the odometer" error={shown.odometerKm}>
+          <Field fieldKey="odometerKm" label={t("complaint.km")} hint={t("complaint.kmHint")} error={shown.odometerKm}>
             <input
               {...fieldProps("odometerKm", shown.odometerKm)}
               type="text"
@@ -137,8 +139,8 @@ export default function ComplaintForm({
         </div>
 
         <fieldset className="intake-group">
-          <legend>Helmets received</legend>
-          <div className="segmented" role="group" aria-label="Helmets received">
+          <legend>{t("complaint.helmets")}</legend>
+          <div className="segmented" role="group" aria-label={t("complaint.helmets")}>
             {([0, 1, 2] as const).map((n) => (
               <button key={n} type="button" aria-pressed={draft.helmets === n} onClick={() => set({ helmets: n })}>
                 {n}
@@ -148,7 +150,7 @@ export default function ComplaintForm({
         </fieldset>
 
         <fieldset className={`intake-group${shown.otherDocuments ? " has-error" : ""}`}>
-          <legend>Documents received</legend>
+          <legend>{t("complaint.documentsReceived")}</legend>
           <div className="intake-checks">
             {INTAKE_DOCUMENTS.map((d) => (
               <label key={d.id} className="check">
@@ -168,7 +170,7 @@ export default function ComplaintForm({
                 checked={draft.otherDocumentsOn}
                 onChange={(e) => set({ otherDocumentsOn: e.target.checked })}
               />
-              Other
+              {t("documents.other")}
             </label>
           </div>
           {draft.otherDocumentsOn && (
@@ -178,8 +180,8 @@ export default function ComplaintForm({
                   <input
                     {...(i === 0 ? fieldProps("otherDocuments", shown.otherDocuments) : {})}
                     type="text"
-                    aria-label={`Other item ${i + 1}`}
-                    placeholder={i === 0 ? "e.g. Insurance copy, spare key" : "Another item"}
+                    aria-label={t("complaint.otherItem", { n: i + 1 })}
+                    placeholder={i === 0 ? t("complaint.otherPlaceholder") : t("complaint.anotherItem")}
                     maxLength={60}
                     value={item}
                     autoFocus={i > 0 && i === draft.otherDocuments.length - 1 && item === ""}
@@ -191,10 +193,10 @@ export default function ComplaintForm({
                     <button
                       type="button"
                       className="btn btn-outline btn-sm"
-                      aria-label={`Remove item ${i + 1}`}
+                      aria-label={t("complaint.removeOther", { n: i + 1 })}
                       onClick={() => set({ otherDocuments: draft.otherDocuments.filter((_, j) => j !== i) })}
                     >
-                      Remove
+                      {t("complaint.remove")}
                     </button>
                   )}
                 </div>
@@ -205,7 +207,7 @@ export default function ComplaintForm({
                   className="btn btn-outline btn-sm"
                   onClick={() => set({ otherDocuments: [...draft.otherDocuments, ""] })}
                 >
-                  + Add another item
+                  {t("complaint.addAnother")}
                 </button>
               )}
               <FieldError fieldKey="otherDocuments" error={shown.otherDocuments} />
@@ -215,10 +217,10 @@ export default function ComplaintForm({
       </section>
 
       <section className="card">
-        <h2>Job card</h2>
+        <h2>{t("complaint.jobCard")}</h2>
         <fieldset className={`job-list${shown.description ? " has-error" : ""}`}>
-          <legend>What needs to be done?</legend>
-          <p className="hint">Tick everything that applies.</p>
+          <legend>{t("complaint.whatNeedsDoing")}</legend>
+          <p className="hint">{t("complaint.tickAll")}</p>
           <div className="job-checks">
             {jobs.map((j) => (
               <label key={j.id} className={`check job-check${draft.jobs.includes(j.id) ? " checked" : ""}`}>
@@ -228,12 +230,10 @@ export default function ComplaintForm({
             ))}
           </div>
           {draft.jobs.length > 0 && (
-            <p className="job-count muted">
-              {draft.jobs.length} {draft.jobs.length === 1 ? "job" : "jobs"} ticked
-            </p>
+            <p className="job-count muted">{tn("complaint.jobsTicked", draft.jobs.length)}</p>
           )}
         </fieldset>
-        <Field fieldKey="description" label="Other problems or comments" error={shown.description}>
+        <Field fieldKey="description" label={t("complaint.otherProblems")} error={shown.description}>
           <textarea
             {...fieldProps("description", shown.description)}
             rows={3}
@@ -243,7 +243,7 @@ export default function ComplaintForm({
           />
         </Field>
         <div className="grid">
-          <Field fieldKey="reportedOn" label="Date reported" required error={shown.reportedOn}>
+          <Field fieldKey="reportedOn" label={t("complaint.dateReported")} required error={shown.reportedOn}>
             <input
               {...fieldProps("reportedOn", shown.reportedOn)}
               type="date"
@@ -252,19 +252,19 @@ export default function ComplaintForm({
             />
           </Field>
           <div className="field">
-            <span className="label-like">Attended by</span>
+            <span className="label-like">{t("complaint.attendedBy")}</span>
             <p className="attended-by">
               <span className="attended-avatar" aria-hidden="true">
                 {attendedBy.trim().charAt(0).toUpperCase() || "?"}
               </span>
-              {attendedBy || "Not recorded"}
+              {attendedBy || t("common.notRecorded")}
             </p>
             <p className="hint">
-              {complaintId ? "Recorded when the complaint was saved." : "Filled in from your login when you save."}
+              {complaintId ? t("complaint.attendedSaved") : t("complaint.attendedNew")}
             </p>
           </div>
         </div>
-        <Field fieldKey="notes" label="Notes" error={shown.notes}>
+        <Field fieldKey="notes" label={t("complaint.notes")} error={shown.notes}>
           <textarea
             {...fieldProps("notes", shown.notes)}
             rows={2}
@@ -273,7 +273,7 @@ export default function ComplaintForm({
           />
         </Field>
         <div className="grid">
-          <Field fieldKey="advance" label="Advance payment received" hint="Shown on the bill as already paid" error={shown.advance}>
+          <Field fieldKey="advance" label={t("complaint.advance")} hint={t("complaint.advanceHint")} error={shown.advance}>
             <MoneyInput
               {...fieldProps("advance", shown.advance)}
               invalid={!!shown.advance}
@@ -282,7 +282,7 @@ export default function ComplaintForm({
             />
           </Field>
           {draft.advance.trim() !== "" && (
-            <Field fieldKey="advanceMethod" label="Paid by" required>
+            <Field fieldKey="advanceMethod" label={t("complaint.paidBy")} required>
               <select
                 {...fieldProps("advanceMethod")}
                 value={draft.advanceMethod}
@@ -298,26 +298,26 @@ export default function ComplaintForm({
           )}
         </div>
         <fieldset className="status-choice">
-          <legend>Status</legend>
+          <legend>{t("complaint.status")}</legend>
           {(["open", "resolved"] as const).map((s) => (
             <label key={s} className="check">
               <input type="radio" name="status" checked={draft.status === s} onChange={() => set({ status: s })} />
-              {s === "open" ? "Open" : "Resolved"}
+              {s === "open" ? t("status.open") : t("status.resolved")}
             </label>
           ))}
         </fieldset>
       </section>
 
       <div className="savebar">
-        <span className="muted">{complaintId ? "Editing complaint" : "New complaint"}</span>
+        <span className="muted">{complaintId ? t("complaint.editing") : t("complaint.newComplaint")}</span>
         <div className="savebar-actions">
           {complaintId && (
             <Link to={`/complaints/${complaintId}`} className="btn btn-outline">
-              Cancel
+              {t("common.cancel")}
             </Link>
           )}
           <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
-            {saving ? "Saving…" : complaintId ? "Save changes" : "Save complaint"}
+            {saving ? t("common.saving") : complaintId ? t("complaint.saveChanges") : t("complaint.saveComplaint")}
           </button>
         </div>
       </div>

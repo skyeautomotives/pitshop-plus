@@ -1,16 +1,12 @@
 import type { ReactNode } from "react";
+import { useT } from "../i18n";
 import { Link } from "react-router";
 import { isNativeApp } from "../lib/platform";
 import { HeroMock } from "../pages/marketing/Home";
 import "../marketing.css";
 import UpdateBanner from "./UpdateBanner";
 
-const POINTS = [
-  "Bills with parts, labour and discounts",
-  "Send bills to customers on WhatsApp",
-  "Vehicle history by number plate",
-  "Daily and monthly sales reports",
-];
+const POINTS = ["login.point1", "login.point2", "login.point3", "login.point4"] as const;
 
 /**
  * Sign-in and registration screens. Wide screens (desktop app, PC browser): brand panel
@@ -18,6 +14,7 @@ const POINTS = [
  */
 export default function AuthLayout({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   const logo = `${import.meta.env.BASE_URL}pitshop-plus-dark.svg`;
+  const { t } = useT();
   return (
     <main className="auth">
       <aside className="auth-brand">
@@ -29,17 +26,17 @@ export default function AuthLayout({ children, wide = false }: { children: React
           </Link>
         )}
         <div className="auth-brand-copy">
-          <h2>Billing for bike and car workshops</h2>
+          <h2>{t("login.brandTitle")}</h2>
           <ul>
             {POINTS.map((p) => (
-              <li key={p}>{p}</li>
+              <li key={p}>{t(p)}</li>
             ))}
           </ul>
         </div>
         <div className="auth-preview">
           <HeroMock />
         </div>
-        <p className="auth-brand-foot">Made by Skye Automotives</p>
+        <p className="auth-brand-foot">{t("login.madeBy")}</p>
       </aside>
       <section className="auth-main">
         <div className={`auth-panel${wide ? " auth-panel-wide" : ""}`}>

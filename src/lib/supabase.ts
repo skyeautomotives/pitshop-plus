@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { t } from "../i18n";
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -85,15 +86,14 @@ export const supabase = createClient(url ?? "http://localhost", anonKey ?? "miss
 
 /** Turns Supabase/Postgres errors into short, readable messages. */
 export function errorMessage(err: unknown): string {
-  if (!err) return "Something went wrong.";
+  if (!err) return t("errors.generic");
   const e = err as { message?: string; code?: string };
-  if (e.message?.includes("Failed to fetch")) return "Network error. Check your internet connection and try again.";
-  if (e.message === "Invalid login credentials") return "Wrong username or password.";
+  if (e.message?.includes("Failed to fetch")) return t("errors.network");
+  if (e.message === "Invalid login credentials") return t("errors.wrongLogin");
   // Messages raised by save_bill() are already written for staff.
-  if (e.code === "22023" || e.code === "P0002" || e.code === "42501") return e.message || "Something went wrong.";
-  if (e.code === "23514")
-    return "Some details weren't accepted. Check the form and try again. If it keeps happening, contact skyeautomotives@gmail.com.";
+  if (e.code === "22023" || e.code === "P0002" || e.code === "42501") return e.message || t("errors.generic");
+  if (e.code === "23514") return t("errors.notAccepted");
   if (e.code === "PGRST202" || e.code === "PGRST205")
     return "The database isn't set up yet. Run the SQL in supabase/migrations (see README).";
-  return e.message || "Something went wrong.";
+  return e.message || t("errors.generic");
 }

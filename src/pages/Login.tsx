@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from "react";
+import LanguageSwitch from "../components/LanguageSwitch";
+import { useT } from "../i18n";
 import { Link, Navigate, useLocation } from "react-router";
 import { useAuth } from "../lib/auth";
 import { errorMessage, isRemembered, rememberedEmail, setRememberMe, supabase } from "../lib/supabase";
@@ -34,15 +36,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t } = useT();
 
-  if (loading) return <p className="page-status">Loading…</p>;
+  if (loading) return <p className="page-status">{t("common.loading")}</p>;
   if (session) return <Navigate to={from} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const login = email.trim().toLowerCase();
     if (!login || !password) {
-      setError("Enter your email (or username) and password.");
+      setError(t("login.missing"));
       return;
     }
     setBusy(true);
@@ -54,7 +57,7 @@ export default function Login() {
     if (err) {
       if (/not confirmed/i.test(err.message)) {
         setUnconfirmed(address);
-        setError("Please confirm your email first. Open the link we emailed you (check Spam too).");
+        setError(t("login.confirmFirst"));
       } else {
         setError(errorMessage(err));
       }
@@ -72,20 +75,21 @@ export default function Login() {
   return (
     <AuthLayout>
       <form onSubmit={onSubmit} noValidate>
-        <h1 className="auth-title">Sign in</h1>
-        <p className="auth-sub">Welcome back. Sign in to your workshop.</p>
+        <LanguageSwitch />
+        <h1 className="auth-title">{t("login.title")}</h1>
+        <p className="auth-sub">{t("login.subtitle")}</p>
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
             {unconfirmed && (
               <button type="button" className="link-button resend" onClick={() => void resend()} disabled={resent}>
-                {resent ? "Confirmation email sent again." : "Send the confirmation email again"}
+                {resent ? t("login.resent") : t("login.resend")}
               </button>
             )}
           </div>
         )}
         <div className="field">
-          <label htmlFor="email">Email or username</label>
+          <label htmlFor="email">{t("login.emailOrUsername")}</label>
           <input
             id="email"
             type="text"
@@ -99,7 +103,7 @@ export default function Login() {
           />
         </div>
         <div className="field">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t("login.password")}</label>
           <PasswordInput
             id="password"
             autoComplete="current-password"
@@ -110,23 +114,21 @@ export default function Login() {
         </div>
         <label className="check remember">
           <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-          Remember me on this device
+          {t("login.rememberMe")}
         </label>
         <p className="hint remember-hint">
-          {remember
-            ? "You'll stay signed in until you press Sign out."
-            : "You'll be signed out when you close the browser. Use this on shared computers."}
+          {remember ? t("login.rememberOn") : t("login.rememberOff")}
         </p>
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? t("login.signingIn") : t("login.title")}
         </button>
         <p className="auth-switch">
-          New workshop? <Link to="/register">Register your workshop</Link>
+          {t("login.newWorkshop")} <Link to="/register">{t("login.registerLink")}</Link>
         </p>
-        <p className="hint auth-staff">Staff: sign in with the username your workshop owner gave you.</p>
+        <p className="hint auth-staff">{t("login.staffHint")}</p>
         {!isNativeApp && (
           <div className="get-app">
-            <p>Get the app</p>
+            <p>{t("login.getApp")}</p>
             <div className="get-app-links">
               <a href={DOWNLOADS.windows}>
                 <PlatformIcon kind="windows" /> Windows
@@ -136,7 +138,7 @@ export default function Login() {
               </a>
             </div>
             <Link to="/download" className="get-app-more">
-              All downloads and install help
+              {t("login.allDownloads")}
             </Link>
           </div>
         )}
