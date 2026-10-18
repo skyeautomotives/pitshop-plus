@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import LanguageSwitch from "../components/LanguageSwitch";
 import { useT } from "../i18n";
 import { Link, Navigate, useLocation } from "react-router";
 import { useAuth } from "../lib/auth";
@@ -75,7 +74,6 @@ export default function Login() {
   return (
     <AuthLayout>
       <form onSubmit={onSubmit} noValidate>
-        <LanguageSwitch />
         <h1 className="auth-title">{t("login.title")}</h1>
         <p className="auth-sub">{t("login.subtitle")}</p>
         {error && (

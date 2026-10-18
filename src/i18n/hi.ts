@@ -116,6 +116,8 @@ const hi: Translation = {
     point4: "रोज़ और महीने की बिक्री की रिपोर्ट",
     madeBy: "Skye Automotives द्वारा बनाया गया",
     language: "भाषा",
+    termsShort: "नियम",
+    privacyShort: "गोपनीयता",
   },
   errors: {
     generic: "कुछ गड़बड़ हो गई।",

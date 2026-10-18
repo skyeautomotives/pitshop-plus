@@ -4,6 +4,8 @@ import { Link } from "react-router";
 import { isNativeApp } from "../lib/platform";
 import { HeroMock } from "../pages/marketing/Home";
 import "../marketing.css";
+import LanguageMenu from "./LanguageMenu";
+import TermsLink from "./TermsLink";
 import UpdateBanner from "./UpdateBanner";
 
 const POINTS = ["login.point1", "login.point2", "login.point3", "login.point4"] as const;
@@ -43,6 +45,13 @@ export default function AuthLayout({ children, wide = false }: { children: React
           <img src={`${import.meta.env.BASE_URL}pitshop-plus.svg`} alt="Pitshop Plus by Skye Automotives" className="auth-mobile-logo" />
           <UpdateBanner />
           {children}
+          <footer className="auth-footer">
+            <LanguageMenu />
+            <nav className="auth-footer-links">
+              <TermsLink page="terms">{t("login.termsShort")}</TermsLink>
+              <TermsLink page="privacy">{t("login.privacyShort")}</TermsLink>
+            </nav>
+          </footer>
         </div>
       </section>
     </main>

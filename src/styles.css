@@ -3641,8 +3641,16 @@ a.admin-list-row:hover {
   min-height: 112px;
 }
 
-.vehicle-type-option svg {
-  color: var(--primary);
+.vehicle-art {
+  display: block;
+  width: 72px;
+  height: 72px;
+  transition: transform 0.15s;
+}
+
+.vehicle-type-option:hover .vehicle-art,
+.vehicle-type-option.selected .vehicle-art {
+  transform: translateY(-2px);
 }
 
 .vehicle-type-option:hover {
@@ -3796,41 +3804,117 @@ html[data-density="compact"] .job-check {
   padding: 2px 10px;
 }
 
-/* Malayalam and Hindi letters are taller: a little more line spacing. */
-html:lang(ml) body,
-html:lang(hi) body {
+/* Indian scripts are taller: a little more line spacing. */
+html:not(:lang(en)) body {
   line-height: 1.6;
 }
 
-/* Sign-in: English | മലയാളം */
-.lang-switch {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  margin-bottom: 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
+/* Language menu (globe button, top right of sign-in and registration). */
+/* Sign-in and registration footer: language menu, Terms and Privacy (like Google's sign-in). */
+.auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
 }
 
-.lang-switch button {
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 0.9rem;
+.auth-footer-links {
+  display: flex;
+  gap: 16px;
+}
+
+.auth-footer-links a {
   color: var(--muted);
-  padding: 4px 12px;
-  border-radius: 999px;
+  text-decoration: none;
+}
+
+.auth-footer-links a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.lang-menu {
+  position: relative;
+}
+
+.lang-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: -8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
   cursor: pointer;
 }
 
-.lang-switch button.active {
-  background: var(--primary);
-  color: #fff;
+.lang-menu-button:hover,
+.lang-menu-button[aria-expanded="true"] {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.lang-menu-list {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  min-width: 210px;
+  max-height: 60vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+.lang-menu-list button {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lang-menu-list button:hover {
+  background: var(--bg);
+}
+
+.lang-menu-list button.selected {
+  background: var(--primary-soft);
+  color: var(--primary);
   font-weight: 600;
+}
+
+.lang-menu-list small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 /* Keep checkboxes full size when the label wraps onto two lines. */
 .check input {
   flex-shrink: 0;
+}
+
+.lang-select {
+  max-width: 320px;
 }

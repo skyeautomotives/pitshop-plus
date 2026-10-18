@@ -2,15 +2,26 @@
 // phrases out while they are being translated, and those show in English.
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import en from "./en";
+import gu from "./gu";
+import ta from "./ta";
+import te from "./te";
+import mr from "./mr";
+import bn from "./bn";
 import hi from "./hi";
 import ml from "./ml";
 
-export type Lang = "en" | "ml" | "hi";
+export type Lang = "en" | "ml" | "hi" | "bn" | "mr" | "te" | "ta" | "gu";
 
-export const LANGUAGES: { id: Lang; native: string; english: string; ready: boolean }[] = [
-  { id: "en", native: "English", english: "English", ready: true },
-  { id: "ml", native: "മലയാളം", english: "Malayalam", ready: true },
-  { id: "hi", native: "हिन्दी", english: "Hindi", ready: true },
+/** In the order shown to people. A language appears once its translation file is added to BUNDLES. */
+const ALL_LANGUAGES: { id: Lang; native: string; english: string; locale: string }[] = [
+  { id: "en", native: "English", english: "English", locale: "en-IN" },
+  { id: "ml", native: "മലയാളം", english: "Malayalam", locale: "ml-IN" },
+  { id: "hi", native: "हिन्दी", english: "Hindi", locale: "hi-IN" },
+  { id: "bn", native: "বাংলা", english: "Bengali", locale: "bn-IN" },
+  { id: "mr", native: "मराठी", english: "Marathi", locale: "mr-IN" },
+  { id: "te", native: "తెలుగు", english: "Telugu", locale: "te-IN" },
+  { id: "ta", native: "தமிழ்", english: "Tamil", locale: "ta-IN" },
+  { id: "gu", native: "ગુજરાતી", english: "Gujarati", locale: "gu-IN" },
 ];
 
 /** A phrase that changes with a count, e.g. "1 bill" / "3 bills". */
@@ -33,8 +44,11 @@ type PluralKeys<T, P extends string = ""> = {
 export type Key = Keys<Messages>;
 export type PluralKey = PluralKeys<Messages>;
 
-const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree };
-const LOCALES: Record<Lang, string> = { en: "en-IN", ml: "ml-IN", hi: "hi-IN" };
+const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree, bn: bn as unknown as Tree, mr: mr as unknown as Tree, te: te as unknown as Tree, ta: ta as unknown as Tree, gu: gu as unknown as Tree };
+const LOCALES = Object.fromEntries(ALL_LANGUAGES.map((l) => [l.id, l.locale])) as Record<Lang, string>;
+
+export const LANGUAGES = ALL_LANGUAGES.map((l) => ({ ...l, ready: l.id in BUNDLES }));
+
 const STORE_KEY = "pitstop:lang";
 
 function lookup(tree: Tree | undefined, key: string): string | Plural | undefined {

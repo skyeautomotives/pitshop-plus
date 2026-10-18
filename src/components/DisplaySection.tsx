@@ -1,6 +1,6 @@
 import { DENSITIES, TEXT_SIZES, useDisplay } from "../lib/display";
 import { useT } from "../i18n";
-import { LANGUAGES, useLang } from "../i18n";
+import { LANGUAGES, useLang, type Lang } from "../i18n";
 
 /** Settings > Display: text size and spacing for this device. */
 export default function DisplaySection() {
@@ -13,24 +13,16 @@ export default function DisplaySection() {
       <p className="hint">{t("display.hint")}</p>
 
       <div className="field">
-        <span className="label-like" id="language-label">
-          {lang === "en" ? "Language / ഭാഷ / भाषा" : `${t("display.language")} / Language`}
-        </span>
-        <div className="display-options" role="radiogroup" aria-labelledby="language-label">
+        <label className="label-like" htmlFor="f-language">
+          {lang === "en" ? t("display.language") : `${t("display.language")} / Language`}
+        </label>
+        <select id="f-language" className="lang-select" value={lang} onChange={(e) => setLang(e.target.value as Lang)}>
           {LANGUAGES.filter((l) => l.ready).map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              role="radio"
-              lang={l.id}
-              aria-checked={lang === l.id}
-              className={`chip${lang === l.id ? " chip-active" : ""}`}
-              onClick={() => setLang(l.id)}
-            >
-              {l.native}
-            </button>
+            <option key={l.id} value={l.id} lang={l.id}>
+              {l.id === "en" ? l.native : `${l.native} (${l.english})`}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className="field">

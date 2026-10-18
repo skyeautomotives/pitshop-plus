@@ -117,6 +117,8 @@ const ml: Translation = {
     point4: "ദിവസേനയും മാസംതോറുമുള്ള വിൽപ്പന റിപ്പോർട്ടുകൾ",
     madeBy: "നിർമ്മിച്ചത് Skye Automotives",
     language: "ഭാഷ",
+    termsShort: "നിബന്ധനകൾ",
+    privacyShort: "സ്വകാര്യത",
   },
   errors: {
     generic: "എന്തോ പ്രശ്നമുണ്ടായി.",
