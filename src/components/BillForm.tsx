@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
+import { useT } from "../i18n";
 import { Link, useNavigate } from "react-router";
 import { saveBill } from "../lib/api";
 import {
@@ -56,6 +57,7 @@ function firstErrorKey(errors: BillErrors, d: BillDraft): string | null {
 export default function BillForm({ initial, title, billId, onChange, onSaved, banner }: Props) {
   const navigate = useNavigate();
   const { settings } = useShopSettings();
+  const { t, tn } = useT();
   const allowZeroLabour = settings?.allow_zero_labour ?? false;
 
   const [draft, setDraft] = useState(initial);
@@ -84,9 +86,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
 
   const guard = useUnsavedGuard(
     dirty,
-    billId
-      ? "Your changes to this bill have not been saved and will be lost."
-      : "This bill has not been saved yet. It will be kept as a draft on this device until you come back to New bill.",
+    billId ? t("bill.unsavedEdit") : t("bill.unsavedNew"),
   );
 
   function set<K extends keyof BillDraft>(key: K, value: BillDraft[K]) {
@@ -153,23 +153,23 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       {banner}
       {errorCount > 0 && (
         <div className="alert alert-error" role="alert">
-          Please fix the {errorCount === 1 ? "highlighted field" : `${errorCount} highlighted fields`} below.
+          {tn("form.fixFields", errorCount)}
         </div>
       )}
       {saveError && (
         <div className="alert alert-error" role="alert">
-          Couldn't save the bill. {saveError}
+          {t("bill.saveFailed", { message: saveError })}
         </div>
       )}
 
       <div className="bill-cols">
       <div className="bill-main">
       <section className="card">
-        <h2>Customer & vehicle</h2>
+        <h2>{t("form.customerVehicle")}</h2>
         <div className="grid">
           <CustomerInputs value={draft} errors={shown} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
           <div className="grid-2 bill-dates">
-            <Field fieldKey="dateReceived" label="Date received" required error={shown.dateReceived}>
+            <Field fieldKey="dateReceived" label={t("bill.dateReceived")} required error={shown.dateReceived}>
               <input
                 {...fieldProps("dateReceived", shown.dateReceived)}
                 type="date"
@@ -177,7 +177,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 onChange={(e) => set("dateReceived", e.target.value)}
               />
             </Field>
-            <Field fieldKey="deliveredOn" label="Delivered on" required error={shown.deliveredOn}>
+            <Field fieldKey="deliveredOn" label={t("bill.deliveredOn")} required error={shown.deliveredOn}>
               <input
                 {...fieldProps("deliveredOn", shown.deliveredOn)}
                 type="date"
@@ -186,7 +186,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 onChange={(e) => set("deliveredOn", e.target.value)}
               />
             </Field>
-            <Field fieldKey="expectedPickup" label="Expected pickup" error={shown.expectedPickup}>
+            <Field fieldKey="expectedPickup" label={t("bill.expectedPickup")} error={shown.expectedPickup}>
               <input
                 {...fieldProps("expectedPickup", shown.expectedPickup)}
                 type="date"
@@ -208,12 +208,12 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       />
 
       <section className="card">
-        <h2>Parts & work done</h2>
-        <p className="hint">Add every part replaced and every job done. Empty rows are ignored.</p>
+        <h2>{t("bill.partsWork")}</h2>
+        <p className="hint">{t("bill.partsHint")}</p>
         <div className="items-head" aria-hidden="true">
-          <span>Item or service</span>
-          <span>Qty</span>
-          <span>Price (each)</span>
+          <span>{t("bill.itemOrService")}</span>
+          <span>{t("bill.qty")}</span>
+          <span>{t("bill.priceEach")}</span>
         </div>
         <ol className="items">
           {draft.items.map((item, index) => {
@@ -228,7 +228,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 </span>
                 <div className="item-desc">
                   <label className="sr-only" htmlFor={`f-${descKey}`}>
-                    Item {index + 1} description
+                    {t("bill.itemDescription", { n: index + 1 })}
                   </label>
                   <input
                     {...fieldProps(descKey, shown[descKey])}
@@ -248,7 +248,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 </div>
                 <div className="item-qty">
                   <label className="sr-only" htmlFor={`f-${qtyKey}`}>
-                    Item {index + 1} quantity
+                    {t("bill.itemQuantity", { n: index + 1 })}
                   </label>
                   <input
                     {...fieldProps(qtyKey, shown[qtyKey])}
@@ -270,7 +270,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 </div>
                 <div className="item-price">
                   <label className="sr-only" htmlFor={`f-${priceKey}`}>
-                    Item {index + 1} price
+                    {t("bill.itemPrice", { n: index + 1 })}
                   </label>
                   <MoneyInput
                     {...fieldProps(priceKey, shown[priceKey])}
@@ -287,8 +287,8 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 <button
                   type="button"
                   className="icon-button"
-                  aria-label={`Remove item ${index + 1}`}
-                  title="Remove item"
+                  aria-label={t("bill.removeItemN", { n: index + 1 })}
+                  title={t("bill.removeItem")}
                   onClick={() => removeItem(item.key)}
                 >
                   ×
@@ -298,20 +298,20 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
           })}
         </ol>
         <button type="button" className="btn btn-secondary" onClick={addItem}>
-          + Add item
+          {t("bill.addItem")}
         </button>
       </section>
       </div>
 
       <aside className="bill-side">
       <section className="card">
-        <h2>Charges</h2>
+        <h2>{t("bill.charges")}</h2>
         <Field
           fieldKey="labour"
-          label="Labour charge"
+          label={t("bill.labourCharge")}
           required
           error={shown.labour}
-          hint={allowZeroLabour ? "Enter 0 if there is no labour charge." : undefined}
+          hint={allowZeroLabour ? t("bill.labourZeroHint") : undefined}
         >
           <MoneyInput
             {...fieldProps("labour", shown.labour)}
@@ -324,7 +324,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
 
         {(["painting", "washing"] as const).map((field) => {
           const service = draft[field];
-          const name = field === "painting" ? "Painting" : "Washing";
+          const name = field === "painting" ? t("bill.painting") : t("bill.washing");
           return (
             <div key={field} className="service">
               <label className="check">
@@ -337,7 +337,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
               </label>
               {service.selected && (
                 <div className={`field${shown[field] ? " has-error" : ""}`}>
-                  <label htmlFor={`f-${field}`}>{name} charge</label>
+                  <label htmlFor={`f-${field}`}>{field === "painting" ? t("bill.paintingCharge") : t("bill.washingCharge")}</label>
                   <MoneyInput
                     {...fieldProps(field, shown[field])}
                     invalid={Boolean(shown[field])}
@@ -353,21 +353,21 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
         })}
         <div className={`service discount${shown.discount ? " has-error" : ""}`}>
           <div className="discount-head">
-            <label htmlFor="f-discount">Discount</label>
-            <div className="segmented segmented-sm" role="group" aria-label="Discount type">
+            <label htmlFor="f-discount">{t("bill.discount")}</label>
+            <div className="segmented segmented-sm" role="group" aria-label={t("bill.discountType")}>
               <button
                 type="button"
                 aria-pressed={draft.discount.mode === "amount"}
                 onClick={() => set("discount", { ...draft.discount, mode: "amount" })}
               >
-                ₹ Amount
+                {t("bill.discountAmount")}
               </button>
               <button
                 type="button"
                 aria-pressed={draft.discount.mode === "percent"}
                 onClick={() => set("discount", { ...draft.discount, mode: "percent" })}
               >
-                % of bill
+                {t("bill.discountPercent")}
               </button>
             </div>
           </div>
@@ -376,7 +376,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
               {...fieldProps("discount", shown.discount)}
               invalid={Boolean(shown.discount)}
               className="money-short"
-              placeholder="0 (optional)"
+              placeholder={t("bill.optionalZero")}
               value={draft.discount.value}
               onChange={(e) => set("discount", { ...draft.discount, value: e.target.value })}
             />
@@ -387,7 +387,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                 type="text"
                 inputMode="decimal"
                 autoComplete="off"
-                placeholder="0 (optional)"
+                placeholder={t("bill.optionalZero")}
                 value={draft.discount.value}
                 onChange={(e) => set("discount", { ...draft.discount, value: e.target.value })}
               />
@@ -395,48 +395,46 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
             </div>
           )}
           {draft.discount.mode === "percent" && totals.discount > 0 && (
-            <p className="hint">= {formatINR(totals.discount)} off</p>
+            <p className="hint">{t("bill.amountOff", { amount: formatINR(totals.discount) })}</p>
           )}
           <FieldError fieldKey="discount" error={shown.discount} />
         </div>
       </section>
 
-      <section className="card totals" aria-label="Bill total">
-        <h2>Bill total</h2>
+      <section className="card totals" aria-label={t("bill.billTotal")}>
+        <h2>{t("bill.billTotal")}</h2>
         <dl>
           <div>
-            <dt>
-              Items subtotal ({filledItems} {filledItems === 1 ? "item" : "items"})
-            </dt>
+            <dt>{tn("bill.itemsSubtotal", filledItems)}</dt>
             <dd>{formatINR(totals.itemsSubtotal)}</dd>
           </div>
           <div>
-            <dt>Labour charge</dt>
+            <dt>{t("bill.labourCharge")}</dt>
             <dd>{formatINR(totals.labour)}</dd>
           </div>
           {draft.painting.selected && (
             <div>
-              <dt>Painting</dt>
+              <dt>{t("bill.painting")}</dt>
               <dd>{formatINR(totals.painting)}</dd>
             </div>
           )}
           {draft.washing.selected && (
             <div>
-              <dt>Washing</dt>
+              <dt>{t("bill.washing")}</dt>
               <dd>{formatINR(totals.washing)}</dd>
             </div>
           )}
           {totals.discount > 0 && (
             <div className="discount-row">
               <dt>
-                Discount
+                {t("bill.discount")}
                 {draft.discount.mode === "percent" ? ` (${draft.discount.value.trim()}%)` : ""}
               </dt>
               <dd>−{formatINR(totals.discount)}</dd>
             </div>
           )}
           <div className="grand">
-            <dt>Grand total</dt>
+            <dt>{t("bill.grandTotal")}</dt>
             <dd>{formatINR(totals.grandTotal)}</dd>
           </div>
         </dl>
@@ -446,17 +444,17 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
 
       <div className="savebar">
         <div className="savebar-total" aria-hidden="true">
-          <span>Total</span>
+          <span>{t("bill.total")}</span>
           <strong>{formatINR(totals.grandTotal)}</strong>
         </div>
         <div className="savebar-actions">
           {billId && (
             <Link to={`/bills/${billId}`} className="btn btn-outline">
-              Cancel
+              {t("common.cancel")}
             </Link>
           )}
           <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
-            {saving ? "Saving…" : billId ? "Save changes" : "Save bill"}
+            {saving ? t("common.saving") : billId ? t("bill.saveChanges") : t("bill.saveBill")}
           </button>
         </div>
       </div>

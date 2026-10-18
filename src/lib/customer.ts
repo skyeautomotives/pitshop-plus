@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 // Customer and vehicle details shared by bills and complaints.
 
 export interface CustomerFields {
@@ -30,21 +31,21 @@ export type FieldErrors = Record<string, string>;
 /** Validates customer/vehicle fields into `errors`; returns the cleaned values. */
 export function validateCustomer(d: CustomerFields, errors: FieldErrors) {
   const name = d.customerName.trim();
-  if (!name) errors.customerName = "Enter the customer's name.";
-  else if (name.length > 100) errors.customerName = "Name is too long (100 characters max).";
+  if (!name) errors.customerName = t("customer.nameMissing");
+  else if (name.length > 100) errors.customerName = t("customer.nameTooLong");
 
-  if (d.address.trim().length > 300) errors.address = "Address is too long (300 characters max).";
+  if (d.address.trim().length > 300) errors.address = t("customer.addressTooLong");
 
   const phoneDigits = d.phone.replace(/\D/g, "");
-  if (!d.phone.trim()) errors.phone = "Enter the phone number.";
+  if (!d.phone.trim()) errors.phone = t("customer.phoneMissing");
   else if (!/^[+\d\s()-]+$/.test(d.phone.trim()) || phoneDigits.length < 10 || phoneDigits.length > 13)
-    errors.phone = "Enter a valid phone number with at least 10 digits.";
+    errors.phone = t("customer.phoneInvalid");
 
   const reg = normalizeVehicleReg(d.vehicleReg);
   const regChars = reg.replace(/[^A-Z0-9]/g, "");
-  if (!reg) errors.vehicleReg = "Enter the vehicle registration number.";
+  if (!reg) errors.vehicleReg = t("customer.regMissing");
   else if (!/^[A-Z0-9 -]+$/.test(reg) || regChars.length < 4 || reg.length > 20)
-    errors.vehicleReg = "Enter a valid registration number, e.g. KA 01 AB 1234.";
+    errors.vehicleReg = t("customer.regInvalid");
 
   return {
     customer_name: name,

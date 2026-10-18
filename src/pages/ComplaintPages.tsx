@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useT } from "../i18n";
 import { jobLabel } from "../lib/jobCard";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
@@ -16,23 +17,25 @@ import type { BillPrefill } from "./NewBill";
 import { displayNumber } from "../lib/format";
 
 function NotFound() {
+  const { t } = useT();
   return (
     <div className="empty">
-      <h1>Complaint not found</h1>
-      <p>This complaint doesn't exist or the link is wrong.</p>
+      <h1>{t("complaint.notFoundTitle")}</h1>
+      <p>{t("complaint.notFoundBody")}</p>
       <Link to="/bills" className="btn btn-primary">
-        Find bills
+        {t("nav.findBills")}
       </Link>
     </div>
   );
 }
 
 function LoadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useT();
   return (
     <div className="alert alert-error" role="alert">
-      <span>Couldn't load the complaint. {message}</span>
+      <span>{t("complaint.loadFailed", { message })}</span>
       <button type="button" className="btn btn-outline btn-sm" onClick={onRetry}>
-        Try again
+        {t("common.tryAgain")}
       </button>
     </div>
   );
@@ -48,15 +51,17 @@ export function NewComplaint() {
     return emptyComplaint(prefill ?? {});
   });
   const name = me.status === "ok" ? me.me.full_name.trim() || me.me.username : "";
-  return <ComplaintForm initial={initial} title="New complaint" attendedBy={name} />;
+  const { t } = useT();
+  return <ComplaintForm initial={initial} title={t("complaint.newComplaint")} attendedBy={name} />;
 }
 
 export function EditComplaint() {
   const { id } = useParams();
   const state = useLoad(id ?? "", () => (isUuid(id) ? getComplaint(id!) : Promise.resolve(null)));
   const initial = useMemo(() => (state.status === "ok" && state.data ? complaintToDraft(state.data) : null), [state]);
+  const { t } = useT();
 
-  if (state.status === "loading") return <p className="page-status">Loading complaint…</p>;
+  if (state.status === "loading") return <p className="page-status">{t("complaint.loadingOne")}</p>;
   if (state.status === "error") return <LoadFailed message={state.message} onRetry={state.retry} />;
   if (!state.data || !initial) return <NotFound />;
   return (
@@ -64,7 +69,7 @@ export function EditComplaint() {
       initial={initial}
       complaintId={state.data.id}
       attendedBy={state.data.attended_by ?? ""}
-      title={`Edit complaint ${displayNumber(state.data.complaint_number)}`}
+      title={t("complaint.editTitle", { number: displayNumber(state.data.complaint_number) })}
     />
   );
 }
@@ -78,12 +83,13 @@ export function ComplaintView() {
   const [statusOverride, setStatusOverride] = useState<ComplaintStatus | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const { t } = useT();
 
   useEffect(() => {
     if (justSaved) navigate(location.pathname, { replace: true, state: null });
   }, [justSaved, navigate, location.pathname]);
 
-  if (state.status === "loading") return <p className="page-status">Loading complaint…</p>;
+  if (state.status === "loading") return <p className="page-status">{t("complaint.loadingOne")}</p>;
   if (state.status === "error") return <LoadFailed message={state.message} onRetry={state.retry} />;
   if (!state.data) return <NotFound />;
 
@@ -116,42 +122,40 @@ export function ComplaintView() {
     <div>
       <div className="toolbar">
         <Link to={`/vehicles/${c.vehicle_reg_key}`} className="back-link">
-          ← History for {c.vehicle_reg}
+          {t("complaint.historyFor", { reg: c.vehicle_reg })}
         </Link>
         <div className="toolbar-actions">
           <Link to={`/complaints/${c.id}/edit`} className="btn btn-outline">
-            Edit
+            {t("complaint.edit")}
           </Link>
           <button type="button" className="btn btn-outline" onClick={() => void toggleStatus()} disabled={statusBusy}>
-            {statusBusy ? "Saving…" : status === "open" ? "Mark resolved" : "Reopen"}
+            {statusBusy ? t("common.saving") : status === "open" ? t("complaint.markResolved") : t("complaint.reopen")}
           </button>
           <Link to="/bills/new" state={{ prefill: billPrefill }} className="btn btn-primary">
-            Create bill for this complaint
+            {t("complaint.createBill")}
           </Link>
         </div>
       </div>
 
       {justSaved && (
         <div className="alert alert-success" role="status">
-          {c.complaint_number === null
-            ? "Complaint saved on this device. It gets its number when it syncs."
-            : `Complaint ${displayNumber(c.complaint_number)} saved.`}
+          {c.complaint_number === null ? t("complaint.savedOffline") : t("complaint.saved", { number: displayNumber(c.complaint_number) })}
         </div>
       )}
       {statusError && (
         <div className="alert alert-error" role="alert">
-          Couldn't change the status. {statusError}
+          {t("complaint.statusFailed", { message: statusError })}
         </div>
       )}
 
       <article className="card">
         <div className="complaint-head">
           <h1>
-            Complaint {displayNumber(c.complaint_number)} <StatusBadge status={status} />
+            {t("complaint.title", { number: displayNumber(c.complaint_number) })} <StatusBadge status={status} />
           </h1>
         </div>
         {(c.jobs ?? []).length > 0 && (
-          <ul className="job-ticked" aria-label="Jobs ticked">
+          <ul className="job-ticked" aria-label={t("complaint.jobsTickedLabel")}>
             {(c.jobs ?? []).map((id) => (
               <li key={id}>{jobLabel(id)}</li>
             ))}
@@ -160,58 +164,58 @@ export function ComplaintView() {
         {c.description.trim() && <p className="complaint-description pre-line">{c.description}</p>}
         <dl className="bill-customer">
           <div>
-            <dt>Reported</dt>
+            <dt>{t("complaint.reported")}</dt>
             <dd>{formatDate(c.reported_on)}</dd>
           </div>
           <div>
-            <dt>Attended by</dt>
-            <dd>{c.attended_by || "Not recorded"}</dd>
+            <dt>{t("complaint.attendedBy")}</dt>
+            <dd>{c.attended_by || t("common.notRecorded")}</dd>
           </div>
           <div>
-            <dt>Customer</dt>
+            <dt>{t("complaint.customer")}</dt>
             <dd>{c.customer_name}</dd>
           </div>
           <div>
-            <dt>Phone</dt>
+            <dt>{t("complaint.phone")}</dt>
             <dd>{c.phone}</dd>
           </div>
           <div>
-            <dt>Vehicle no.</dt>
+            <dt>{t("complaint.vehicleNo")}</dt>
             <dd className="reg">{c.vehicle_reg}</dd>
           </div>
           {c.vehicle_name && (
             <div>
-              <dt>Vehicle</dt>
+              <dt>{t("complaint.vehicle")}</dt>
               <dd>{c.vehicle_name}</dd>
             </div>
           )}
           {c.odometer_km !== null && c.odometer_km !== undefined && (
             <div>
-              <dt>Km driven</dt>
-              <dd>{c.odometer_km.toLocaleString("en-IN")} km</dd>
+              <dt>{t("complaint.km")}</dt>
+              <dd>{t("complaint.kmValue", { km: c.odometer_km.toLocaleString("en-IN") })}</dd>
             </div>
           )}
           {c.helmets !== null && c.helmets !== undefined && (
             <div>
-              <dt>Helmets received</dt>
+              <dt>{t("complaint.helmets")}</dt>
               <dd>{c.helmets}</dd>
             </div>
           )}
           {c.address && (
             <div className="span-all">
-              <dt>Address</dt>
+              <dt>{t("complaint.address")}</dt>
               <dd className="pre-line">{c.address}</dd>
             </div>
           )}
           {((c.helmets !== null && c.helmets !== undefined) || documentsText(c) !== "") && (
             <div className="span-all">
-              <dt>Documents received</dt>
-              <dd>{documentsText(c) || "None"}</dd>
+              <dt>{t("complaint.documentsReceived")}</dt>
+              <dd>{documentsText(c) || t("complaint.none")}</dd>
             </div>
           )}
           {!!c.advance_amount && (
             <div className="span-all">
-              <dt>Advance received</dt>
+              <dt>{t("complaint.advanceReceived")}</dt>
               <dd>
                 <strong>{formatINR(rupeesToPaise(c.advance_amount))}</strong>
                 {c.advance_method && <span className="muted"> · {paymentMethodLabel(c.advance_method)}</span>}
@@ -220,7 +224,7 @@ export function ComplaintView() {
           )}
           {c.notes && (
             <div className="span-all">
-              <dt>Notes</dt>
+              <dt>{t("complaint.notes")}</dt>
               <dd className="pre-line">{c.notes}</dd>
             </div>
           )}
@@ -228,20 +232,20 @@ export function ComplaintView() {
       </article>
 
       <section className="card">
-        <h2>Bills for this complaint</h2>
+        <h2>{t("complaint.billsFor")}</h2>
         {bills.length === 0 ? (
           <p className="muted">
-            No bill yet for this complaint.{" "}
+            {t("complaint.noBillYet")}{" "}
             <Link to="/bills/new" state={{ prefill: billPrefill }}>
-              Create one
+              {t("complaint.createOne")}
             </Link>{" "}
-            when the work is done.
+            {t("complaint.whenDone")}
           </p>
         ) : (
           <ul className="linked-list">
             {bills.map((b) => (
               <li key={b.id}>
-                <Link to={`/bills/${b.id}`}>Bill {displayNumber(b.bill_number)}</Link>
+                <Link to={`/bills/${b.id}`}>{t("complaint.billNumber", { number: displayNumber(b.bill_number) })}</Link>
                 <span className="muted">{formatDate(b.date_received)}</span>
                 <strong>{formatINR(rupeesToPaise(b.grand_total))}</strong>
               </li>

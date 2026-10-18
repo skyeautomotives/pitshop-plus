@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT, type Key } from "../i18n";
 import { Link, useParams } from "react-router";
 import { BillCard, ComplaintCard } from "../components/cards";
 import { vehicleHistory } from "../lib/api";
@@ -7,10 +8,10 @@ import { buildHistory, filterHistory, historyCounts, type HistoryFilter } from "
 import { useLoad } from "../lib/useLoad";
 import type { BillPrefill } from "./NewBill";
 
-const FILTER_EMPTY: Record<HistoryFilter, string> = {
-  all: "No bills or complaints for this vehicle yet.",
-  "complaints-without-bill": "Every complaint for this vehicle has a bill.",
-  "bills-without-complaint": "Every bill for this vehicle is linked to a complaint.",
+const FILTER_EMPTY: Record<HistoryFilter, Key> = {
+  all: "history.emptyAll",
+  "complaints-without-bill": "history.emptyComplaintsWithoutBill",
+  "bills-without-complaint": "history.emptyBillsWithoutComplaint",
 };
 
 /** Complaints and bills for one vehicle, together in date order. */
@@ -18,14 +19,15 @@ export default function VehicleHistory() {
   const key = vehicleKey(useParams().key ?? "");
   const state = useLoad(key, () => vehicleHistory(key));
   const [filter, setFilter] = useState<HistoryFilter>("all");
+  const { t, tn } = useT();
 
-  if (state.status === "loading") return <p className="page-status">Loading history…</p>;
+  if (state.status === "loading") return <p className="page-status">{t("history.loading")}</p>;
   if (state.status === "error")
     return (
       <div className="alert alert-error" role="alert">
-        <span>Couldn't load the history. {state.message}</span>
+        <span>{t("history.loadFailed", { message: state.message })}</span>
         <button type="button" className="btn btn-outline btn-sm" onClick={state.retry}>
-          Try again
+          {t("common.tryAgain")}
         </button>
       </div>
     );
@@ -49,15 +51,15 @@ export default function VehicleHistory() {
   const billPrefill: BillPrefill = customer ?? { vehicleReg: key };
 
   const filters: { id: HistoryFilter; label: string; count: number }[] = [
-    { id: "all", label: "Everything", count: all.length },
-    { id: "complaints-without-bill", label: "Complaints without a bill", count: counts.complaintsWithoutBill },
-    { id: "bills-without-complaint", label: "Bills without a complaint", count: counts.billsWithoutComplaint },
+    { id: "all", label: t("history.everything"), count: all.length },
+    { id: "complaints-without-bill", label: t("history.complaintsWithoutBill"), count: counts.complaintsWithoutBill },
+    { id: "bills-without-complaint", label: t("history.billsWithoutComplaint"), count: counts.billsWithoutComplaint },
   ];
 
   return (
     <div>
       <Link to={`/bills?q=${encodeURIComponent(key)}`} className="back-link">
-        ← Find bills
+        {t("history.back")}
       </Link>
       <div className="history-head">
         <div>
@@ -67,26 +69,25 @@ export default function VehicleHistory() {
           {latest && (
             <p className="muted">
               {latest.customer_name} · {latest.phone}
-              {otherNames.length > 0 && ` · also recorded as ${otherNames.join(", ")}`}
+              {otherNames.length > 0 && t("history.alsoRecordedAs", { names: otherNames.join(", ") })}
             </p>
           )}
         </div>
         <div className="toolbar-actions">
           <Link to="/complaints/new" state={{ prefill: customer ?? { vehicleReg: key } }} className="btn btn-outline">
-            New complaint
+            {t("nav.newComplaint")}
           </Link>
           <Link to="/bills/new" state={{ prefill: billPrefill }} className="btn btn-primary">
-            New bill
+            {t("nav.newBill")}
           </Link>
         </div>
       </div>
 
       <p className="history-summary">
-        {counts.complaints} {counts.complaints === 1 ? "complaint" : "complaints"} ({counts.openComplaints} open) · {counts.bills}{" "}
-        {counts.bills === 1 ? "bill" : "bills"}
+        {tn("history.complaintsSummary", counts.complaints, { open: counts.openComplaints })} · {tn("dashboard.billCount", counts.bills)}
       </p>
 
-      <div className="filter-bar" role="group" aria-label="Show">
+      <div className="filter-bar" role="group" aria-label={t("lists.show")}>
         {filters.map((f) => (
           <button
             key={f.id}

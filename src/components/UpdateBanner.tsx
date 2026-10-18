@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../i18n";
 import { isAndroidApp } from "../lib/platform";
 import { downloadUpdate, useUpdateAvailable } from "../lib/updates";
 
@@ -6,16 +7,13 @@ import { downloadUpdate, useUpdateAvailable } from "../lib/updates";
 export default function UpdateBanner() {
   const update = useUpdateAvailable();
   const [started, setStarted] = useState(false);
+  const { t } = useT();
   if (!update) return null;
   return (
     <div className="alert update-banner no-print" role="status">
       <span>
-        <strong>Pitshop Plus {update.version} is available.</strong>{" "}
-        {started
-          ? isAndroidApp
-            ? "When the download finishes, open it and tap Install. Your data is kept."
-            : "When the download finishes, run it to update. Your data is kept."
-          : "Update to get the latest improvements. Your data is kept."}
+        <strong>{t("update.available", { version: update.version })}</strong>{" "}
+        {started ? (isAndroidApp ? t("update.afterDownloadAndroid") : t("update.afterDownloadWindows")) : t("update.prompt")}
       </span>
       <button
         type="button"
@@ -25,7 +23,7 @@ export default function UpdateBanner() {
           void downloadUpdate();
         }}
       >
-        {started ? "Download again" : "Update now"}
+        {started ? t("update.downloadAgain") : t("update.updateNow")}
       </button>
     </div>
   );

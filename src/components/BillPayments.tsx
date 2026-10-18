@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { t, useT } from "../i18n";
 import { addBillPayment, removeBillPayment } from "../lib/api";
 import { PAYMENT_METHODS, paymentMethodLabel } from "../lib/complaint";
 import { formatDate } from "../lib/format";
@@ -24,6 +25,7 @@ export default function BillPayments({
   payments: BillPayment[];
   money: BillMoney;
 }) {
+  useT();
   const [draft, setDraft] = useState<PaymentDraft | null>(null);
   /** A problem with what was typed (shown under the amount). */
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export default function BillPayments({
     try {
       await addBillPayment(billId, input);
       setDraft(null);
-      setNotice(`Recorded ${inr(input.amount)} by ${paymentMethodLabel(input.method)}.`);
+      setNotice(t("payments.recorded", { amount: inr(input.amount), method: paymentMethodLabel(input.method) }));
     } catch (e2) {
       setSaveError(errorMessage(e2));
     } finally {
@@ -69,7 +71,7 @@ export default function BillPayments({
     setSaveError(null);
     try {
       await removeBillPayment(billId, p.id);
-      setNotice(`Removed the payment of ${inr(p.amount)}.`);
+      setNotice(t("payments.removed", { amount: inr(p.amount) }));
     } catch (e2) {
       setSaveError(errorMessage(e2));
     }
@@ -80,29 +82,29 @@ export default function BillPayments({
   return (
     <section className="card bill-payments no-print" aria-labelledby="payments-title">
       <div className="card-head">
-        <h2 id="payments-title">Payments</h2>
+        <h2 id="payments-title">{t("payments.title")}</h2>
         {money.status === "paid" ? (
-          <span className="badge badge-resolved">Paid in full</span>
+          <span className="badge badge-resolved">{t("payments.paidInFull")}</span>
         ) : (
-          <span className="badge badge-open">Balance {inr(money.balance)}</span>
+          <span className="badge badge-open">{t("lists.balance", { amount: inr(money.balance) })}</span>
         )}
       </div>
 
       <dl className="pay-summary">
         <div>
-          <dt>Advance (on the complaint)</dt>
+          <dt>{t("payments.advance")}</dt>
           <dd>{inr(money.advance)}</dd>
         </div>
         <div>
-          <dt>Paid after billing</dt>
+          <dt>{t("payments.paidAfter")}</dt>
           <dd>{inr(money.paid)}</dd>
         </div>
         <div className="pay-balance">
-          <dt>Balance to pay</dt>
+          <dt>{t("payments.balanceToPay")}</dt>
           <dd>{inr(money.balance)}</dd>
         </div>
       </dl>
-      {money.extra > 0 && <p className="hint">The customer has paid {inr(money.extra)} more than the bill.</p>}
+      {money.extra > 0 && <p className="hint">{t("payments.overpaid", { amount: inr(money.extra) })}</p>}
 
       {notice && (
         <div className="alert alert-success" role="status">
@@ -111,7 +113,7 @@ export default function BillPayments({
       )}
       {saveError && (
         <div className="alert alert-error" role="alert">
-          Couldn't save the payment. {saveError}
+          {t("payments.saveFailed", { message: saveError })}
         </div>
       )}
 
@@ -123,12 +125,12 @@ export default function BillPayments({
                 <strong>{inr(p.amount)}</strong> · {paymentMethodLabel(p.method)}
                 <div className="muted pay-meta">
                   {formatDate(p.paid_on)}
-                  {p.recorded_by_name && ` · recorded by ${p.recorded_by_name}`}
+                  {p.recorded_by_name && t("payments.recordedBy", { name: p.recorded_by_name })}
                   {p.note && ` · ${p.note}`}
                 </div>
               </div>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => setRemoving(p)}>
-                Remove
+                {t("payments.remove")}
               </button>
             </li>
           ))}
@@ -137,7 +139,7 @@ export default function BillPayments({
 
       {draft ? (
         <form className="pay-form" onSubmit={onSubmit} noValidate>
-          <div className="pay-methods" role="group" aria-label="Paid by">
+          <div className="pay-methods" role="group" aria-label={t("payments.paidBy")}>
             {QUICK.map((m) => (
               <button
                 key={m}
@@ -150,11 +152,11 @@ export default function BillPayments({
               </button>
             ))}
             <select
-              aria-label="Other ways to pay"
+              aria-label={t("payments.otherWays")}
               value={QUICK.includes(draft.method) ? "" : draft.method}
               onChange={(e) => e.target.value && setDraft({ ...draft, method: e.target.value as PaymentMethod })}
             >
-              <option value="">More…</option>
+              <option value="">{t("payments.more")}</option>
               {PAYMENT_METHODS.filter((m) => !QUICK.includes(m.id)).map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.label}
@@ -164,7 +166,7 @@ export default function BillPayments({
           </div>
           <div className="grid">
             <div className={`field${error ? " has-error" : ""}`}>
-              <label htmlFor="f-payAmount">Amount received</label>
+              <label htmlFor="f-payAmount">{t("payments.amountReceived")}</label>
               <MoneyInput
                 id="f-payAmount"
                 invalid={!!error}
@@ -181,46 +183,50 @@ export default function BillPayments({
               )}
             </div>
             <div className="field">
-              <label htmlFor="f-payDate">Date paid</label>
+              <label htmlFor="f-payDate">{t("payments.datePaid")}</label>
               <input id="f-payDate" type="date" value={draft.paidOn} onChange={(e) => setDraft({ ...draft, paidOn: e.target.value })} />
             </div>
           </div>
           <div className="field">
             <label htmlFor="f-payNote">
-              Note <span className="optional">(optional)</span>
+              {t("payments.note")} <span className="optional">{t("common.optional")}</span>
             </label>
             <input
               id="f-payNote"
               type="text"
               maxLength={200}
-              placeholder="e.g. UPI ref 4512, rest on delivery"
+              placeholder={t("payments.notePlaceholder")}
               value={draft.note}
               onChange={(e) => setDraft({ ...draft, note: e.target.value })}
             />
           </div>
           <div className="pay-actions">
             <button type="button" className="btn btn-outline" onClick={() => setDraft(null)} disabled={saving}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? "Saving…" : "Save payment"}
+              {saving ? t("common.saving") : t("payments.savePayment")}
             </button>
           </div>
         </form>
       ) : (
         money.balance > 0 && (
           <button type="button" className="btn btn-primary" onClick={open}>
-            Record payment
+            {t("payments.recordPayment")}
           </button>
         )
       )}
 
       {removing && (
         <ConfirmDialog
-          title="Remove this payment?"
-          message={`${inr(removing.amount)} by ${paymentMethodLabel(removing.method)} on ${formatDate(removing.paid_on)} will be removed from the bill, and the balance goes up.`}
-          confirmLabel="Remove"
-          cancelLabel="Keep it"
+          title={t("payments.removeTitle")}
+          message={t("payments.removeMessage", {
+            amount: inr(removing.amount),
+            method: paymentMethodLabel(removing.method),
+            date: formatDate(removing.paid_on),
+          })}
+          confirmLabel={t("payments.remove")}
+          cancelLabel={t("payments.keepIt")}
           onConfirm={() => void onRemove(removing)}
           onCancel={() => setRemoving(null)}
         />

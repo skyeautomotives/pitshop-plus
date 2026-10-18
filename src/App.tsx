@@ -1,4 +1,5 @@
 import { createBrowserRouter, createHashRouter, Link, Navigate, RouterProvider } from "react-router";
+import { LanguageProvider } from "./i18n";
 import Layout from "./components/Layout";
 import { AuthProvider, RequireAuth } from "./lib/auth";
 import { ShopSettingsProvider } from "./lib/shopSettings";
@@ -115,8 +116,10 @@ export default function App() {
     );
   }
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

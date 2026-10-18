@@ -1,4 +1,5 @@
 import { ISO_DATE, todayISO, validateCustomer, type CustomerFields } from "./customer";
+import { t } from "../i18n";
 import { paiseToDecimal, paiseToInput, parseAmount, rupeesToPaise, type ParsedAmount } from "./money";
 import type { BillWithItems } from "./types";
 
@@ -144,9 +145,9 @@ export type BillErrors = Record<string, string>;
 
 function amountMessage(p: ParsedAmount, label: string): string | null {
   if (p.ok) return null;
-  if (p.reason === "empty") return `Enter the ${label}.`;
-  if (p.reason === "too-large") return `The ${label} is too large.`;
-  return `Enter the ${label} as a number, e.g. 450 or 450.50.`;
+  if (p.reason === "empty") return t("validation.amountEmpty", { label });
+  if (p.reason === "too-large") return t("validation.amountTooLarge", { label });
+  return t("validation.amountNotNumber", { label });
 }
 
 /** Checks every field. Returns the payload only when there are no errors. */
@@ -157,47 +158,46 @@ export function validateBill(
   const errors: BillErrors = {};
   const customer = validateCustomer(d, errors);
 
-  if (!ISO_DATE.test(d.dateReceived)) errors.dateReceived = "Choose the date the vehicle was received.";
-  if (!ISO_DATE.test(d.deliveredOn)) errors.deliveredOn = "Choose the delivery date.";
-  else if (ISO_DATE.test(d.dateReceived) && d.deliveredOn < d.dateReceived)
-    errors.deliveredOn = "Delivery can't be before the date received.";
+  if (!ISO_DATE.test(d.dateReceived)) errors.dateReceived = t("validation.dateReceived");
+  if (!ISO_DATE.test(d.deliveredOn)) errors.deliveredOn = t("validation.deliveredOn");
+  else if (ISO_DATE.test(d.dateReceived) && d.deliveredOn < d.dateReceived) errors.deliveredOn = t("validation.deliveryBeforeReceived");
 
-  if (d.expectedPickup && !ISO_DATE.test(d.expectedPickup)) errors.expectedPickup = "Choose a valid pickup date.";
+  if (d.expectedPickup && !ISO_DATE.test(d.expectedPickup)) errors.expectedPickup = t("validation.pickupInvalid");
   else if (d.expectedPickup && ISO_DATE.test(d.dateReceived) && d.expectedPickup < d.dateReceived)
-    errors.expectedPickup = "Pickup date can't be before the date received.";
+    errors.expectedPickup = t("validation.pickupBeforeReceived");
 
   const items: SaveBillPayload["items"] = [];
   for (const item of d.items) {
     if (isBlankItem(item)) continue;
     const description = item.description.trim();
-    if (!description) errors[`item-${item.key}-description`] = "Describe the part or work.";
-    else if (description.length > 200) errors[`item-${item.key}-description`] = "Too long (200 characters max).";
+    if (!description) errors[`item-${item.key}-description`] = t("validation.describeItem");
+    else if (description.length > 200) errors[`item-${item.key}-description`] = t("validation.tooLong200");
     const qty = parseQuantity(item.quantity);
-    if (qty === null) errors[`item-${item.key}-quantity`] = "Enter a quantity above 0, e.g. 1 or 1.5.";
+    if (qty === null) errors[`item-${item.key}-quantity`] = t("validation.quantity");
     const price = parseAmount(item.price);
-    const priceError = amountMessage(price, "price");
+    const priceError = amountMessage(price, t("validation.labelPrice"));
     if (priceError) errors[`item-${item.key}-price`] = priceError;
     if (description && price.ok && qty !== null)
       items.push({ description, quantity: (qty / 100).toFixed(2), price: paiseToDecimal(price.paise) });
   }
 
   const labour = parseAmount(d.labour);
-  const labourError = amountMessage(labour, "labour charge");
+  const labourError = amountMessage(labour, t("validation.labelLabour"));
   if (labourError) errors.labour = labourError;
-  else if (labour.ok && labour.paise === 0 && !opts.allowZeroLabour)
-    errors.labour = "Labour charge must be more than ₹0.";
+  else if (labour.ok && labour.paise === 0 && !opts.allowZeroLabour) errors.labour = t("validation.labourAboveZero");
 
   // Optional services: only checked when ticked, and then need an amount above ₹0.
-  const optional = (service: OptionalService, field: "painting" | "washing", name: string): string | null => {
+  const optional = (service: OptionalService, field: "painting" | "washing"): string | null => {
     if (!service.selected) return null;
-    const label = `${name.toLowerCase()} charge`;
+    const label = field === "painting" ? t("validation.labelPainting") : t("validation.labelWashing");
+    const name = field === "painting" ? t("bill.painting") : t("bill.washing");
     const p = parseAmount(service.amount);
-    const msg = p.ok ? (p.paise === 0 ? `The ${label} must be more than ₹0.` : null) : amountMessage(p, label);
-    if (msg) errors[field] = `${msg} Or untick ${name}.`;
+    const msg = p.ok ? (p.paise === 0 ? t("validation.amountAboveZero", { label }) : null) : amountMessage(p, label);
+    if (msg) errors[field] = t("validation.orUntick", { message: msg, name });
     return p.ok ? paiseToDecimal(p.paise) : null;
   };
-  const painting = optional(d.painting, "painting", "Painting");
-  const washing = optional(d.washing, "washing", "Washing");
+  const painting = optional(d.painting, "painting");
+  const washing = optional(d.washing, "washing");
 
   // Discount: optional; checked against the bill total before discount.
   const totals = computeTotals(d);
@@ -206,14 +206,14 @@ export function validateBill(
   if (d.discount.value.trim()) {
     const p = parseAmount(d.discount.value);
     if (d.discount.mode === "percent") {
-      if (!p.ok || p.paise === 0 || p.paise > 10000) errors.discount = "Enter a percentage between 0 and 100, e.g. 10.";
+      if (!p.ok || p.paise === 0 || p.paise > 10000) errors.discount = t("validation.percent");
       else {
         discount = Math.round((totals.gross * p.paise) / 10000);
         discountPercent = (p.paise / 100).toFixed(2);
       }
-    } else if (!p.ok) errors.discount = amountMessage(p, "discount") ?? "Enter the discount.";
+    } else if (!p.ok) errors.discount = amountMessage(p, t("validation.labelDiscount")) ?? t("validation.discountMissing");
     else discount = p.paise;
-    if (!errors.discount && discount > totals.gross) errors.discount = "The discount can't be more than the bill total.";
+    if (!errors.discount && discount > totals.gross) errors.discount = t("validation.discountTooBig");
   }
 
   if (Object.keys(errors).length > 0 || !labour.ok) return { errors, payload: null };

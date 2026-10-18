@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { t, useT } from "../i18n";
 import { useLocation, useNavigate } from "react-router";
 import BillForm from "../components/BillForm";
 import { emptyBill, isBlankItem, type BillDraft } from "../lib/bill";
@@ -56,6 +57,7 @@ function clearDraft() {
 export type BillPrefill = Partial<Pick<BillDraft, "customerName" | "phone" | "address" | "vehicleReg" | "complaintIds">>;
 
 export default function NewBill() {
+  useT();
   const location = useLocation();
   const navigate = useNavigate();
   const [prefill] = useState(() => (location.state as { prefill?: BillPrefill } | null)?.prefill ?? null);
@@ -87,13 +89,13 @@ export default function NewBill() {
 
   const banner = start.restored ? (
     <div className="alert alert-info">
-      <span>We restored a bill you hadn't saved yet.</span>
+      <span>{t("billView.restored")}</span>
       <button type="button" className="link-button" onClick={startFresh}>
         {prefill?.complaintIds?.length
-          ? "Discard it and start the bill for the selected complaint"
+          ? t("billView.discardForComplaint")
           : prefill
-            ? `Discard it and start a bill for ${prefill.vehicleReg}`
-            : "Discard it and start a new bill"}
+            ? t("billView.discardForVehicle", { reg: prefill.vehicleReg ?? "" })
+            : t("billView.discardNew")}
       </button>
     </div>
   ) : null;
@@ -102,7 +104,7 @@ export default function NewBill() {
     <BillForm
       key={start.key}
       initial={start.draft}
-      title="New bill"
+      title={t("nav.newBill")}
       onChange={saveDraft}
       onSaved={clearDraft}
       banner={banner}

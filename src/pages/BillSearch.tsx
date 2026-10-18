@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useT } from "../i18n";
 import { Link, useSearchParams } from "react-router";
 import { BillCard, ComplaintCard } from "../components/cards";
 import { searchBills, searchComplaints } from "../lib/api";
@@ -12,11 +13,10 @@ type Results =
   | { status: "error"; message: string }
   | { status: "ok"; bills: BillWithComplaints[]; complaints: ComplaintWithBills[] };
 
-function countLabel(n: number, one: string, many: string) {
-  return `${n}${n === RESULT_LIMIT ? "+" : ""} ${n === 1 ? one : many}`;
-}
+const countLabel = (n: number) => `${n}${n === RESULT_LIMIT ? "+" : ""}`;
 
 export default function BillSearch() {
+  const { t } = useT();
   const [params, setParams] = useSearchParams();
   const query = params.get("q") ?? "";
   const [input, setInput] = useState(query);
@@ -62,15 +62,15 @@ export default function BillSearch() {
 
   return (
     <div>
-      <h1>Find bills</h1>
+      <h1>{t("nav.findBills")}</h1>
       <div className="card search-card">
-        <label htmlFor="bill-search">Search by customer name, phone number or vehicle number</label>
+        <label htmlFor="bill-search">{t("lists.searchLabel")}</label>
         <input
           id="bill-search"
           type="search"
           autoFocus
           autoComplete="off"
-          placeholder="e.g. Ravi, 98765 or KA01AB1234"
+          placeholder={t("lists.searchPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
@@ -79,20 +79,20 @@ export default function BillSearch() {
       <div aria-live="polite">
         {results.status === "error" ? (
           <div className="alert alert-error" role="alert">
-            <span>Couldn't search. {results.message}</span>
+            <span>{t("lists.searchFailed", { message: results.message })}</span>
             <button type="button" className="btn btn-outline btn-sm" onClick={() => setAttempt((a) => a + 1)}>
-              Try again
+              {t("common.tryAgain")}
             </button>
           </div>
         ) : results.status === "loading" ? (
-          <p className="page-status">Loading…</p>
+          <p className="page-status">{t("common.loading")}</p>
         ) : (
           <div className={searching ? "stale" : undefined}>
-            {searching && <p className="results-heading">Searching…</p>}
+            {searching && <p className="results-heading">{t("lists.searching")}</p>}
 
             {vehicles.length > 0 && (
               <section className="vehicle-links">
-                <h2>Vehicle history</h2>
+                <h2>{t("lists.vehicleHistory")}</h2>
                 <div className="chips">
                   {vehicles.map((v) => (
                     <Link key={v.key} to={`/vehicles/${v.key}`} className="chip">
@@ -104,16 +104,16 @@ export default function BillSearch() {
             )}
 
             <section className="result-section">
-              <h2>{query ? `Bills · ${countLabel(results.bills.length, "found", "found")}` : "Recent bills"}</h2>
+              <h2>{query ? t("lists.billsFound", { count: countLabel(results.bills.length) }) : t("lists.recentBills")}</h2>
               {results.bills.length === 0 ? (
                 <div className="empty empty-list">
                   {query ? (
-                    <p>No bills match “{query}”. Check the spelling, or try the phone or vehicle number instead.</p>
+                    <p>{t("lists.noBillsMatch", { query })}</p>
                   ) : (
                     <>
-                      <p>No bills yet.</p>
+                      <p>{t("lists.noBillsYet")}</p>
                       <Link to="/bills/new" className="btn btn-primary">
-                        Create the first bill
+                        {t("lists.createFirstBill")}
                       </Link>
                     </>
                   )}
@@ -131,13 +131,13 @@ export default function BillSearch() {
 
             <section className="result-section">
               <h2>
-                {query ? `Complaints · ${countLabel(results.complaints.length, "found", "found")}` : "Recent complaints"}
+                {query ? t("lists.complaintsFound", { count: countLabel(results.complaints.length) }) : t("lists.recentComplaints")}
               </h2>
               {results.complaints.length === 0 ? (
                 <div className="empty empty-list">
-                  <p>{query ? `No complaints match “${query}”.` : "No complaints recorded yet."}</p>
+                  <p>{query ? t("lists.noComplaintsMatch", { query }) : t("lists.emptyAll")}</p>
                   <Link to="/complaints/new" className="btn btn-outline">
-                    Record a complaint
+                    {t("lists.recordComplaint")}
                   </Link>
                 </div>
               ) : (

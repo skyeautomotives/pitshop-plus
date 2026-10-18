@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
 import { BillNotFound, LoadError } from "../components/states";
@@ -22,13 +23,14 @@ export default function BillView() {
   const { settings } = useShopSettings();
   const state = useBill(id);
   const [justSaved] = useState(() => (location.state as { saved?: boolean } | null)?.saved === true);
+  const { t } = useT();
 
   // Drop the "saved" flag from history so a reload doesn't show the message again.
   useEffect(() => {
     if (justSaved) navigate(location.pathname, { replace: true, state: null });
   }, [justSaved, navigate, location.pathname]);
 
-  if (state.status === "loading") return <p className="page-status">Loading bill…</p>;
+  if (state.status === "loading") return <p className="page-status">{t("billView.loading")}</p>;
   if (state.status === "not-found") return <BillNotFound />;
   if (state.status === "error") return <LoadError message={state.message} onRetry={state.retry} />;
 
@@ -44,15 +46,15 @@ export default function BillView() {
     <div className="bill-page">
       <div className="toolbar no-print">
         <Link to={`/vehicles/${bill.vehicle_reg_key}`} className="back-link">
-          ← History for {bill.vehicle_reg}
+          {t("billView.historyFor", { reg: bill.vehicle_reg })}
         </Link>
         <div className="toolbar-actions">
           <Link to={`/bills/${bill.id}/edit`} className="btn btn-outline">
-            Edit
+            {t("billView.edit")}
           </Link>
           {canPrint && (
             <button type="button" className="btn btn-outline" onClick={() => window.print()}>
-              Print / Save PDF
+              {t("billView.print")}
             </button>
           )}
           {whatsapp && (
@@ -67,30 +69,28 @@ export default function BillView() {
                 void openExternal(whatsapp);
               }}
             >
-              Send on WhatsApp
+              {t("billView.whatsapp")}
             </a>
           )}
         </div>
       </div>
       {!whatsapp && (
         <p className="hint no-print">
-          WhatsApp isn't available for this bill because the phone number ({bill.phone}) isn't a valid mobile number.
+          {t("billView.noWhatsapp", { phone: bill.phone })}
         </p>
       )}
 
       {justSaved && (
         <div className="alert alert-success no-print" role="status">
-          {bill.bill_number === null
-            ? "Bill saved on this device. It gets its bill number when it syncs."
-            : `Bill ${displayNumber(bill.bill_number)} saved.`}{" "}
+          {bill.bill_number === null ? t("billView.savedOffline") : t("billView.saved", { number: displayNumber(bill.bill_number) })}{" "}
           <Link to="/bills/new" className="link-button">
-            Start a new bill
+            {t("billView.startNew")}
           </Link>
         </div>
       )}
       {!justSaved && bill.pending && (
         <div className="alert first-sync no-print" role="status">
-          This bill has changes saved on this device that haven't reached the server yet. They will be sent when you're online.
+          {t("billView.pendingChanges")}
         </div>
       )}
 

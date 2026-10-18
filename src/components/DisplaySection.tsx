@@ -1,12 +1,36 @@
 import { DENSITIES, TEXT_SIZES, useDisplay } from "../lib/display";
+import { LANGUAGES, useLang } from "../i18n";
 
 /** Settings > Display: text size and spacing for this device. */
 export default function DisplaySection() {
   const [prefs, setPrefs] = useDisplay();
+  const [lang, setLang] = useLang();
   return (
     <section className="card">
       <h2>Display</h2>
       <p className="hint">These choices are saved on this device only. Each phone or computer can have its own.</p>
+
+      <div className="field">
+        <span className="label-like" id="language-label">
+          Language / ഭാഷ / भाषा
+        </span>
+        <div className="display-options" role="radiogroup" aria-labelledby="language-label">
+          {LANGUAGES.filter((l) => l.ready).map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              role="radio"
+              lang={l.id}
+              aria-checked={lang === l.id}
+              className={`chip${lang === l.id ? " chip-active" : ""}`}
+              onClick={() => setLang(l.id)}
+            >
+              {l.native}
+            </button>
+          ))}
+        </div>
+        {lang !== "en" && <p className="hint">Some screens are still in English while they are being translated.</p>}
+      </div>
 
       <div className="field">
         <span className="label-like" id="text-size-label">

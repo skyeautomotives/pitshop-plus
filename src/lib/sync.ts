@@ -4,6 +4,7 @@
 // Runs when the app starts, when the connection comes back, when the window is
 // focused, and every 30 seconds.
 import { useEffect, useState } from "react";
+import { t } from "../i18n";
 import { getMeta, isBillOp, localDb, localUserId, openLocalDb, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import { digitsOnly } from "./local/model";
 import { errorMessage, supabase } from "./supabase";
@@ -305,16 +306,21 @@ export async function listWaitingChanges(): Promise<WaitingChange[]> {
       let detail = "";
       if (op.kind === "bill") {
         const b = await db.bills.get(op.entityId);
-        title = b?.bill_number ? `Bill #${b.bill_number}` : "New bill";
+        title = b?.bill_number ? t("syncPage.billN", { n: b.bill_number }) : t("syncPage.newBill");
         detail = [op.payload.bill.customer_name, op.payload.bill.vehicle_reg].filter(Boolean).join(" · ");
       } else if (op.kind === "bill-payment") {
         const b = await db.bills.get(op.entityId);
-        const bill = b?.bill_number ? `bill #${b.bill_number}` : "a new bill";
-        title = "add" in op.payload ? `Payment on ${bill}` : `Removed payment on ${bill}`;
+        const bill = b?.bill_number ? t("syncPage.billLower", { n: b.bill_number }) : t("syncPage.aNewBill");
+        title = "add" in op.payload ? t("syncPage.paymentOn", { bill }) : t("syncPage.removedPaymentOn", { bill });
         detail = "add" in op.payload ? `₹${op.payload.add.amount} · ${op.payload.add.method.toUpperCase()}` : "";
       } else {
         const c = await db.complaints.get(op.entityId);
-        title = op.kind === "complaint-create" ? "New complaint" : c?.complaint_number ? `Complaint #${c.complaint_number}` : "Complaint";
+        title =
+          op.kind === "complaint-create"
+            ? t("syncPage.newComplaint")
+            : c?.complaint_number
+              ? t("syncPage.complaintN", { n: c.complaint_number })
+              : t("syncPage.complaint");
         detail = c ? `${c.customer_name} · ${c.vehicle_reg}` : "";
       }
       return { seq: op.seq!, kind: op.kind, entityId: op.entityId, title, detail, error: op.error ?? null, createdAt: op.createdAt };
