@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 // Staff sign in with a username. Supabase Auth needs an email, so each login's
 // email is <username>@pitstop.invalid (".invalid" can never receive mail).
 
@@ -16,7 +17,7 @@ export function loginEmail(username: string): string {
 
 export function usernameError(raw: string): string | null {
   const u = normalizeUsername(raw);
-  if (!u) return "Enter a username.";
-  if (!USERNAME_RE.test(u)) return `Usernames are ${USERNAME_HINT}`;
+  if (!u) return t("staff.usernameMissing");
+  if (!USERNAME_RE.test(u)) return t("staff.usernameInvalid", { hint: t("staff.usernameHint") });
   return null;
 }

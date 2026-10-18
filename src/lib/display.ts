@@ -1,5 +1,6 @@
 // Text size and spacing, chosen per device in Settings > Display.
 import { useEffect, useState } from "react";
+import type { Key } from "../i18n";
 
 export type TextSize = "small" | "normal" | "large" | "xlarge";
 export type Density = "comfortable" | "compact";
@@ -9,16 +10,16 @@ export interface DisplayPrefs {
   density: Density;
 }
 
-export const TEXT_SIZES: { id: TextSize; label: string; px: number }[] = [
-  { id: "small", label: "Small", px: 14 },
-  { id: "normal", label: "Normal", px: 16 },
-  { id: "large", label: "Large", px: 18 },
-  { id: "xlarge", label: "Extra large", px: 20 },
+export const TEXT_SIZES: { id: TextSize; label: Key; px: number }[] = [
+  { id: "small", label: "display.small", px: 14 },
+  { id: "normal", label: "display.normal", px: 16 },
+  { id: "large", label: "display.large", px: 18 },
+  { id: "xlarge", label: "display.xlarge", px: 20 },
 ];
 
-export const DENSITIES: { id: Density; label: string; hint: string }[] = [
-  { id: "comfortable", label: "Comfortable", hint: "More space around things" },
-  { id: "compact", label: "Compact", hint: "Fits more on the screen" },
+export const DENSITIES: { id: Density; label: Key; hint: Key }[] = [
+  { id: "comfortable", label: "display.comfortable", hint: "display.comfortableHint" },
+  { id: "compact", label: "display.compact", hint: "display.compactHint" },
 ];
 
 const KEY = "pitstop:display";

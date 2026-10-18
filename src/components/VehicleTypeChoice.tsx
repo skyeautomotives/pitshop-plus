@@ -1,4 +1,5 @@
 import { VEHICLE_TYPES, type VehicleType } from "../lib/vehicleType";
+import { useT } from "../i18n";
 
 /** Two big buttons: Bikes or Cars. */
 export default function VehicleTypeChoice({
@@ -14,6 +15,7 @@ export default function VehicleTypeChoice({
   invalid?: boolean;
   describedBy?: string;
 }) {
+  useT();
   return (
     <div className="vehicle-type" role="radiogroup" aria-invalid={invalid || undefined} aria-describedby={describedBy}>
       {VEHICLE_TYPES.map((t, i) => (

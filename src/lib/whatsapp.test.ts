@@ -29,7 +29,7 @@ const bill: BillWithItems = {
   ],
 };
 
-const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null };
+const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null, customer_language: "en" as const };
 
 describe("whatsappNumber", () => {
   it("adds India's country code to 10-digit numbers", () => {
@@ -73,5 +73,28 @@ describe("billMessage with quantities", () => {
       bill_items: [{ id: "1", bill_id: "b1", position: 0, description: "Spark plug", quantity: 4, price: 180, line_total: 720 }],
     };
     expect(billMessage(withQty, shop)).toContain("1. Spark plug: 4 × ₹180.00 = ₹720.00");
+  });
+});
+
+describe("billMessage in the workshop's language for customers", () => {
+  const withJob = {
+    ...bill,
+    complaints: [
+      { id: "c1", complaint_number: 4, description: "Brakes. Squeaks", jobs: ["brakes"], note: "Squeaks", status: "resolved" as const, attended_by: "Anu", reported_on: "2026-10-14", advance_amount: null },
+    ],
+  };
+
+  it("writes the message in Malayalam, including the ticked jobs", () => {
+    const msg = billMessage(withJob, { ...shop, customer_language: "ml" });
+    expect(msg).toContain("ബിൽ #12");
+    expect(msg).toContain("- ബ്രേക്ക്. Squeaks");
+    expect(msg).toContain("*ആകെ തുക: ₹2,999.50*");
+    expect(msg).not.toContain("Grand total");
+  });
+
+  it("stays in English when the workshop chose English, whatever the app language", () => {
+    const msg = billMessage(withJob, shop);
+    expect(msg).toContain("- Brakes. Squeaks");
+    expect(msg).toContain("*Grand total: ₹2,999.50*");
   });
 });

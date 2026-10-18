@@ -1,6 +1,6 @@
 // Job card: the common jobs and problems ticked when a vehicle comes in.
 // Ids are saved with the complaint; labels come from the language files (jobs.*).
-import { t, type Key } from "../i18n";
+import { t, type Key, type Lang } from "../i18n";
 import en from "../i18n/en";
 import type { VehicleType } from "./vehicleType";
 
@@ -67,13 +67,13 @@ export function jobList(type: VehicleType | null | undefined): JobItem[] {
 }
 
 /** A job's label in the current language; ids from an older list still show something readable. */
-export function jobLabel(id: string): string {
-  return id in en.jobs ? t(`jobs.${id}` as Key) : id.replace(/_/g, " ");
+export function jobLabel(id: string, lang?: Lang): string {
+  return id in en.jobs ? t(`jobs.${id}` as Key, undefined, lang) : id.replace(/_/g, " ");
 }
 
 /** "Engine oil change / top up, Brakes. Rattle near the seat" */
-export function complaintText(c: { jobs?: string[] | null; description: string }): string {
-  const jobs = (c.jobs ?? []).map(jobLabel).join(", ");
+export function complaintText(c: { jobs?: string[] | null; description: string }, lang?: Lang): string {
+  const jobs = (c.jobs ?? []).map((id) => jobLabel(id, lang)).join(", ");
   const text = c.description.trim();
   if (!jobs) return text;
   return text ? `${jobs}. ${text}` : jobs;

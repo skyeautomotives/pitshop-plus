@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { t } from "../i18n";
 import { useBlocker } from "react-router";
 import ConfirmDialog from "../components/ConfirmDialog";
 
@@ -28,10 +29,10 @@ export function useUnsavedGuard(dirty: boolean, message: string) {
   const dialog =
     blocker.state === "blocked" ? (
       <ConfirmDialog
-        title="Leave without saving?"
+        title={t("unsaved.title")}
         message={message}
-        cancelLabel="Stay and finish"
-        confirmLabel="Leave"
+        cancelLabel={t("unsaved.stay")}
+        confirmLabel={t("unsaved.leave")}
         onCancel={() => blocker.reset()}
         onConfirm={() => blocker.proceed()}
       />

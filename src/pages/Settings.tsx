@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { LANGUAGES, useT, type Key } from "../i18n";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
@@ -14,28 +15,28 @@ import type { ShopSettings } from "../lib/types";
 /** Settings are grouped; each sub-group is its own page at /settings/<id>. */
 const GROUPS = [
   {
-    label: "Workshop",
+    label: "settings.groupWorkshop",
     items: [
-      { id: "shop", label: "Shop details", hint: "Name, address and phone on bills" },
-      { id: "billing", label: "Billing rules", hint: "Labour charge rules" },
+      { id: "shop", label: "settings.shopDetails", hint: "settings.shopDetailsHint" },
+      { id: "billing", label: "settings.billingRules", hint: "settings.billingRulesHint" },
     ],
   },
   {
-    label: "Staff",
+    label: "settings.groupStaff",
     items: [
-      { id: "staff", label: "Staff logins", hint: "Names, usernames, passwords" },
-      { id: "add-staff", label: "Add a login", hint: "Give someone access" },
+      { id: "staff", label: "settings.staffLogins", hint: "settings.staffLoginsHint" },
+      { id: "add-staff", label: "settings.addLogin", hint: "settings.addLoginHint" },
     ],
   },
   {
-    label: "Your data",
-    items: [{ id: "backup", label: "Backup & restore", hint: "Keep a copy in your Google Drive" }],
+    label: "settings.groupData",
+    items: [{ id: "backup", label: "settings.backup", hint: "settings.backupHint" }],
   },
   {
-    label: "This device",
-    items: [{ id: "display", label: "Display", hint: "Text size and spacing" }],
+    label: "settings.groupDevice",
+    items: [{ id: "display", label: "settings.display", hint: "settings.displayHint" }],
   },
-] as const;
+] as const satisfies readonly { label: Key; items: readonly { id: string; label: Key; hint: Key }[] }[];
 
 type SectionId = (typeof GROUPS)[number]["items"][number]["id"];
 
@@ -43,28 +44,29 @@ export default function Settings() {
   const me = useMe();
   const isOwner = useIsOwner();
   const { section } = useParams();
+  const { t } = useT();
 
-  if (me.status === "loading") return <p className="page-status">Loading…</p>;
+  if (me.status === "loading") return <p className="page-status">{t("common.loading")}</p>;
   // Staff can change how the app looks on their device; everything else is for the owner.
-  const groups = isOwner ? GROUPS : GROUPS.filter((g) => g.label === "This device");
+  const groups = isOwner ? GROUPS : GROUPS.filter((g) => g.label === "settings.groupDevice");
   const allowed = groups.flatMap((g) => g.items.map((i) => i.id)) as SectionId[];
   if (!section || !allowed.includes(section as SectionId)) return <Navigate to={isOwner ? "/settings/shop" : "/settings/display"} replace />;
   const current = section as SectionId;
 
   return (
     <div>
-      <h1>Settings</h1>
+      <h1>{t("settings.title")}</h1>
       <div className="settings-layout">
-        <nav className="settings-nav card" aria-label="Settings sections">
+        <nav className="settings-nav card" aria-label={t("settings.sections")}>
           {groups.map((g) => (
             <div key={g.label} className="settings-group">
-              <p className="settings-group-label">{g.label}</p>
+              <p className="settings-group-label">{t(g.label)}</p>
               <ul>
                 {g.items.map((item) => (
                   <li key={item.id}>
                     <NavLink to={`/settings/${item.id}`} className="settings-link">
-                      <span>{item.label}</span>
-                      <small>{item.hint}</small>
+                      <span>{t(item.label)}</span>
+                      <small>{t(item.hint)}</small>
                     </NavLink>
                   </li>
                 ))}
@@ -92,12 +94,13 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
   const [nameError, setNameError] = useState<string | undefined>();
   const [status, setStatus] = useState<{ kind: "saved" } | { kind: "error"; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const { t } = useT();
 
   useEffect(() => {
     if (settings && !form) setForm(settings);
   }, [settings, form]);
 
-  if (!form) return <p className="page-status">Loading settings…</p>;
+  if (!form) return <p className="page-status">{t("settings.loadingSettings")}</p>;
 
   const update = (patch: Partial<ShopSettings>) => {
     setForm({ ...form, ...patch });
@@ -109,7 +112,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
     if (!form) return;
     const shopName = form.shop_name.trim();
     if (!shopName) {
-      setNameError("Enter the workshop name.");
+      setNameError(t("settings.nameMissing"));
       document.getElementById("f-shopName")?.focus();
       return;
     }
@@ -122,6 +125,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         phone: form.phone?.trim() || null,
         allow_zero_labour: form.allow_zero_labour,
         vehicle_type: form.vehicle_type,
+        customer_language: form.customer_language,
       });
       await reload();
       setStatus({ kind: "saved" });
@@ -137,14 +141,14 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
       {part === "shop" ? (
         <div className="shop-details">
         <section className="card">
-          <h2>Shop details</h2>
-          <p className="hint">Printed at the top of every bill and included in WhatsApp messages.</p>
+          <h2>{t("settings.shopDetails")}</h2>
+          <p className="hint">{t("settings.shopHint")}</p>
           <div className="field">
-            <span className="label-like">Workshop type</span>
+            <span className="label-like">{t("settings.workshopType")}</span>
             <VehicleTypeChoice value={form.vehicle_type} onChange={(v) => update({ vehicle_type: v })} />
-            <p className="hint">Sets the job lists and examples you see when taking a vehicle in.</p>
+            <p className="hint">{t("settings.workshopTypeHint")}</p>
           </div>
-          <Field fieldKey="shopName" label="Workshop name" required error={nameError}>
+          <Field fieldKey="shopName" label={t("settings.workshopName")} required error={nameError}>
             <input
               {...fieldProps("shopName", nameError)}
               type="text"
@@ -152,7 +156,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
               onChange={(e) => update({ shop_name: e.target.value })}
             />
           </Field>
-          <Field fieldKey="shopAddress" label="Address">
+          <Field fieldKey="shopAddress" label={t("settings.address")}>
             <textarea
               id="f-shopAddress"
               rows={2}
@@ -160,21 +164,46 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
               onChange={(e) => update({ address: e.target.value })}
             />
           </Field>
-          <Field fieldKey="shopPhone" label="Phone">
+          <Field fieldKey="shopPhone" label={t("settings.phone")}>
             <input id="f-shopPhone" type="tel" value={form.phone ?? ""} onChange={(e) => update({ phone: e.target.value })} />
           </Field>
+          <div className="field">
+            <span className="label-like" id="customer-language-label">
+              {t("customerLanguage.label")}
+            </span>
+            <div className="display-options" role="radiogroup" aria-labelledby="customer-language-label">
+              {LANGUAGES.filter((l) => l.ready).map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  role="radio"
+                  lang={l.id}
+                  aria-checked={form.customer_language === l.id}
+                  className={`chip${form.customer_language === l.id ? " chip-active" : ""}`}
+                  onClick={() => update({ customer_language: l.id })}
+                >
+                  {l.native}
+                </button>
+              ))}
+            </div>
+            <p className="hint">{t("customerLanguage.hint")}</p>
+          </div>
           <SaveRow saving={saving} status={status} />
         </section>
-        <aside className="card bill-preview" aria-label="Preview of your bill header">
-          <p className="bill-preview-label">Preview: top of your bills</p>
+        <aside className="card bill-preview" aria-label={t("settings.previewAria")}>
+          <p className="bill-preview-label">{t("settings.previewLabel")}</p>
           <div className="bill-preview-paper">
             <div className="bill-preview-head">
               <div>
-                <strong>{form.shop_name.trim() || "Your workshop name"}</strong>
-                <span>{form.address?.trim() || "Your address"}</span>
-                <span>{form.phone?.trim() ? `Phone: ${form.phone.trim()}` : "Your phone number"}</span>
+                <strong>{form.shop_name.trim() || t("settings.yourName")}</strong>
+                <span>{form.address?.trim() || t("settings.yourAddress")}</span>
+                <span>
+                  {form.phone?.trim()
+                    ? t("doc.phoneLine", { phone: form.phone.trim() }, form.customer_language)
+                    : t("settings.yourPhone")}
+                </span>
               </div>
-              <em>INVOICE</em>
+              <em>{t("doc.invoice", undefined, form.customer_language).toUpperCase()}</em>
             </div>
             <div className="bill-preview-lines" aria-hidden="true">
               <span />
@@ -186,16 +215,16 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         </div>
       ) : (
         <section className="card">
-          <h2>Billing rules</h2>
+          <h2>{t("settings.billingRules")}</h2>
           <label className="check">
             <input
               type="checkbox"
               checked={form.allow_zero_labour}
               onChange={(e) => update({ allow_zero_labour: e.target.checked })}
             />
-            Allow bills with a labour charge of ₹0
+            {t("settings.allowZero")}
           </label>
-          <p className="hint">When this is off, every bill needs a labour charge above ₹0.</p>
+          <p className="hint">{t("settings.allowZeroHint")}</p>
           <SaveRow saving={saving} status={status} />
         </section>
       )}
@@ -210,20 +239,21 @@ function SaveRow({
   saving: boolean;
   status: { kind: "saved" } | { kind: "error"; message: string } | null;
 }) {
+  const { t } = useT();
   return (
     <div className="settings-save">
       {status?.kind === "saved" && (
         <div className="alert alert-success" role="status">
-          Saved.
+          {t("settings.saved")}
         </div>
       )}
       {status?.kind === "error" && (
         <div className="alert alert-error" role="alert">
-          Couldn't save. {status.message}
+          {t("settings.saveFailed", { message: status.message })}
         </div>
       )}
       <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving ? "Saving…" : "Save"}
+        {saving ? t("common.saving") : t("common.save")}
       </button>
     </div>
   );

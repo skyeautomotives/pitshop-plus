@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { complaintText } from "../lib/jobCard";
+import type { Key, Lang } from "../i18n";
 import { useT } from "../i18n";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
@@ -41,6 +43,10 @@ export default function BillView() {
   // Advance taken on the complaints and payments after billing; the bill's own total is unchanged.
   const payments = [...(bill.payments ?? [])].sort((a, b) => (a.paid_on < b.paid_on ? -1 : a.paid_on > b.paid_on ? 1 : 0));
   const money = billMoney(bill.grand_total, complaints, payments);
+  // The printed bill is for the customer: it uses the workshop's language for customers.
+  const lang: Lang = settings?.customer_language ?? "en";
+  const d = (key: Key, vars?: Record<string, string | number>) => t(key, vars, lang);
+  const date = (iso: string) => formatDate(iso, lang);
 
   return (
     <div className="bill-page">
@@ -95,36 +101,36 @@ export default function BillView() {
       )}
 
       <article className="card bill-doc">
-        <p className="doc-title">Invoice</p>
+        <p className="doc-title">{d("doc.invoice")}</p>
         <header className="bill-head">
           <div>
-            <h1 className="shop-name">{settings?.shop_name || "Workshop"}</h1>
+            <h1 className="shop-name">{settings?.shop_name || d("doc.workshop")}</h1>
             {settings?.address && <p className="shop-line">{settings.address}</p>}
-            {settings?.phone && <p className="shop-line">Phone: {settings.phone}</p>}
+            {settings?.phone && <p className="shop-line">{d("doc.phoneLine", { phone: settings.phone })}</p>}
           </div>
           <div className="bill-meta">
-            <p className="bill-no">Bill {displayNumber(bill.bill_number)}</p>
-            <p>Received: {formatDate(bill.date_received)}</p>
-            <p>Delivered: {formatDate(bill.delivered_on)}</p>
+            <p className="bill-no">{d("doc.bill", { number: displayNumber(bill.bill_number, lang) })}</p>
+            <p>{d("doc.received", { date: date(bill.date_received) })}</p>
+            <p>{d("doc.delivered", { date: date(bill.delivered_on) })}</p>
           </div>
         </header>
 
         <dl className="bill-customer">
           <div>
-            <dt>Customer</dt>
+            <dt>{d("doc.customer")}</dt>
             <dd>{bill.customer_name}</dd>
           </div>
           <div>
-            <dt>Phone</dt>
+            <dt>{d("doc.phone")}</dt>
             <dd>{bill.phone}</dd>
           </div>
           <div>
-            <dt>Vehicle no.</dt>
+            <dt>{d("doc.vehicleNo")}</dt>
             <dd className="reg">{bill.vehicle_reg}</dd>
           </div>
           {bill.address && (
             <div className="span-all">
-              <dt>Address</dt>
+              <dt>{d("doc.address")}</dt>
               <dd className="pre-line">{bill.address}</dd>
             </div>
           )}
@@ -132,18 +138,17 @@ export default function BillView() {
 
         {complaints.length > 0 ? (
           <div className="bill-complaints">
-            <h2>Complaints addressed</h2>
+            <h2>{d("doc.complaintsAddressed")}</h2>
             <ul>
               {complaints.map((c) => (
                 <li key={c.id}>
                   <Link to={`/complaints/${c.id}`} className="complaint-ref">
-                    {displayNumber(c.complaint_number)}
+                    {displayNumber(c.complaint_number, lang)}
                   </Link>{" "}
-                  {c.description}
+                  {complaintText({ jobs: c.jobs, description: c.note ?? c.description }, lang)}
                   <span className="muted">
-                    {" "}
-                    · reported {formatDate(c.reported_on)}
-                    {c.attended_by && ` · attended by ${c.attended_by}`}
+                    {d("doc.reported", { date: date(c.reported_on) })}
+                    {c.attended_by && d("doc.attendedBy", { name: c.attended_by })}
                   </span>{" "}
                   <span className="no-print">
                     <StatusBadge status={c.status} />
@@ -153,24 +158,24 @@ export default function BillView() {
             </ul>
           </div>
         ) : (
-          <p className="muted no-print">This bill is not linked to a complaint.</p>
+          <p className="muted no-print">{t("lists.notLinked")}</p>
         )}
 
         <table className="bill-items">
           <thead>
             <tr>
               <th className="col-no">#</th>
-              <th>Item or service</th>
-              <th className="col-qty">Qty</th>
-              <th className="num">Rate</th>
-              <th className="num">Amount</th>
+              <th>{d("doc.item")}</th>
+              <th className="col-qty">{d("doc.qty")}</th>
+              <th className="num">{d("doc.rate")}</th>
+              <th className="num">{d("doc.amount")}</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <tr>
                 <td colSpan={5} className="muted">
-                  No parts or items recorded.
+                  {d("doc.noItems")}
                 </td>
               </tr>
             ) : (
@@ -189,61 +194,59 @@ export default function BillView() {
 
         <dl className="bill-totals">
           <div>
-            <dt>Items subtotal</dt>
+            <dt>{d("doc.itemsSubtotal")}</dt>
             <dd>{inr(bill.items_subtotal)}</dd>
           </div>
           <div>
-            <dt>Labour charge</dt>
+            <dt>{d("doc.labour")}</dt>
             <dd>{inr(bill.labour_charge)}</dd>
           </div>
           {bill.painting_charge !== null && (
             <div>
-              <dt>Painting</dt>
+              <dt>{d("doc.painting")}</dt>
               <dd>{inr(bill.painting_charge)}</dd>
             </div>
           )}
           {bill.washing_charge !== null && (
             <div>
-              <dt>Washing</dt>
+              <dt>{d("doc.washing")}</dt>
               <dd>{inr(bill.washing_charge)}</dd>
             </div>
           )}
           {Number(bill.discount) > 0 && (
             <div className="discount-row">
               <dt>
-                Discount
+                {d("doc.discount")}
                 {bill.discount_percent !== null && ` (${Number(bill.discount_percent)}%)`}
               </dt>
               <dd>−{inr(bill.discount)}</dd>
             </div>
           )}
           <div className="grand">
-            <dt>Grand total</dt>
+            <dt>{d("doc.grandTotal")}</dt>
             <dd>{inr(bill.grand_total)}</dd>
           </div>
           {money.advance > 0 && (
             <div className="discount-row">
-              <dt>Advance received</dt>
+              <dt>{d("doc.advance")}</dt>
               <dd>−{inr(money.advance)}</dd>
             </div>
           )}
           {payments.map((p) => (
             <div key={p.id} className="discount-row">
-              <dt>
-                Paid {formatDate(p.paid_on)} · {paymentMethodLabel(p.method)}
-              </dt>
+              <dt>{d("doc.paidOn", { date: date(p.paid_on), method: paymentMethodLabel(p.method, lang) })}</dt>
               <dd>−{inr(p.amount)}</dd>
             </div>
           ))}
           {(money.advance > 0 || payments.length > 0) && (
             <div className="grand balance-row">
-              <dt>{money.status === "paid" ? "Paid in full" : "Balance to pay"}</dt>
+              <dt>{money.status === "paid" ? d("doc.paidInFull") : d("doc.balance")}</dt>
               <dd>{inr(money.balance)}</dd>
             </div>
           )}
         </dl>
 
-        <p className="bill-foot">Thank you for your business.</p>
+        <p className="bill-foot">{d("doc.thanks")}</p>
       </article>
 
       <BillPayments billId={bill.id} payments={payments} money={money} />
