@@ -2,6 +2,7 @@
 // phrases out while they are being translated, and those show in English.
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import en from "./en";
+import hi from "./hi";
 import ml from "./ml";
 
 export type Lang = "en" | "ml" | "hi";
@@ -9,7 +10,7 @@ export type Lang = "en" | "ml" | "hi";
 export const LANGUAGES: { id: Lang; native: string; english: string; ready: boolean }[] = [
   { id: "en", native: "English", english: "English", ready: true },
   { id: "ml", native: "മലയാളം", english: "Malayalam", ready: true },
-  { id: "hi", native: "हिन्दी", english: "Hindi", ready: false },
+  { id: "hi", native: "हिन्दी", english: "Hindi", ready: true },
 ];
 
 /** A phrase that changes with a count, e.g. "1 bill" / "3 bills". */
@@ -32,7 +33,7 @@ type PluralKeys<T, P extends string = ""> = {
 export type Key = Keys<Messages>;
 export type PluralKey = PluralKeys<Messages>;
 
-const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree };
+const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree };
 const LOCALES: Record<Lang, string> = { en: "en-IN", ml: "ml-IN", hi: "hi-IN" };
 const STORE_KEY = "pitstop:lang";
 

@@ -31,7 +31,6 @@ export default function DisplaySection() {
             </button>
           ))}
         </div>
-        {lang !== "en" && <p className="hint">{t("display.partial")}</p>}
       </div>
 
       <div className="field">

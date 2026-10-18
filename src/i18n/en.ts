@@ -583,7 +583,6 @@ const en = {
     title: "Display",
     hint: "These choices are saved on this device only. Each phone or computer can have its own.",
     language: "Language",
-    partial: "Some screens are still in English while they are being translated.",
     textSize: "Text size",
     small: "Small",
     normal: "Normal",
