@@ -33,7 +33,8 @@ describe("translations", () => {
   });
 
   it("has no em or en dashes", () => {
-    for (const [k, v] of [...english, ...malayalam]) expect(JSON.stringify(v), k).not.toMatch(/[–—]/);
+    const dashes = new RegExp("[\\u2013\\u2014]");
+    for (const [k, v] of [...english, ...malayalam]) expect(JSON.stringify(v), k).not.toMatch(dashes);
   });
 
   it("translates, fills in values and counts", () => {
