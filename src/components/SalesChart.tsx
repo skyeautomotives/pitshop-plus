@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { locale, useT } from "../i18n";
 import { barPath, compactINR, niceMax } from "../lib/chart";
 import { formatINR } from "../lib/money";
 import type { DaySales } from "../lib/sales";
 
 // Two series, categorical slots 1 and 2 of the validated chart palette.
 const SERIES = [
-  { key: "total", label: "Total incl. labour", color: "#2a78d6" },
-  { key: "excludingLabour", label: "Total excl. labour", color: "#eb6834" },
+  { key: "total", label: "reports.chartInclLabour", color: "#2a78d6" },
+  { key: "excludingLabour", label: "reports.chartExclLabour", color: "#eb6834" },
 ] as const;
 
 const HEIGHT = 240;
@@ -23,6 +24,7 @@ export default function SalesChart({
   onSelect: (date: string) => void;
 }) {
   const [hover, setHover] = useState<number | null>(null);
+  const { t, tn } = useT();
   const width = Math.max(640, days.length * 26 + M.left + M.right);
   const plotW = width - M.left - M.right;
   const plotH = HEIGHT - M.top - M.bottom;
@@ -40,7 +42,7 @@ export default function SalesChart({
         {SERIES.map((s) => (
           <span key={s.key}>
             <i style={{ background: s.color }} />
-            {s.label}
+            {t(s.label)}
           </span>
         ))}
       </div>
@@ -50,7 +52,7 @@ export default function SalesChart({
             viewBox={`0 0 ${width} ${HEIGHT}`}
             width="100%"
             role="img"
-            aria-label="Daily sales including and excluding labour. The table below lists the same figures."
+            aria-label={t("reports.chartAria")}
             onMouseLeave={() => setHover(null)}
           >
             {ticks.map((t) => (
@@ -104,22 +106,22 @@ export default function SalesChart({
               role="status"
             >
               <strong>
-                {new Date(`${shown.date}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
+                {new Date(`${shown.date}T00:00:00`).toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" })}
               </strong>
               {SERIES.map((s) => (
                 <span key={s.key}>
                   <i style={{ background: s.color }} />
-                  {s.label}: <b>{formatINR(shown[s.key])}</b>
+                  {t(s.label)}: <b>{formatINR(shown[s.key])}</b>
                 </span>
               ))}
               <span className="muted">
-                Labour {formatINR(shown.labour)} · {shown.bills} {shown.bills === 1 ? "bill" : "bills"}
+                {t("dashboard.labourAmount", { amount: formatINR(shown.labour) })} · {tn("dashboard.billCount", shown.bills)}
               </span>
             </div>
           )}
         </div>
       </div>
-      <p className="hint">Tap a day to see its overview above.</p>
+      <p className="hint">{t("reports.tapDay")}</p>
     </div>
   );
 }

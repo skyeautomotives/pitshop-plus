@@ -1,4 +1,5 @@
 import { summarize, type SaleRow } from "./sales";
+import { t } from "../i18n";
 import type { StaffMember } from "./types";
 
 export interface PerformanceComplaint {
@@ -48,7 +49,7 @@ export function computeStaffPerformance(
   const forUser = (id: string | null | undefined, fallbackName: string | null) => {
     const s = id ? byId.get(id) : undefined;
     if (s) return row(s.user_id, staffName(s), s.role);
-    const name = fallbackName?.trim() || "Not recorded";
+    const name = fallbackName?.trim() || t("common.notRecorded");
     return row(`name:${name.toLowerCase()}`, name, null);
   };
 
@@ -67,7 +68,7 @@ export function computeStaffPerformance(
     billsByUser.set(k, [...(billsByUser.get(k) ?? []), b]);
   }
   for (const [id, list] of billsByUser) {
-    const r = forUser(id || null, id ? "Former staff" : "Not recorded");
+    const r = forUser(id || null, id ? t("reports.formerStaff") : t("common.notRecorded"));
     const s = summarize(list);
     r.bills += s.bills;
     r.sales += s.total;
