@@ -1,28 +1,17 @@
+import { t } from "../i18n";
 // Bike or car workshop: chosen when registering, changeable in Settings.
 export type VehicleType = "bike" | "car";
 
-export const VEHICLE_TYPES: { id: VehicleType; label: string; hint: string }[] = [
-  { id: "bike", label: "Bikes", hint: "Bikes and scooters" },
-  { id: "car", label: "Cars", hint: "Cars, SUVs and vans" },
+export const VEHICLE_TYPES: { id: VehicleType; readonly label: string; readonly hint: string }[] = [
+  { id: "bike", get label() { return t("vehicleType.bikes"); }, get hint() { return t("vehicleType.bikesHint"); } },
+  { id: "car", get label() { return t("vehicleType.cars"); }, get hint() { return t("vehicleType.carsHint"); } },
 ];
 
 /** Example text for form boxes, matching the workshop's vehicles. */
 export function vehicleExamples(type: VehicleType | null | undefined) {
   if (type === "bike")
-    return {
-      vehicleName: "e.g. Honda Activa 6G, Royal Enfield Classic 350",
-      complaint: "e.g. Brake noise when stopping, chain noise, hard to start",
-      billItem: "e.g. Engine oil changed",
-    };
+    return { vehicleName: t("examples.bikeVehicle"), complaint: t("examples.bikeComplaint"), billItem: t("examples.bikeItem") };
   if (type === "car")
-    return {
-      vehicleName: "e.g. Maruti Swift, Hyundai Creta",
-      complaint: "e.g. AC not cooling, engine warning light on",
-      billItem: "e.g. Brake pads replaced",
-    };
-  return {
-    vehicleName: "e.g. Honda Activa 6G, Maruti Swift",
-    complaint: "e.g. Brake noise when stopping, engine warning light on",
-    billItem: "e.g. Brake pads replaced",
-  };
+    return { vehicleName: t("examples.carVehicle"), complaint: t("examples.carComplaint"), billItem: t("examples.carItem") };
+  return { vehicleName: t("examples.anyVehicle"), complaint: t("examples.anyComplaint"), billItem: t("examples.anyItem") };
 }

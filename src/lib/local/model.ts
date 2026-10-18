@@ -178,6 +178,8 @@ export function complaintSummary(c: LocalComplaint): ComplaintSummary {
     id: c.id,
     complaint_number: c.complaint_number,
     description: complaintText(c),
+    jobs: c.jobs ?? [],
+    note: c.description,
     status: c.status,
     attended_by: c.attended_by,
     reported_on: c.reported_on,

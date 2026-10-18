@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { locale, useT } from "../i18n";
 import { barPath, compactINR, niceMax } from "../lib/chart";
 import { formatINR } from "../lib/money";
 import type { DaySales } from "../lib/sales";
@@ -9,11 +10,12 @@ const H = 150;
 const M = { top: 10, right: 4, bottom: 22, left: 44 };
 
 const shortDate = (iso: string) =>
-  new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  new Date(`${iso}T00:00:00`).toLocaleDateString(locale(), { day: "numeric", month: "short" });
 
 /** Small single-series bar chart: total sales per day. */
 export default function MiniSalesChart({ days, today }: { days: DaySales[]; today: string }) {
   const [hover, setHover] = useState<number | null>(null);
+  const { t, tn } = useT();
   const plotW = W - M.left - M.right;
   const plotH = H - M.top - M.bottom;
   const max = niceMax(Math.max(...days.map((d) => d.total)));
@@ -28,7 +30,7 @@ export default function MiniSalesChart({ days, today }: { days: DaySales[]; toda
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         role="img"
-        aria-label={`Total sales per day for the last ${days.length} days`}
+        aria-label={t("reports.miniAria", { n: days.length })}
         onMouseLeave={() => setHover(null)}
       >
         {[0, 0.5, 1].map((t) => (
@@ -52,7 +54,7 @@ export default function MiniSalesChart({ days, today }: { days: DaySales[]; toda
               )}
               {label && (
                 <text x={gx + gw / 2} y={H - 6} className={`chart-axis${isToday ? " chart-axis-sel" : ""}`} textAnchor="middle">
-                  {isToday ? "Today" : shortDate(d.date)}
+                  {isToday ? t("reports.today") : shortDate(d.date)}
                 </text>
               )}
               <rect x={gx} y={M.top} width={gw} height={plotH + M.bottom} fill="transparent" onMouseEnter={() => setHover(i)} />
@@ -63,13 +65,11 @@ export default function MiniSalesChart({ days, today }: { days: DaySales[]; toda
       </svg>
       {shown && hover !== null && (
         <div className="chart-tip" style={{ left: `${((M.left + (hover + 0.5) * gw) / W) * 100}%` }} role="status">
-          <strong>{shown.date === today ? "Today" : shortDate(shown.date)}</strong>
+          <strong>{shown.date === today ? t("reports.today") : shortDate(shown.date)}</strong>
           <span>
-            Total: <b>{formatINR(shown.total)}</b>
+            {t("reports.total")}: <b>{formatINR(shown.total)}</b>
           </span>
-          <span className="muted">
-            {shown.bills} {shown.bills === 1 ? "bill" : "bills"}
-          </span>
+          <span className="muted">{tn("dashboard.billCount", shown.bills)}</span>
         </div>
       )}
     </div>

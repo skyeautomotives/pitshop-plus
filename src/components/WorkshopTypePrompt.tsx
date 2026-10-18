@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../i18n";
 import { updateShopSettings } from "../lib/api";
 import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
@@ -10,6 +11,7 @@ export default function WorkshopTypePrompt() {
   const { settings, reload } = useShopSettings();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useT();
 
   if (!settings || settings.vehicle_type) return null;
 
@@ -29,12 +31,12 @@ export default function WorkshopTypePrompt() {
 
   return (
     <section className="card workshop-type-prompt no-print" aria-labelledby="workshop-type-title">
-      <h2 id="workshop-type-title">Does your workshop work on bikes or cars?</h2>
-      <p className="hint">This sets the job lists and examples you see when taking a vehicle in. You can change it later in Settings.</p>
+      <h2 id="workshop-type-title">{t("vehicleType.promptTitle")}</h2>
+      <p className="hint">{t("vehicleType.promptHint")}</p>
       <VehicleTypeChoice value={null} onChange={(v) => void choose(v)} />
       {error && (
         <div className="alert alert-error" role="alert">
-          Couldn't save. {error}
+          {t("vehicleType.saveFailed", { message: error })}
         </div>
       )}
     </section>

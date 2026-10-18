@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { locale, useT, type Key } from "../i18n";
 import { Navigate, NavLink, useNavigate, useParams } from "react-router";
 import SalesChart from "../components/SalesChart";
 import { complaintsForRange, listStaff, salesForRange } from "../lib/api";
@@ -13,7 +14,7 @@ import { useLoad } from "../lib/useLoad";
 type View = "combined" | "separate";
 
 function monthLabel(month: string): string {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  return new Date(`${month}-01T00:00:00`).toLocaleDateString(locale(), { month: "long", year: "numeric" });
 }
 
 function Tile({ label, value, sub, strong }: { label: string; value: string; sub?: string; strong?: boolean }) {
@@ -27,28 +28,27 @@ function Tile({ label, value, sub, strong }: { label: string; value: string; sub
 }
 
 function SummaryTiles({ s, view }: { s: SalesSummary; view: View }) {
-  const bills = `${s.bills} ${s.bills === 1 ? "bill" : "bills"}`;
+  const { t, tn } = useT();
+  const bills = tn("dashboard.billCount", s.bills);
   if (view === "combined")
     return (
       <div className="tiles">
         <Tile
           strong
-          label="Total sales (incl. labour)"
+          label={t("reports.totalInclLabour")}
           value={formatINR(s.total)}
-          sub={s.discount > 0 ? `${bills} · after ${formatINR(s.discount)} discount` : bills}
+          sub={s.discount > 0 ? t("reports.afterDiscount", { bills, amount: formatINR(s.discount) }) : bills}
         />
-        <Tile label="Excluding labour" value={formatINR(s.excludingLabour)} sub="Spares + painting & washing" />
+        <Tile label={t("reports.excludingLabour")} value={formatINR(s.excludingLabour)} sub={t("reports.sparesAndServices")} />
       </div>
     );
   return (
     <div className="tiles">
-      <Tile strong label="Total sales" value={formatINR(s.total)} sub={bills} />
-      <Tile label="Spare parts" value={formatINR(s.spares)} sub="Parts & items on bills" />
-      <Tile label="Labour charge" value={formatINR(s.labour)} />
-      <Tile label="Painting & washing" value={formatINR(s.services)} />
-      {s.discount > 0 && (
-        <Tile label="Discounts given" value={`−${formatINR(s.discount)}`} sub="Already taken off the total" />
-      )}
+      <Tile strong label={t("reports.totalSales")} value={formatINR(s.total)} sub={bills} />
+      <Tile label={t("reports.spareParts")} value={formatINR(s.spares)} sub={t("reports.sparePartsSub")} />
+      <Tile label={t("reports.labourCharge")} value={formatINR(s.labour)} />
+      <Tile label={t("reports.paintingWashing")} value={formatINR(s.services)} />
+      {s.discount > 0 && <Tile label={t("reports.discounts")} value={`−${formatINR(s.discount)}`} sub={t("reports.discountsSub")} />}
     </div>
   );
 }
@@ -56,37 +56,38 @@ function SummaryTiles({ s, view }: { s: SalesSummary; view: View }) {
 /** Owner-only reports: daily and monthly sales overview. */
 const CATEGORIES = [
   {
-    label: "Sales",
+    label: "reports.catSales",
     items: [
-      { id: "daily", label: "Daily sales", hint: "One day's totals" },
-      { id: "monthly", label: "Monthly sales", hint: "Month totals, day by day" },
-      { id: "chart", label: "Daily comparison", hint: "Chart: with and without labour" },
+      { id: "daily", label: "reports.daily", hint: "reports.dailyHint" },
+      { id: "monthly", label: "reports.monthly", hint: "reports.monthlyHint" },
+      { id: "chart", label: "reports.chart", hint: "reports.chartHint" },
     ],
   },
   {
-    label: "Staff",
-    items: [{ id: "staff", label: "Staff performance", hint: "Complaints and bills per person" }],
+    label: "reports.catStaff",
+    items: [{ id: "staff", label: "reports.staff", hint: "reports.staffHint" }],
   },
-] as const;
+] as const satisfies readonly { label: Key; items: readonly { id: string; label: Key; hint: Key }[] }[];
 
 type ReportId = (typeof CATEGORIES)[number]["items"][number]["id"];
 const REPORT_IDS = CATEGORIES.flatMap((c) => c.items.map((i) => i.id)) as ReportId[];
 
 /** Month picker with previous/next buttons, shared by the monthly, chart and staff reports. */
 function MonthStepper({ month, today, onMonth }: { month: string; today: string; onMonth: (m: string) => void }) {
+  const { t } = useT();
   return (
     <div className="stepper">
       <button
         type="button"
         className="btn btn-outline btn-sm"
-        aria-label="Previous month"
+        aria-label={t("reports.prevMonth")}
         onClick={() => onMonth(shiftMonth(month, -1))}
       >
         ‹
       </button>
       <input
         type="month"
-        aria-label="Month"
+        aria-label={t("reports.month")}
         value={month}
         max={today.slice(0, 7)}
         onChange={(e) => e.target.value && onMonth(e.target.value)}
@@ -94,7 +95,7 @@ function MonthStepper({ month, today, onMonth }: { month: string; today: string;
       <button
         type="button"
         className="btn btn-outline btn-sm"
-        aria-label="Next month"
+        aria-label={t("reports.nextMonth")}
         disabled={month >= today.slice(0, 7)}
         onClick={() => onMonth(shiftMonth(month, 1))}
       >
@@ -115,13 +116,14 @@ export default function Reports() {
   const [view, setView] = useState<View>("separate");
   const { from, to } = monthRange(month);
   const state = useLoad(month, () => salesForRange(from, to));
+  const { t } = useT();
 
-  if (me.status === "loading") return <p className="page-status">Loading…</p>;
+  if (me.status === "loading") return <p className="page-status">{t("common.loading")}</p>;
   if (!isOwner)
     return (
       <div className="empty empty-list">
-        <h1>Reports</h1>
-        <p>Only the workshop owner can see reports.</p>
+        <h1>{t("reports.title")}</h1>
+        <p>{t("reports.ownerOnly")}</p>
       </div>
     );
   if (!section || !REPORT_IDS.includes(section as ReportId)) return <Navigate to="/reports/daily" replace />;
@@ -140,12 +142,12 @@ export default function Reports() {
   }
 
   const viewToggle = (
-    <div className="segmented" role="group" aria-label="How to show amounts">
+    <div className="segmented" role="group" aria-label={t("reports.howToShow")}>
       <button type="button" aria-pressed={view === "separate"} onClick={() => setView("separate")}>
-        Spares & labour separately
+        {t("reports.separate")}
       </button>
       <button type="button" aria-pressed={view === "combined"} onClick={() => setView("combined")}>
-        Combined
+        {t("reports.combined")}
       </button>
     </div>
   );
@@ -153,30 +155,30 @@ export default function Reports() {
   return (
     <div>
       <div className="sales-head">
-        <h1>Reports</h1>
+        <h1>{t("reports.title")}</h1>
         {viewToggle}
       </div>
 
       {state.status === "error" && (
         <div className="alert alert-error" role="alert">
-          <span>Couldn't load sales. {state.message}</span>
+          <span>{t("reports.loadFailed", { message: state.message })}</span>
           <button type="button" className="btn btn-outline btn-sm" onClick={state.retry}>
-            Try again
+            {t("common.tryAgain")}
           </button>
         </div>
       )}
 
       <div className="settings-layout">
-        <nav className="settings-nav card" aria-label="Report categories">
+        <nav className="settings-nav card" aria-label={t("reports.categories")}>
           {CATEGORIES.map((c) => (
             <div key={c.label} className="settings-group">
-              <p className="settings-group-label">{c.label}</p>
+              <p className="settings-group-label">{t(c.label)}</p>
               <ul>
                 {c.items.map((item) => (
                   <li key={item.id}>
                     <NavLink to={`/reports/${item.id}`} className="settings-link">
-                      <span>{item.label}</span>
-                      <small>{item.hint}</small>
+                      <span>{t(item.label)}</span>
+                      <small>{t(item.hint)}</small>
                     </NavLink>
                   </li>
                 ))}
@@ -237,27 +239,28 @@ function SalesBody({
   const activeDays = days.filter((d) => d.bills > 0);
   const best = activeDays.reduce<(typeof days)[number] | null>((b, d) => (!b || d.total > b.total ? d : b), null);
   const isFutureMonth = month > today.slice(0, 7);
+  const { t, tn } = useT();
 
   return (
     <>
       {section === "daily" && (
         <section className="card">
           <div className="card-head">
-            <h2>Daily sales</h2>
+            <h2>{t("reports.daily")}</h2>
             <div className="stepper">
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
-                aria-label="Previous day"
+                aria-label={t("reports.prevDay")}
                 onClick={() => onDay(shiftDay(day, -1))}
               >
                 ‹
               </button>
-              <input type="date" aria-label="Day" value={day} max={today} onChange={(e) => onDay(e.target.value)} />
+              <input type="date" aria-label={t("reports.day")} value={day} max={today} onChange={(e) => onDay(e.target.value)} />
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
-                aria-label="Next day"
+                aria-label={t("reports.nextDay")}
                 disabled={day >= today}
                 onClick={() => onDay(shiftDay(day, 1))}
               >
@@ -267,10 +270,10 @@ function SalesBody({
           </div>
           <p className="muted overview-date">
             {formatDate(day)}
-            {day === today && " · Today"}
+            {day === today && t("reports.todaySuffix")}
           </p>
-          {loading ? <p className="muted">Loading…</p> : <SummaryTiles s={daySales} view={view} />}
-          {!loading && daySales.bills === 0 && <p className="muted">No bills received on this day.</p>}
+          {loading ? <p className="muted">{t("common.loading")}</p> : <SummaryTiles s={daySales} view={view} />}
+          {!loading && daySales.bills === 0 && <p className="muted">{t("reports.noBillsDay")}</p>}
         </section>
       )}
 
@@ -278,30 +281,26 @@ function SalesBody({
         <>
           <section className="card">
             <div className="card-head">
-              <h2>Monthly sales</h2>
+              <h2>{t("reports.monthly")}</h2>
               <MonthStepper month={month} today={today} onMonth={onMonth} />
             </div>
             <p className="muted overview-date">{monthLabel(month)}</p>
             {loading ? (
-              <p className="muted">Loading…</p>
+              <p className="muted">{t("common.loading")}</p>
             ) : (
               <>
                 <SummaryTiles s={monthTotal} view={view} />
                 {monthTotal.bills > 0 ? (
                   <p className="month-facts">
                     <span>
-                      Average per working day: <b>{formatINR(Math.round(monthTotal.total / activeDays.length))}</b> (
-                      {activeDays.length} {activeDays.length === 1 ? "day" : "days"} with bills)
+                      {t("reports.averagePerDay", { amount: formatINR(Math.round(monthTotal.total / activeDays.length)) })}{" "}
+                      {tn("reports.daysWithBills", activeDays.length)}
                     </span>
-                    {best && (
-                      <span>
-                        Best day: <b>{formatDate(best.date)}</b> · {formatINR(best.total)}
-                      </span>
-                    )}
+                    {best && <span>{t("reports.bestDay", { date: formatDate(best.date), amount: formatINR(best.total) })}</span>}
                   </p>
                 ) : (
                   <p className="muted">
-                    {isFutureMonth ? "This month hasn't started yet." : "No bills received this month."}
+                    {isFutureMonth ? t("reports.notStarted") : t("reports.noBillsMonth")}
                   </p>
                 )}
               </>
@@ -309,29 +308,29 @@ function SalesBody({
           </section>
 
           <section className="card">
-            <h2>Day by day</h2>
+            <h2>{t("reports.dayByDay")}</h2>
             {loading ? (
-              <p className="muted">Loading…</p>
+              <p className="muted">{t("common.loading")}</p>
             ) : activeDays.length === 0 ? (
-              <p className="muted">No bills this month.</p>
+              <p className="muted">{t("reports.noBillsThisMonth")}</p>
             ) : (
               <div className="table-scroll">
                 <table className="sales-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th className="num">Bills</th>
+                      <th>{t("reports.date")}</th>
+                      <th className="num">{t("reports.bills")}</th>
                       {view === "separate" ? (
                         <>
-                          <th className="num">Spares</th>
-                          <th className="num">Labour</th>
-                          <th className="num">Painting & washing</th>
-                          <th className="num">Discount</th>
+                          <th className="num">{t("reports.spares")}</th>
+                          <th className="num">{t("reports.labour")}</th>
+                          <th className="num">{t("reports.paintingWashing")}</th>
+                          <th className="num">{t("reports.discount")}</th>
                         </>
                       ) : (
-                        <th className="num">Excl. labour</th>
+                        <th className="num">{t("reports.exclLabour")}</th>
                       )}
-                      <th className="num">Total</th>
+                      <th className="num">{t("reports.total")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -361,7 +360,7 @@ function SalesBody({
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td>Month total</td>
+                      <td>{t("reports.monthTotal")}</td>
                       <td className="num">{monthTotal.bills}</td>
                       {view === "separate" ? (
                         <>
@@ -381,7 +380,7 @@ function SalesBody({
                 </table>
               </div>
             )}
-            <p className="hint">Sales are counted on the bill's "Date received". Tap a day to open its daily sales.</p>
+            <p className="hint">{t("reports.countedHint")}</p>
           </section>
         </>
       )}
@@ -389,14 +388,14 @@ function SalesBody({
       {section === "chart" && (
         <section className="card">
           <div className="card-head">
-            <h2>Daily comparison</h2>
+            <h2>{t("reports.chart")}</h2>
             <MonthStepper month={month} today={today} onMonth={onMonth} />
           </div>
           <p className="muted overview-date">{monthLabel(month)}</p>
           {loading ? (
-            <p className="muted">Loading chart…</p>
+            <p className="muted">{t("reports.loadingChart")}</p>
           ) : monthTotal.bills === 0 ? (
-            <p className="muted">No sales to chart for this month.</p>
+            <p className="muted">{t("reports.nothingToChart")}</p>
           ) : (
             <SalesChart days={days} selected={day} onSelect={onOpenDay} />
           )}
@@ -435,19 +434,20 @@ function StaffPerformanceSection({
 }) {
   const { from, to } = monthRange(month);
   const extra = useLoad(`staff|${month}`, () => Promise.all([listStaff(), complaintsForRange(from, to)]));
+  const { t } = useT();
 
   let body;
   if (extra.status === "error") {
     body = (
       <div className="alert alert-error" role="alert">
-        <span>Couldn't load staff performance. {extra.message}</span>
+        <span>{t("reports.staffLoadFailed", { message: extra.message })}</span>
         <button type="button" className="btn btn-outline btn-sm" onClick={extra.retry}>
-          Try again
+          {t("common.tryAgain")}
         </button>
       </div>
     );
   } else if (extra.status === "loading" || loadingSales) {
-    body = <p className="muted">Loading…</p>;
+    body = <p className="muted">{t("common.loading")}</p>;
   } else {
     const [staff, complaints] = extra.data;
     const perf = computeStaffPerformance(staff, rows, complaints);
@@ -457,17 +457,17 @@ function StaffPerformanceSection({
         <table className="sales-table staff-table">
           <thead>
             <tr>
-              <th>Staff</th>
-              <th className="num">Complaints attended</th>
-              <th className="num">Resolved</th>
-              <th className="num">Bills made</th>
+              <th>{t("reports.staffCol")}</th>
+              <th className="num">{t("reports.complaintsAttended")}</th>
+              <th className="num">{t("reports.resolved")}</th>
+              <th className="num">{t("reports.billsMade")}</th>
               {view === "separate" && (
                 <>
-                  <th className="num">Spares</th>
-                  <th className="num">Labour</th>
+                  <th className="num">{t("reports.spares")}</th>
+                  <th className="num">{t("reports.labour")}</th>
                 </>
               )}
-              <th className="num">Sales</th>
+              <th className="num">{t("reports.sales")}</th>
             </tr>
           </thead>
           <tbody>
@@ -475,8 +475,8 @@ function StaffPerformanceSection({
               <tr key={p.key} className="no-click">
                 <td>
                   <strong>{p.name}</strong>
-                  {p.role === "owner" && <span className="badge badge-owner">Owner</span>}
-                  {p.role === null && <span className="badge">Not on staff list</span>}
+                  {p.role === "owner" && <span className="badge badge-owner">{t("common.owner")}</span>}
+                  {p.role === null && <span className="badge">{t("reports.notOnList")}</span>}
                 </td>
                 <td className="num">{p.complaints}</td>
                 <td className="num">
@@ -509,15 +509,12 @@ function StaffPerformanceSection({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>Staff performance</h2>
+        <h2>{t("reports.staff")}</h2>
         <MonthStepper month={month} today={today} onMonth={onMonth} />
       </div>
       <p className="muted overview-date">{monthLabel(month)}</p>
       {body}
-      <p className="hint">
-        Complaints count for the staff member who was signed in when the complaint was saved; bills count for whoever
-        created them. Complaints are counted by date reported, bills by date received.
-      </p>
+      <p className="hint">{t("reports.staffHintLong")}</p>
     </section>
   );
 }

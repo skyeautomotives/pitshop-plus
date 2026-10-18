@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 import { formatDate } from "../lib/format";
 import { supabase } from "../lib/supabase";
 import { CONTACT_EMAIL } from "../pages/marketing/Site";
@@ -25,6 +26,7 @@ function daysUntil(date: string): number {
 export default function SubscriptionReminder() {
   const [sub, setSub] = useState<MySubscription | null>(null);
   const [hidden, setHidden] = useState(false);
+  const { t, tn } = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -43,13 +45,13 @@ export default function SubscriptionReminder() {
     if (days <= 7) {
       text =
         days <= 0
-          ? `Your free trial ends today.`
-          : `Your free trial ends in ${days} ${days === 1 ? "day" : "days"} (${formatDate(sub.trial_ends_at)}).`;
+          ? t("subscription.endsToday")
+          : tn("subscription.endsIn", days, { date: formatDate(sub.trial_ends_at) });
     }
   } else if (sub.state === "trial_ended") {
-    text = "Your free trial has ended.";
+    text = t("subscription.ended");
   } else if (sub.state === "overdue") {
-    text = sub.paid_until ? `Your Pitshop Plus payment is due (paid until ${formatDate(sub.paid_until)}).` : "Your Pitshop Plus payment is due.";
+    text = sub.paid_until ? t("subscription.dueUntil", { date: formatDate(sub.paid_until) }) : t("subscription.due");
   }
   if (!text) return null;
   try {
@@ -61,7 +63,7 @@ export default function SubscriptionReminder() {
   return (
     <div className="alert sub-reminder no-print" role="status">
       <span>
-        <strong>{text}</strong> To keep using Pitshop Plus, contact Skye Automotives at{" "}
+        <strong>{text}</strong> {t("subscription.contact")}{" "}
         <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Pitshop Plus subscription")}`}>{CONTACT_EMAIL}</a>.
       </span>
       <button
@@ -76,7 +78,7 @@ export default function SubscriptionReminder() {
           setHidden(true);
         }}
       >
-        Hide for today
+        {t("backup.hideToday")}
       </button>
     </div>
   );

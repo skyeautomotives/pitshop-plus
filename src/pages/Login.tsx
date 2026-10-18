@@ -25,7 +25,8 @@ function signInEmail(login: string): string {
 }
 
 export default function Login() {
-  usePageTitle("Sign in");
+  const { t } = useT();
+  usePageTitle(t("login.title"));
   const { session, loading } = useAuth();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from || "/dashboard";
@@ -36,7 +37,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const { t } = useT();
 
   if (loading) return <p className="page-status">{t("common.loading")}</p>;
   if (session) return <Navigate to={from} replace />;
