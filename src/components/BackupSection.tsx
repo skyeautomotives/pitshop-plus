@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { countsText } from "../lib/backup";
+import { t, useT, type Key } from "../i18n";
 import { Link } from "react-router";
 import {
   backupStatus,
@@ -23,29 +25,24 @@ import { isNetworkError } from "../lib/sync";
 export const BACKUP_SAVED_EVENT = "pitstop:backup-saved";
 const DAY = 86_400_000;
 
-const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
 export function daysAgo(iso: string): number {
   const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   return Math.round((start(new Date()) - start(new Date(iso))) / DAY);
 }
 
 export function lastBackupText(last: string | null): string {
-  if (!last) return "No backup saved yet.";
+  if (!last) return t("backup.none");
   const days = daysAgo(last);
-  const when = days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`;
-  return `Last backup: ${when} (${formatDate(last.slice(0, 10))}).`;
+  const when = days <= 0 ? t("backup.today") : days === 1 ? t("backup.yesterday") : t("backup.daysAgo", { n: days });
+  return t("backup.last", { when, date: formatDate(last.slice(0, 10)) });
 }
 
-const WHERE = isAndroidApp
-  ? "After you tap Save a backup, choose Drive to keep the file in your Google Drive."
-  : isDesktopApp
-    ? "Choose where to save the file. If you have Google Drive on this computer, save it in your Google Drive folder so a copy is also kept online."
-    : "The file is downloaded to this computer. Upload it to your Google Drive (drive.google.com) so a copy is also kept online.";
+const WHERE: Key = isAndroidApp ? "backup.whereAndroid" : isDesktopApp ? "backup.whereWindows" : "backup.whereWeb";
 
 /** Settings: save a backup file, and restore missing records from one. */
 export default function BackupSection() {
   const { settings } = useShopSettings();
+  const { tn } = useT();
   const [status, setStatus] = useState<BackupStatus | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<{ kind: "ok" | "error"; text: string; offline?: boolean } | null>(null);
@@ -73,11 +70,11 @@ export default function BackupSection() {
       setStatus((s) => ({ shopCreatedAt: null, bills: 0, ...s, last: new Date().toISOString() }));
       setSaved({
         kind: "ok",
-        text: `Backup saved: ${count(b.bills.length, "bill", "bills")} and ${count(b.complaints.length, "complaint", "complaints")}.`,
+        text: t("backup.saved", { counts: countsText(b.bills.length, b.complaints.length) }),
         offline: b.source === "device",
       });
     } catch (err) {
-      setSaved({ kind: "error", text: `Couldn't save the backup. ${errorMessage(err)}` });
+      setSaved({ kind: "error", text: t("backup.saveFailed", { message: errorMessage(err) }) });
     } finally {
       setSaving(false);
     }
@@ -95,7 +92,7 @@ export default function BackupSection() {
       setFile(b);
       setCheck(await checkBackup(b));
     } catch (err) {
-      setRestoreError(isNetworkError(err) ? "Connect to the internet to restore a backup." : errorMessage(err));
+      setRestoreError(isNetworkError(err) ? t("backup.needInternet") : errorMessage(err));
     } finally {
       setChecking(false);
       if (fileInput.current) fileInput.current.value = "";
@@ -111,9 +108,7 @@ export default function BackupSection() {
       setCheck(null);
     } catch (err) {
       setRestoreError(
-        isNetworkError(err)
-          ? "The connection dropped. Choose the file again to restore the rest; nothing will be added twice."
-          : `Couldn't restore. ${errorMessage(err)}`,
+        isNetworkError(err) ? t("backup.dropped") : t("backup.restoreFailed", { message: errorMessage(err) }),
       );
     } finally {
       setProgress(null);
@@ -127,38 +122,26 @@ export default function BackupSection() {
   return (
     <div className="backup">
       <section className="card">
-        <h2>Save a backup</h2>
-        <p>
-          Saves all your bills, complaints and shop details in one file. Keep it somewhere safe outside Pitshop Plus,
-          such as your Google Drive, and save a new one at least once a week.
-        </p>
-        <p className="hint">{WHERE}</p>
+        <h2>{t("backup.saveTitle")}</h2>
+        <p>{t("backup.saveBody")}</p>
+        <p className="hint">{t(WHERE)}</p>
         {status && <p className="backup-last">{lastBackupText(status.last)}</p>}
         {saved && (
           <div className={`alert ${saved.kind === "ok" ? "alert-success" : "alert-error"}`} role={saved.kind === "ok" ? "status" : "alert"}>
             <span>
               {saved.text}
-              {saved.offline && (
-                <>
-                  {" "}
-                  You're offline, so it was made from the copy on this device. Changes made on other devices since they
-                  last synced aren't in it.
-                </>
-              )}
+              {saved.offline && ` ${t("backup.offlineNote")}`}
             </span>
           </div>
         )}
         <button type="button" className="btn btn-primary" onClick={onSave} disabled={saving}>
-          {saving ? "Preparing backup…" : "Save a backup"}
+          {saving ? t("backup.preparing") : t("backup.saveTitle")}
         </button>
       </section>
 
       <section className="card">
-        <h2>Restore from a backup</h2>
-        <p>
-          Brings back bills and complaints from a backup file that are missing here. Nothing already here is changed or
-          deleted, so it is safe to restore the same file more than once.
-        </p>
+        <h2>{t("backup.restoreTitle")}</h2>
+        <p>{t("backup.restoreBody")}</p>
         <input
           ref={fileInput}
           type="file"
@@ -168,7 +151,7 @@ export default function BackupSection() {
           onChange={(e) => void onChoose(e.target.files?.[0])}
         />
         <label htmlFor="backup-file" className={`btn btn-outline${checking || progress ? " disabled" : ""}`} aria-disabled={checking || !!progress}>
-          {checking ? "Checking the file…" : "Choose backup file"}
+          {checking ? t("backup.checking") : t("backup.choose")}
         </label>
 
         {restoreError && (
@@ -184,44 +167,28 @@ export default function BackupSection() {
             </p>
             {otherWorkshop && (
               <div className="alert sub-reminder backup-msg" role="status">
-                This backup is from “{file.workshop}”, not “{settings?.shop_name}”. Make sure it's the right file.
+                {t("backup.otherWorkshop", { file: file.workshop, shop: settings?.shop_name ?? "" })}
               </div>
             )}
             {missing === 0 ? (
               <div className="alert alert-success backup-msg" role="status">
-                Everything in this backup is already here. Nothing needs restoring.
+                {t("backup.nothingMissing")}
               </div>
             ) : (
               <ul className="backup-list">
                 <li>
-                  Missing here, will be added:{" "}
-                  <strong>
-                    {count(check.bills.missing, "bill", "bills")} and {count(check.complaints.missing, "complaint", "complaints")}
-                  </strong>
+                  <strong>{t("backup.willAdd", { counts: countsText(check.bills.missing, check.complaints.missing) })}</strong>
                 </li>
-                <li>
-                  Already here, won't be changed: {count(check.bills.present, "bill", "bills")} and{" "}
-                  {count(check.complaints.present, "complaint", "complaints")}
-                </li>
+                <li>{t("backup.alreadyHere", { counts: countsText(check.bills.present, check.complaints.present) })}</li>
                 {check.bills.renumbered + check.complaints.renumbered > 0 && (
-                  <li>
-                    {count(check.bills.renumbered + check.complaints.renumbered, "record has a number", "records have numbers")} now
-                    used by newer records, so they will get new numbers.
-                  </li>
+                  <li>{tn("backup.renumbered", check.bills.renumbered + check.complaints.renumbered)}</li>
                 )}
-                {check.bills.other + check.complaints.other > 0 && (
-                  <li>
-                    {count(check.bills.other + check.complaints.other, "record belongs", "records belong")} to another workshop
-                    and will be skipped.
-                  </li>
-                )}
+                {check.bills.other + check.complaints.other > 0 && <li>{tn("backup.otherShop", check.bills.other + check.complaints.other)}</li>}
               </ul>
             )}
             {missing > 0 && (
               <button type="button" className="btn btn-primary" onClick={onRestore} disabled={!!progress}>
-                {progress
-                  ? `Restoring… ${progress.done} of ${progress.total}`
-                  : `Restore ${count(missing, "missing record", "missing records")}`}
+                {progress ? t("backup.restoring", { done: progress.done, total: progress.total }) : tn("backup.restoreButton", missing)}
               </button>
             )}
           </div>
@@ -230,16 +197,16 @@ export default function BackupSection() {
         {result && (
           <div className="alert alert-success backup-msg" role="status">
             <span>
-              Restored {count(result.bills.added, "bill", "bills")} and {count(result.complaints.added, "complaint", "complaints")}.
-              {result.settings && " Blank shop details were filled in from the backup."}{" "}
-              {result.bills.added > 0 && <Link to="/bills">Find bills</Link>}
+              {t("backup.restored", { counts: countsText(result.bills.added, result.complaints.added) })}
+              {result.settings && t("backup.filledDetails")}{" "}
+              {result.bills.added > 0 && <Link to="/bills">{t("nav.findBills")}</Link>}
             </span>
           </div>
         )}
         {result && result.bills.failed + result.complaints.failed > 0 && (
           <div className="alert alert-error backup-msg" role="alert">
-            {count(result.bills.failed + result.complaints.failed, "record in the file was", "records in the file were")} damaged
-            and couldn't be restored{result.error ? ` (${result.error})` : ""}.
+            {tn("backup.damaged", result.bills.failed + result.complaints.failed)}
+            {result.error ? ` (${result.error})` : ""}
           </div>
         )}
       </section>

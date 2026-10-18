@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 import { Link, useLocation } from "react-router";
 import { backupStatus, type BackupStatus } from "../lib/backup";
 import { BACKUP_SAVED_EVENT, daysAgo } from "./BackupSection";
@@ -17,6 +18,7 @@ export default function BackupReminder() {
     }
   });
   const { pathname } = useLocation();
+  const { t } = useT();
 
   useEffect(() => {
     const load = () => void backupStatus().then(setStatus, () => undefined);
@@ -32,8 +34,8 @@ export default function BackupReminder() {
   return (
     <div className="alert sub-reminder backup-reminder no-print" role="status">
       <span>
-        <strong>{status.last ? `Your last backup was ${age} days ago.` : "You haven't saved a backup yet."}</strong> Keep a copy of
-        your records in your Google Drive so they are never lost. <Link to="/settings/backup">Save a backup</Link>
+        <strong>{status.last ? t("backup.reminderDays", { n: age }) : t("backup.reminderNever")}</strong> {t("backup.reminderBody")}{" "}
+        <Link to="/settings/backup">{t("backup.reminderLink")}</Link>
       </span>
       <button
         type="button"
@@ -47,7 +49,7 @@ export default function BackupReminder() {
           setHidden(true);
         }}
       >
-        Hide for today
+        {t("backup.hideToday")}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 // Backup files the workshop owner keeps (on their computer, phone or Google Drive),
 // and restoring them. A restore only adds what is missing; see 0017_backup_restore.sql.
 import { formatDate } from "./format";
+import { t, tn } from "../i18n";
 import { localDb, localUserId } from "./local/db";
 import { isAndroidApp, isDesktopApp } from "./platform";
 import { supabase } from "./supabase";
@@ -122,7 +123,7 @@ export async function saveBackupFile(b: BackupFile): Promise<boolean> {
     const { Share } = await import("@capacitor/share");
     const { uri } = await Filesystem.writeFile({ path: name, data: text, directory: Directory.Cache, encoding: Encoding.UTF8 });
     try {
-      await Share.share({ title: name, files: [uri], dialogTitle: "Save your backup to Google Drive" });
+      await Share.share({ title: name, files: [uri], dialogTitle: t("backup.shareTitle") });
     } catch (err) {
       if (/cancel/i.test((err as Error)?.message ?? "")) return false;
       throw err;
@@ -186,14 +187,14 @@ export async function readBackupFile(file: File): Promise<BackupFile> {
   try {
     data = JSON.parse(await file.text());
   } catch {
-    throw new Error("This file isn't a Pitshop Plus backup.");
+    throw new Error(t("backup.notBackup"));
   }
   const b = data as Partial<BackupFile> | null;
   if (!b || b.format !== BACKUP_FORMAT || !Array.isArray(b.bills) || !Array.isArray(b.complaints)) {
-    throw new Error("This file isn't a Pitshop Plus backup.");
+    throw new Error(t("backup.notBackup"));
   }
   if (typeof b.version !== "number" || b.version > 1) {
-    throw new Error("This backup was made by a newer version of Pitshop Plus. Update the app, then try again.");
+    throw new Error(t("backup.newerVersion"));
   }
   return b as BackupFile;
 }
@@ -270,8 +271,15 @@ export async function restoreBackup(b: BackupFile, onProgress?: (done: number, t
   return result;
 }
 
+/** "3 bills and 1 complaint" in the app's language. */
+export function countsText(bills: number, complaints: number): string {
+  return t("backup.billsAndComplaints", { bills: tn("dashboard.billCount", bills), complaints: tn("lists.complaintCount", complaints) });
+}
+
 export function describeBackup(b: BackupFile): string {
-  const bills = `${b.bills.length} ${b.bills.length === 1 ? "bill" : "bills"}`;
-  const complaints = `${b.complaints.length} ${b.complaints.length === 1 ? "complaint" : "complaints"}`;
-  return `${b.workshop || "Workshop"}, saved ${formatDate(b.made_at.slice(0, 10))}: ${bills} and ${complaints}`;
+  return t("backup.describe", {
+    workshop: b.workshop || t("doc.workshop"),
+    date: formatDate(b.made_at.slice(0, 10)),
+    counts: countsText(b.bills.length, b.complaints.length),
+  });
 }
