@@ -1,4 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import Slot from "../components/Slot";
+import LanguageSwitch from "../components/LanguageSwitch";
+import { t, useT } from "../i18n";
 import { Link, Navigate } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import { useAuth } from "../lib/auth";
@@ -28,19 +31,20 @@ type Errors = Partial<Record<keyof Form, string>>;
 
 function validate(f: Form): Errors {
   const errors: Errors = {};
-  if (!f.shopName.trim()) errors.shopName = "Enter your workshop's name.";
-  if (!f.fullName.trim()) errors.fullName = "Enter your name.";
+  if (!f.shopName.trim()) errors.shopName = t("register.shopNameMissing");
+  if (!f.fullName.trim()) errors.fullName = t("register.nameMissing");
   const digits = f.phone.replace(/\D/g, "");
-  if (digits.length < 10 || digits.length > 13) errors.phone = "Enter a 10-digit mobile number.";
-  if (!EMAIL_RE.test(f.email.trim())) errors.email = "Enter a valid email address.";
-  if (f.password.length < MIN_PASSWORD) errors.password = `Use at least ${MIN_PASSWORD} characters.`;
-  else if (f.confirm !== f.password) errors.confirm = "The passwords don't match.";
+  if (digits.length < 10 || digits.length > 13) errors.phone = t("register.phoneInvalid");
+  if (!EMAIL_RE.test(f.email.trim())) errors.email = t("register.emailInvalid");
+  if (f.password.length < MIN_PASSWORD) errors.password = t("register.passwordShort", { n: MIN_PASSWORD });
+  else if (f.confirm !== f.password) errors.confirm = t("register.passwordMismatch");
   return errors;
 }
 
 /** Sign-up for a new workshop. Supabase emails a confirmation link; the workshop is created with the login. */
 export default function Register() {
-  usePageTitle("Register your workshop");
+  useT();
+  usePageTitle(t("register.pageTitle"));
   const { session, loading } = useAuth();
   const [form, setForm] = useState<Form>({ shopName: "", fullName: "", phone: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Errors>({});
@@ -53,7 +57,7 @@ export default function Register() {
   const [typeError, setTypeError] = useState<string | undefined>();
   const [termsError, setTermsError] = useState<string | undefined>();
 
-  if (loading) return <p className="page-status">Loading…</p>;
+  if (loading) return <p className="page-status">{t("common.loading")}</p>;
   if (session) return <Navigate to="/dashboard" replace />;
 
   const set = (key: keyof Form) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -65,8 +69,8 @@ export default function Register() {
     e.preventDefault();
     const found = validate(form);
     setErrors(found);
-    setTermsError(agreed ? undefined : "Please read and agree to the Terms & Conditions.");
-    setTypeError(vehicleType ? undefined : "Choose bikes or cars.");
+    setTermsError(agreed ? undefined : t("register.agreeMissing"));
+    setTypeError(vehicleType ? undefined : t("register.typeMissing"));
     if (!vehicleType) {
       document.getElementById("f-vehicleType")?.focus();
       return;
@@ -100,7 +104,7 @@ export default function Register() {
     });
     setBusy(false);
     if (err) {
-      setError(/already registered/i.test(err.message) ? "That email is already registered. Sign in instead." : errorMessage(err));
+      setError(/already registered/i.test(err.message) ? t("register.alreadyRegistered") : errorMessage(err));
       return;
     }
     // With email confirmation on there is no session yet: ask them to check their inbox.
@@ -118,16 +122,20 @@ export default function Register() {
     return (
       <AuthLayout>
         <div>
-          <h1 className="auth-title">Check your email</h1>
+          <h1 className="auth-title">{t("register.checkEmail")}</h1>
           <p>
-            We sent a confirmation link to <strong>{sentTo}</strong>.
+            <Slot text={t("register.sentTo")} name="email">
+              <strong>{sentTo}</strong>
+            </Slot>
           </p>
           <ol className="steps">
-            <li>Open the email from Pitshop Plus (check Spam or Promotions if you don't see it).</li>
+            <li>{t("register.step1")}</li>
             <li>
-              Tap <strong>Confirm my email</strong>.
+              <Slot text={t("register.step2")} name="button">
+                <strong>Confirm my email</strong>
+              </Slot>
             </li>
-            <li>Sign in with your email and password, and start billing.</li>
+            <li>{t("register.step3")}</li>
           </ol>
           {error && (
             <div className="alert alert-error" role="alert">
@@ -135,10 +143,10 @@ export default function Register() {
             </div>
           )}
           <button type="button" className="btn btn-outline btn-block" onClick={() => void resend()} disabled={resent}>
-            {resent ? "Email sent again" : "Send the email again"}
+            {resent ? t("register.sentAgain") : t("register.sendAgain")}
           </button>
           <p className="auth-switch">
-            Confirmed already? <Link to="/login">Sign in</Link>
+            {t("register.confirmedAlready")} <Link to="/login">{t("login.title")}</Link>
           </p>
         </div>
       </AuthLayout>
@@ -148,8 +156,9 @@ export default function Register() {
   return (
     <AuthLayout wide>
       <form onSubmit={onSubmit} noValidate>
-        <h1 className="auth-title">Register your workshop</h1>
-        <p className="auth-sub">Create your account. We will email you a link to confirm it.</p>
+        <LanguageSwitch />
+        <h1 className="auth-title">{t("register.title")}</h1>
+        <p className="auth-sub">{t("register.subtitle")}</p>
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
@@ -157,7 +166,8 @@ export default function Register() {
         )}
         <div className="field">
           <span className="label-like">
-            What does your workshop work on?<span className="required"> *</span>
+            {t("register.workOn")}
+            <span className="required"> *</span>
           </span>
           <VehicleTypeChoice
             id="f-vehicleType"
@@ -176,16 +186,16 @@ export default function Register() {
           )}
         </div>
         <div className="form-grid">
-        <Field fieldKey="shopName" label="Workshop name" required error={errors.shopName} hint="Printed on your bills.">
+        <Field fieldKey="shopName" label={t("register.workshopName")} required error={errors.shopName} hint={t("register.onBills")}>
           <input {...fieldProps("shopName", errors.shopName)} type="text" autoComplete="organization" autoFocus value={form.shopName} onChange={set("shopName")} />
         </Field>
-        <Field fieldKey="fullName" label="Your name" required error={errors.fullName}>
+        <Field fieldKey="fullName" label={t("register.yourName")} required error={errors.fullName}>
           <input {...fieldProps("fullName", errors.fullName)} type="text" autoComplete="name" value={form.fullName} onChange={set("fullName")} />
         </Field>
-        <Field fieldKey="phone" label="Mobile number" required error={errors.phone} hint="Printed on your bills.">
+        <Field fieldKey="phone" label={t("register.mobile")} required error={errors.phone} hint={t("register.onBills")}>
           <input {...fieldProps("phone", errors.phone)} type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={set("phone")} />
         </Field>
-        <Field fieldKey="email" label="Email" required error={errors.email} hint="You will sign in with this.">
+        <Field fieldKey="email" label={t("register.email")} required error={errors.email} hint={t("register.signInWith")}>
           <input
             {...fieldProps("email", errors.email)}
             type="email"
@@ -197,10 +207,16 @@ export default function Register() {
             onChange={set("email")}
           />
         </Field>
-        <Field fieldKey="password" label="Password" required error={errors.password} hint={`At least ${MIN_PASSWORD} characters.`}>
+        <Field
+          fieldKey="password"
+          label={t("register.password")}
+          required
+          error={errors.password}
+          hint={t("register.passwordHint", { n: MIN_PASSWORD })}
+        >
           <PasswordInput {...fieldProps("password", errors.password)} autoComplete="new-password" value={form.password} onChange={set("password")} />
         </Field>
-        <Field fieldKey="confirm" label="Confirm password" required error={errors.confirm}>
+        <Field fieldKey="confirm" label={t("register.confirm")} required error={errors.confirm}>
           <PasswordInput {...fieldProps("confirm", errors.confirm)} autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />
         </Field>
         </div>
@@ -218,7 +234,9 @@ export default function Register() {
               }}
             />
             <span>
-              I agree to the <TermsLink />, including that I am responsible for keeping backups of my workshop's records.
+              <Slot text={t("register.agree")} name="terms">
+                <TermsLink>{t("register.terms")}</TermsLink>
+              </Slot>
             </span>
           </label>
           {termsError && (
@@ -228,10 +246,10 @@ export default function Register() {
           )}
         </div>
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
-          {busy ? "Registering…" : "Register workshop"}
+          {busy ? t("register.registering") : t("register.button")}
         </button>
         <p className="auth-switch">
-          Already registered? <Link to="/login">Sign in</Link>
+          {t("register.alreadyAccount")} <Link to="/login">{t("login.title")}</Link>
         </p>
       </form>
     </AuthLayout>
