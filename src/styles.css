@@ -3804,7 +3804,7 @@ html[data-density="compact"] .job-check {
   padding: 2px 10px;
 }
 
-/* Indian scripts and Urdu are taller: a little more line spacing. */
+/* Indian scripts are taller: a little more line spacing. */
 html:not(:lang(en)) body {
   line-height: 1.6;
 }

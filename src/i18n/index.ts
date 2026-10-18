@@ -2,6 +2,7 @@
 // phrases out while they are being translated, and those show in English.
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import en from "./en";
+import gu from "./gu";
 import ta from "./ta";
 import te from "./te";
 import mr from "./mr";
@@ -9,10 +10,10 @@ import bn from "./bn";
 import hi from "./hi";
 import ml from "./ml";
 
-export type Lang = "en" | "ml" | "hi" | "bn" | "mr" | "te" | "ta" | "gu" | "kn" | "or" | "pa" | "ur";
+export type Lang = "en" | "ml" | "hi" | "bn" | "mr" | "te" | "ta" | "gu";
 
 /** In the order shown to people. A language appears once its translation file is added to BUNDLES. */
-const ALL_LANGUAGES: { id: Lang; native: string; english: string; locale: string; rtl?: boolean }[] = [
+const ALL_LANGUAGES: { id: Lang; native: string; english: string; locale: string }[] = [
   { id: "en", native: "English", english: "English", locale: "en-IN" },
   { id: "ml", native: "മലയാളം", english: "Malayalam", locale: "ml-IN" },
   { id: "hi", native: "हिन्दी", english: "Hindi", locale: "hi-IN" },
@@ -21,10 +22,6 @@ const ALL_LANGUAGES: { id: Lang; native: string; english: string; locale: string
   { id: "te", native: "తెలుగు", english: "Telugu", locale: "te-IN" },
   { id: "ta", native: "தமிழ்", english: "Tamil", locale: "ta-IN" },
   { id: "gu", native: "ગુજરાતી", english: "Gujarati", locale: "gu-IN" },
-  { id: "kn", native: "ಕನ್ನಡ", english: "Kannada", locale: "kn-IN" },
-  { id: "or", native: "ଓଡ଼ିଆ", english: "Odia", locale: "or-IN" },
-  { id: "pa", native: "ਪੰਜਾਬੀ", english: "Punjabi", locale: "pa-IN" },
-  { id: "ur", native: "اردو", english: "Urdu", locale: "ur-IN", rtl: true },
 ];
 
 /** A phrase that changes with a count, e.g. "1 bill" / "3 bills". */
@@ -47,13 +44,11 @@ type PluralKeys<T, P extends string = ""> = {
 export type Key = Keys<Messages>;
 export type PluralKey = PluralKeys<Messages>;
 
-const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree, bn: bn as unknown as Tree, mr: mr as unknown as Tree, te: te as unknown as Tree, ta: ta as unknown as Tree };
+const BUNDLES: Partial<Record<Lang, Tree>> = { en: en as unknown as Tree, ml: ml as unknown as Tree, hi: hi as unknown as Tree, bn: bn as unknown as Tree, mr: mr as unknown as Tree, te: te as unknown as Tree, ta: ta as unknown as Tree, gu: gu as unknown as Tree };
 const LOCALES = Object.fromEntries(ALL_LANGUAGES.map((l) => [l.id, l.locale])) as Record<Lang, string>;
 
 export const LANGUAGES = ALL_LANGUAGES.map((l) => ({ ...l, ready: l.id in BUNDLES }));
 
-/** True for languages written right to left (Urdu). */
-export const isRtl = (lang: Lang) => !!ALL_LANGUAGES.find((l) => l.id === lang)?.rtl;
 const STORE_KEY = "pitstop:lang";
 
 function lookup(tree: Tree | undefined, key: string): string | Plural | undefined {
@@ -113,10 +108,7 @@ export function setLang(lang: Lang) {
   } catch {
     /* storage unavailable */
   }
-  if (typeof document !== "undefined") {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = isRtl(lang) ? "rtl" : "ltr";
-  }
+  if (typeof document !== "undefined") document.documentElement.lang = lang;
   listeners.forEach((fn) => fn(lang));
 }
 
@@ -127,7 +119,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setState] = useState(current);
   useEffect(() => {
     document.documentElement.lang = current;
-    document.documentElement.dir = isRtl(current) ? "rtl" : "ltr";
     listeners.add(setState);
     return () => {
       listeners.delete(setState);

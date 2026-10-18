@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import en from "./en";
+import gu from "./gu";
 import ta from "./ta";
 import te from "./te";
 import mr from "./mr";
@@ -30,6 +31,7 @@ describe.each([
   ["Marathi", mr],
   ["Telugu", te],
   ["Tamil", ta],
+  ["Gujarati", gu],
 ])("%s", (_name, bundle) => {
   const translated = leaves(bundle as unknown as Node);
 
