@@ -397,14 +397,14 @@ export async function openComplaintsForPhoneElsewhere(phoneDigits: string, vehic
 // ---------- Shop settings (read offline from the last copy; changes need a connection) ----------
 
 export async function getShopSettings(): Promise<ShopSettings> {
-  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type, customer_language").single();
+  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type").single();
   if (!error) {
     await setMeta("shopSettings", data);
     return data as ShopSettings;
   }
   const saved = await getMeta<ShopSettings>("shopSettings");
   if (saved && isNetworkError(error))
-    return { ...saved, vehicle_type: saved.vehicle_type ?? null, customer_language: saved.customer_language ?? "en" };
+    return { ...saved, vehicle_type: saved.vehicle_type ?? null };
   throw error;
 }
 

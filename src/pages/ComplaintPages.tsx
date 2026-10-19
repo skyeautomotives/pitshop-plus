@@ -154,14 +154,6 @@ export function ComplaintView() {
             {t("complaint.title", { number: displayNumber(c.complaint_number) })} <StatusBadge status={status} />
           </h1>
         </div>
-        {(c.jobs ?? []).length > 0 && (
-          <ul className="job-ticked" aria-label={t("complaint.jobsTickedLabel")}>
-            {(c.jobs ?? []).map((id) => (
-              <li key={id}>{jobLabel(id)}</li>
-            ))}
-          </ul>
-        )}
-        {c.description.trim() && <p className="complaint-description pre-line">{c.description}</p>}
         <dl className="bill-customer">
           <div>
             <dt>{t("complaint.reported")}</dt>
@@ -229,6 +221,36 @@ export function ComplaintView() {
             </div>
           )}
         </dl>
+
+        {((c.jobs ?? []).length > 0 || c.description.trim() !== "") && (
+          <section className="job-sheet">
+            <h2>{t("complaint.jobCard")}</h2>
+            {(c.jobs ?? []).length > 0 && (
+              <table className="job-table">
+                <thead>
+                  <tr>
+                    <th className="col-no">#</th>
+                    <th>{t("complaint.jobsTickedLabel")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(c.jobs ?? []).map((id, i) => (
+                    <tr key={id}>
+                      <td className="col-no">{i + 1}</td>
+                      <td>{jobLabel(id)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {c.description.trim() && (
+              <div className="job-notes">
+                <h3>{t("complaint.otherProblems")}</h3>
+                <p className="pre-line">{c.description}</p>
+              </div>
+            )}
+          </section>
+        )}
       </article>
 
       <section className="card">

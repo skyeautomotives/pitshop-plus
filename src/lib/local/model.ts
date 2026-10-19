@@ -184,6 +184,8 @@ export function complaintSummary(c: LocalComplaint): ComplaintSummary {
     attended_by: c.attended_by,
     reported_on: c.reported_on,
     advance_amount: c.advance_amount ?? null,
+    vehicle_name: c.vehicle_name ?? null,
+    odometer_km: c.odometer_km ?? null,
   };
 }
 
