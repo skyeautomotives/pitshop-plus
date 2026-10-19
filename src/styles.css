@@ -4496,3 +4496,7 @@ html:not(:lang(en)) body {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+.bill-filter {
+  margin-top: 10px;
+}
