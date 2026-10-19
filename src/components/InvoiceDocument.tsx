@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { locale, t, type Key, type Lang } from "../i18n";
 import { paymentMethodLabel } from "../lib/complaint";
 import { billCode, displayNumber, formatDate, seqNumber } from "../lib/format";
+import { amountInWords, DEFAULT_GST_RATE, halves, SERVICE_SAC } from "../lib/gst";
 import { complaintText } from "../lib/jobCard";
 import { formatINR, rupeesToPaise } from "../lib/money";
 import { billMoney } from "../lib/payments";
@@ -18,6 +19,23 @@ export function billParts(bill: BillWithItems) {
   // Advance taken on the complaints and payments after billing; the bill's own total is unchanged.
   const money = billMoney(bill.grand_total, complaints, payments);
   return { items, complaints, payments, money };
+}
+
+const paise = (rupees: number | null | undefined) => rupeesToPaise(Number(rupees ?? 0));
+
+/** GST grouped by rate, from the amounts saved on the bill. */
+export function gstSummary(bill: BillWithItems) {
+  const groups = new Map<number, { taxable: number; gst: number }>();
+  const add = (rate: number, taxable: number, gst: number) => {
+    const g = groups.get(rate) ?? { taxable: 0, gst: 0 };
+    groups.set(rate, { taxable: g.taxable + taxable, gst: g.gst + gst });
+  };
+  for (const item of bill.bill_items) add(Number(item.gst_rate ?? DEFAULT_GST_RATE), paise(item.taxable_value), paise(item.gst_amount));
+  if (paise(bill.service_taxable) > 0) add(Number(bill.service_gst_rate ?? DEFAULT_GST_RATE), paise(bill.service_taxable), paise(bill.service_gst));
+  return [...groups.entries()]
+    .filter(([, g]) => g.taxable > 0 || g.gst > 0)
+    .sort((a, b) => a[0] - b[0])
+    .map(([rate, g]) => ({ rate, ...g, ...halves(g.gst) }));
 }
 
 interface Props {
@@ -41,6 +59,9 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
   const km = [...complaints].reverse().find((c) => c.odometer_km)?.odometer_km;
   const anyPaid = money.advance > 0 || payments.length > 0;
   const paidUp = money.status === "paid" && anyPaid;
+  const gst = bill.gst_mode ? gstSummary(bill) : null;
+  const gstTotal = paise(bill.gst_total);
+  const { cgst, sgst } = halves(gstTotal);
 
   return (
     <article className={pdf ? "invoice invoice-pdf" : "card invoice"} lang={lang}>
@@ -49,9 +70,10 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
           <h1 className="inv-shop-name">{shopName}</h1>
           {settings?.address && <p className="pre-line">{settings.address}</p>}
           {settings?.phone && <p>{d("doc.phoneLine", { phone: settings.phone })}</p>}
+          {gst && bill.gstin && <p className="inv-strong">{d("doc.gstinLine", { gstin: bill.gstin })}</p>}
         </div>
         <div className="inv-title">
-          <p className="inv-doc">{d("doc.invoice")}</p>
+          <p className="inv-doc">{gst ? d("doc.taxInvoice") : d("doc.invoice")}</p>
           <dl className="inv-facts">
             <div>
               <dt>{d("doc.invoiceNo")}</dt>
@@ -75,6 +97,7 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
           <p className="inv-strong">{bill.customer_name}</p>
           <p>{bill.phone}</p>
           {bill.address && <p className="pre-line">{bill.address}</p>}
+          {gst && bill.customer_gstin && <p>{d("doc.gstinLine", { gstin: bill.customer_gstin })}</p>}
         </div>
         <div className="inv-box">
           <h2>{d("doc.vehicle")}</h2>
@@ -124,6 +147,8 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
           <tr data-keep>
             <th className="col-no">#</th>
             <th>{d("doc.item")}</th>
+            {gst && <th>{d("doc.hsn")}</th>}
+            {gst && <th className="num">{d("doc.gstRate")}</th>}
             <th className="num">{d("doc.qty")}</th>
             <th className="num">{d("doc.rate")}</th>
             <th className="num">{d("doc.amount")}</th>
@@ -132,7 +157,7 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
         <tbody>
           {items.length === 0 ? (
             <tr data-keep>
-              <td colSpan={5} className="inv-muted">
+              <td colSpan={gst ? 7 : 5} className="inv-muted">
                 {d("doc.noItems")}
               </td>
             </tr>
@@ -141,6 +166,8 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
               <tr key={item.id} data-keep>
                 <td className="col-no">{i + 1}</td>
                 <td>{item.description}</td>
+                {gst && <td>{item.hsn ?? ""}</td>}
+                {gst && <td className="num">{`${Number(item.gst_rate ?? DEFAULT_GST_RATE)}%`}</td>}
                 <td className="num">{Number(item.quantity ?? 1)}</td>
                 <td className="num">{inr(item.price)}</td>
                 <td className="num">{inr(item.line_total ?? item.price)}</td>
@@ -149,16 +176,46 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
           )}
         </tbody>
       </table>
+      {bill.gst_mode === "inclusive" && <p className="inv-note">{d("doc.pricesInclude")}</p>}
 
       <section className="inv-summary" data-keep>
-        <div className="inv-stamp-area">{paidUp && <span className="inv-stamp">{d("doc.paidStamp")}</span>}</div>
+        <div className="inv-summary-left">
+          <p className="inv-words">
+            <span className="inv-muted">{d("doc.amountWords")}</span>
+            {amountInWords(rupeesToPaise(bill.grand_total))}
+          </p>
+          {gst && gst.length > 0 && (
+            <table className="inv-tax">
+              <caption>{d("doc.taxSummary")}</caption>
+              <thead>
+                <tr>
+                  <th>{d("doc.gstRate")}</th>
+                  <th className="num">{d("doc.taxable")}</th>
+                  <th className="num">{d("doc.cgst")}</th>
+                  <th className="num">{d("doc.sgst")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {gst.map((g) => (
+                  <tr key={g.rate}>
+                    <td>{`${g.rate}%`}</td>
+                    <td className="num">{formatINR(g.taxable)}</td>
+                    <td className="num">{formatINR(g.cgst)}</td>
+                    <td className="num">{formatINR(g.sgst)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {paidUp && <span className="inv-stamp">{d("doc.paidStamp")}</span>}
+        </div>
         <dl className="inv-totals">
           <div>
             <dt>{d("doc.itemsSubtotal")}</dt>
             <dd>{inr(bill.items_subtotal)}</dd>
           </div>
           <div>
-            <dt>{d("doc.labour")}</dt>
+            <dt>{gst ? d("doc.labourSac", { sac: SERVICE_SAC }) : d("doc.labour")}</dt>
             <dd>{inr(bill.labour_charge)}</dd>
           </div>
           {bill.painting_charge !== null && (
@@ -181,6 +238,22 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
               </dt>
               <dd>−{inr(bill.discount)}</dd>
             </div>
+          )}
+          {gst && (
+            <>
+              <div className="inv-sub">
+                <dt>{d("doc.taxable")}</dt>
+                <dd>{inr(Number(bill.taxable_total ?? 0))}</dd>
+              </div>
+              <div>
+                <dt>{d("doc.cgst")}</dt>
+                <dd>{formatINR(cgst)}</dd>
+              </div>
+              <div>
+                <dt>{d("doc.sgst")}</dt>
+                <dd>{formatINR(sgst)}</dd>
+              </div>
+            </>
           )}
           <div className="inv-grand">
             <dt>{d("doc.grandTotal")}</dt>

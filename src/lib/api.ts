@@ -240,6 +240,7 @@ export async function salesForRange(from: string, to: string): Promise<SaleRow[]
     washing_charge: b.washing_charge,
     grand_total: b.grand_total,
     discount: b.discount,
+    gst_total: b.gst_total ?? null,
     created_by: b.created_by,
   }));
 }
@@ -397,14 +398,14 @@ export async function openComplaintsForPhoneElsewhere(phoneDigits: string, vehic
 // ---------- Shop settings (read offline from the last copy; changes need a connection) ----------
 
 export async function getShopSettings(): Promise<ShopSettings> {
-  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type").single();
+  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type, gst_enabled, gstin, gst_inclusive").single();
   if (!error) {
     await setMeta("shopSettings", data);
     return data as ShopSettings;
   }
   const saved = await getMeta<ShopSettings>("shopSettings");
   if (saved && isNetworkError(error))
-    return { ...saved, vehicle_type: saved.vehicle_type ?? null };
+    return { ...saved, vehicle_type: saved.vehicle_type ?? null, gst_enabled: saved.gst_enabled ?? false, gstin: saved.gstin ?? null, gst_inclusive: saved.gst_inclusive ?? false };
   throw error;
 }
 

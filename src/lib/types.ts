@@ -1,3 +1,4 @@
+import type { GstMode } from "./gst";
 import type { VehicleType } from "./vehicleType";
 // Row shapes as returned by Supabase. Amounts are rupees (numeric(12,2)).
 
@@ -22,6 +23,17 @@ export interface BillRow {
   /** Set when the discount was given as a percentage (for display). */
   discount_percent: number | null;
   grand_total: number;
+  /** GST (0026): null or missing on plain bills. */
+  gst_mode?: GstMode | null;
+  /** The workshop's GSTIN when the bill was made. */
+  gstin?: string | null;
+  customer_gstin?: string | null;
+  /** GST % on labour, painting and washing. */
+  service_gst_rate?: number | null;
+  service_taxable?: number | null;
+  service_gst?: number | null;
+  taxable_total?: number | null;
+  gst_total?: number | null;
   /** Payments received after billing (0020); missing on bills saved before it. */
   payments?: BillPayment[];
   created_at: string;
@@ -41,6 +53,11 @@ export interface BillItemRow {
   price: number;
   /** quantity x price. */
   line_total: number;
+  /** GST bills only. */
+  gst_rate?: number | null;
+  hsn?: string | null;
+  taxable_value?: number | null;
+  gst_amount?: number | null;
 }
 
 export type ComplaintStatus = "open" | "resolved";
@@ -151,4 +168,9 @@ export interface ShopSettings {
   allow_zero_labour: boolean;
   /** Bike or car workshop; null until the owner chooses. */
   vehicle_type: VehicleType | null;
+  /** GST registered: bills become tax invoices. */
+  gst_enabled: boolean;
+  gstin: string | null;
+  /** Default for new bills: prices typed include GST. */
+  gst_inclusive: boolean;
 }

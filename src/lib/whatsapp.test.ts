@@ -30,7 +30,7 @@ const bill: BillWithItems = {
   ],
 };
 
-const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null };
+const shop = { shop_name: "Sharma Motors", address: null, phone: "080 1234 5678", allow_zero_labour: false, vehicle_type: null, gst_enabled: false, gstin: null, gst_inclusive: false };
 
 describe("whatsappNumber", () => {
   it("adds India's country code to 10-digit numbers", () => {

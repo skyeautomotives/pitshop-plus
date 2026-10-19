@@ -11,6 +11,7 @@ import type {
   ComplaintWithBills,
 } from "../types";
 import { complaintText } from "../jobCard";
+import { computeGst, DEFAULT_GST_RATE } from "../gst";
 import type { LocalBill, LocalComplaint } from "./db";
 
 export const digitsOnly = (s: string) => s.replace(/\D/g, "");
@@ -42,6 +43,10 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
       quantity: qtyHundredths / 100,
       price: rupees(price),
       line_total: rupees(Math.round((price * qtyHundredths) / 100)),
+      gst_rate: b.gst_mode ? Number(i.gst_rate ?? DEFAULT_GST_RATE) : null,
+      hsn: i.hsn ?? null,
+      taxable_value: null as number | null,
+      gst_amount: null as number | null,
     };
   });
   const subtotal = items.reduce((sum, i) => sum + Math.round(i.line_total * 100), 0);
@@ -50,6 +55,22 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
   const washing = toPaise(b.washing_charge);
   const discount = toPaise(b.discount) ?? 0;
   const gross = subtotal + labour + (painting ?? 0) + (washing ?? 0);
+  const serviceRate = Number(b.service_gst_rate ?? DEFAULT_GST_RATE);
+  // GST worked out the same way as the server's apply_bill_gst().
+  const gst = b.gst_mode
+    ? computeGst(
+        items.map((i) => ({ amount: Math.round(i.line_total * 100), rate: i.gst_rate ?? DEFAULT_GST_RATE })),
+        labour + (painting ?? 0) + (washing ?? 0),
+        serviceRate,
+        discount,
+        b.gst_mode,
+      )
+    : null;
+  if (gst)
+    items.forEach((item, n) => {
+      item.taxable_value = rupees(gst.items[n].taxable);
+      item.gst_amount = rupees(gst.items[n].gst);
+    });
   const vehicleReg = b.vehicle_reg.trim().toUpperCase();
   const stamp = now.toISOString();
   return {
@@ -70,7 +91,15 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
     items_subtotal: rupees(subtotal),
     discount: rupees(discount),
     discount_percent: discount === 0 || b.discount_percent === null ? null : Number(b.discount_percent),
-    grand_total: rupees(gross - discount),
+    grand_total: rupees(gst ? gst.total : gross - discount),
+    gst_mode: b.gst_mode ?? null,
+    gstin: b.gst_mode ? (prev?.gstin ?? b.gstin ?? null) : null,
+    customer_gstin: b.gst_mode ? (b.customer_gstin ?? null) : null,
+    service_gst_rate: b.gst_mode ? serviceRate : null,
+    service_taxable: gst ? rupees(gst.services.taxable) : null,
+    service_gst: gst ? rupees(gst.services.gst) : null,
+    taxable_total: gst ? rupees(gst.taxable) : null,
+    gst_total: gst ? rupees(gst.gst) : null,
     created_by: prev?.created_by ?? me.user_id,
     created_at: prev?.created_at ?? stamp,
     updated_at: stamp,

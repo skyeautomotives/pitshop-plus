@@ -57,11 +57,48 @@ describe("computeTotals", () => {
       washing: 0,
       gross: 474950,
       discount: 0,
+      gst: null,
       grandTotal: 474950,
     });
   });
   it("counts invalid amounts as zero while typing", () => {
     expect(computeTotals(filled({ labour: "abc" })).grandTotal).toBe(214950);
+  });
+});
+
+describe("GST bills", () => {
+  const gst = (patch: Partial<BillDraft> = {}) => filled({ gstMode: "exclusive", ...patch });
+
+  it("adds GST on top and sends each line's rate and HSN", () => {
+    const d = gst();
+    d.items[0].hsn = "8708";
+    const { errors, payload } = validateBill(d, { ...strict, gstin: "32ABCDE1234F1Z5" });
+    expect(errors).toEqual({});
+    expect(payload?.bill.gst_mode).toBe("exclusive");
+    expect(payload?.bill.gstin).toBe("32ABCDE1234F1Z5");
+    expect(payload?.items[0]).toMatchObject({ gst_rate: "18", hsn: "8708" });
+    // 2149.50 of parts + 600 labour, 18% on all of it.
+    expect(computeTotals(d).grandTotal).toBe(Math.round(274950 * 1.18));
+  });
+
+  it("leaves the total as typed when prices include GST", () => {
+    const totals = computeTotals(gst({ gstMode: "inclusive" }));
+    expect(totals.grandTotal).toBe(274950);
+    expect(totals.gst!.taxable + totals.gst!.gst).toBe(274950);
+  });
+
+  it("checks HSN codes and the customer GSTIN", () => {
+    const d = gst({ customerGstin: "12345" });
+    d.items[0].hsn = "87A";
+    const { errors } = validateBill(d, strict);
+    expect(errors.customerGstin).toBeTruthy();
+    expect(errors[`item-${d.items[0].key}-hsn`]).toBeTruthy();
+  });
+
+  it("ignores GST details on plain bills", () => {
+    const d = filled({ customerGstin: "12345" });
+    expect(validateBill(d, strict).errors).toEqual({});
+    expect(validateBill(d, strict).payload?.items[0]).not.toHaveProperty("gst_rate");
   });
 });
 
@@ -83,6 +120,10 @@ describe("validateBill", () => {
         washing_charge: "250.00",
         discount: "0.00",
         discount_percent: null,
+        gst_mode: null,
+        customer_gstin: null,
+        service_gst_rate: null,
+        gstin: null,
       },
       items: [
         { description: "Brake pads", quantity: "1.00", price: "1250.00" },
