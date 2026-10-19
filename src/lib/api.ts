@@ -10,7 +10,7 @@ import { FunctionsHttpError } from "@supabase/supabase-js";
 import { complaintText } from "./jobCard";
 import type { SaveBillPayload } from "./bill";
 import type { ComplaintPayload } from "./complaint";
-import type { PaymentInput } from "./payments";
+import { billMoney, type PaymentInput } from "./payments";
 import { getMeta, localDb, localUserId, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import {
   applyComplaintEdit,
@@ -208,6 +208,24 @@ export async function removeBillPayment(billId: string, paymentId: string): Prom
 export async function getBill(id: string): Promise<BillWithItems | null> {
   const b = await localDb().bills.get(id);
   return b ? toBillWithItems(b, await complaintMap()) : null;
+}
+
+/** Bills with money still to collect (oldest first), with the amount due. Optionally filtered by a search. */
+export async function unpaidBills(q = ""): Promise<{ bills: BillWithComplaints[]; due: number }> {
+  const [bills, complaints] = await Promise.all([localDb().bills.toArray(), complaintMap()]);
+  let due = 0;
+  const unpaid = bills
+    .filter((b) => matchesSearch(b, q))
+    .sort(byBillDateDesc)
+    .reverse()
+    .map((b) => toBillWithComplaints(b, complaints))
+    .filter((b) => {
+      const m = billMoney(b.grand_total, b.complaints, b.payments ?? []);
+      if (m.status === "paid") return false;
+      due += m.balance;
+      return true;
+    });
+  return { bills: unpaid, due };
 }
 
 /** Matches customer name, phone or vehicle number. Empty query = most recent bills. */

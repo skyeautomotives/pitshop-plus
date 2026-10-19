@@ -14,10 +14,10 @@ export function StatusBadge({ status }: { status: ComplaintStatus }) {
 
 const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
 
-/** "Paid" or "Balance ₹…" once anything has been paid on the bill (nothing for older bills). */
-function PaymentTag({ bill }: { bill: BillWithComplaints }) {
+/** "Paid" or "Balance ₹…" once anything has been paid on the bill (always the balance in the unpaid list). */
+function PaymentTag({ bill, showDue }: { bill: BillWithComplaints; showDue: boolean }) {
   const m = billMoney(bill.grand_total, bill.complaints, bill.payments ?? []);
-  if (m.status === "unpaid") return null;
+  if (m.status === "unpaid" && !showDue) return null;
   return m.status === "paid" ? (
     <span className="badge badge-resolved">{t("lists.paid")}</span>
   ) : (
@@ -26,7 +26,7 @@ function PaymentTag({ bill }: { bill: BillWithComplaints }) {
 }
 
 /** A bill in a list, with the complaints it addresses. */
-export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplaints; showCustomer?: boolean }) {
+export function BillCard({ bill, showCustomer = true, showDue = false }: { bill: BillWithComplaints; showCustomer?: boolean; showDue?: boolean }) {
   useT();
   return (
     <Link to={`/bills/${bill.id}`} className="result">
@@ -42,7 +42,7 @@ export function BillCard({ bill, showCustomer = true }: { bill: BillWithComplain
         {showCustomer && <span>{bill.phone}</span>}
         <span>{t("lists.received", { date: formatDate(bill.date_received) })}</span>
         <span>{t("lists.delivered", { date: formatDate(bill.delivered_on) })}</span>
-        <PaymentTag bill={bill} />
+        <PaymentTag bill={bill} showDue={showDue} />
       </div>
       <div className="result-links">
         {bill.complaints.length === 0 ? (

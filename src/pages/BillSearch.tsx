@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useT } from "../i18n";
 import { Link, useSearchParams } from "react-router";
 import { BillCard, ComplaintCard } from "../components/cards";
-import { searchBills, searchComplaints } from "../lib/api";
+import { searchBills, searchComplaints, unpaidBills } from "../lib/api";
+import { formatINR } from "../lib/money";
 import { errorMessage } from "../lib/supabase";
 import type { BillWithComplaints, ComplaintWithBills } from "../lib/types";
 
@@ -11,14 +12,16 @@ const RESULT_LIMIT = 100;
 type Results =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ok"; bills: BillWithComplaints[]; complaints: ComplaintWithBills[] };
+  | { status: "ok"; bills: BillWithComplaints[]; complaints: ComplaintWithBills[]; due: number };
 
 const countLabel = (n: number) => `${n}${n === RESULT_LIMIT ? "+" : ""}`;
 
 export default function BillSearch() {
-  const { t } = useT();
+  const { t, tn } = useT();
   const [params, setParams] = useSearchParams();
   const query = params.get("q") ?? "";
+  const unpaid = params.get("show") === "unpaid";
+  const urlParams = (q: string, onlyUnpaid: boolean) => ({ ...(q ? { q } : {}), ...(onlyUnpaid ? { show: "unpaid" } : {}) });
   const [input, setInput] = useState(query);
   const [results, setResults] = useState<Results>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
@@ -28,28 +31,31 @@ export default function BillSearch() {
   useEffect(() => {
     const t = setTimeout(() => {
       const q = input.trim();
-      if (q !== query) setParams(q ? { q } : {}, { replace: true });
+      if (q !== query) setParams(urlParams(q, unpaid), { replace: true });
     }, 300);
     return () => clearTimeout(t);
-  }, [input, query, setParams]);
+  }, [input, query, unpaid, setParams]);
 
   useEffect(() => {
     const requestId = ++latest.current;
     setResults((r) => (r.status === "ok" ? r : { status: "loading" }));
-    Promise.all([searchBills(query), searchComplaints(query)])
-      .then(([bills, complaints]) => {
-        if (requestId === latest.current) setResults({ status: "ok", bills, complaints });
+    const load = unpaid
+      ? unpaidBills(query).then(({ bills, due }) => ({ bills, complaints: [] as ComplaintWithBills[], due }))
+      : Promise.all([searchBills(query), searchComplaints(query)]).then(([bills, complaints]) => ({ bills, complaints, due: 0 }));
+    load
+      .then((r) => {
+        if (requestId === latest.current) setResults({ status: "ok", ...r });
       })
       .catch((err) => {
         if (requestId === latest.current) setResults({ status: "error", message: errorMessage(err) });
       });
-  }, [query, attempt]);
+  }, [query, unpaid, attempt]);
 
   const searching = input.trim() !== query || (results.status === "loading" && query !== "");
 
   // Distinct vehicles in the results, for quick access to their full history.
   const vehicles =
-    results.status === "ok" && query
+    results.status === "ok" && query && !unpaid
       ? [
           ...new Map(
             [...results.bills, ...results.complaints].map((r) => [
@@ -74,6 +80,14 @@ export default function BillSearch() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
+        <div className="segmented segmented-sm bill-filter" role="group" aria-label={t("lists.show")}>
+          <button type="button" aria-pressed={!unpaid} onClick={() => setParams(urlParams(query, false), { replace: true })}>
+            {t("lists.filterAllBills")}
+          </button>
+          <button type="button" aria-pressed={unpaid} onClick={() => setParams(urlParams(query, true), { replace: true })}>
+            {t("lists.filterUnpaid")}
+          </button>
+        </div>
       </div>
 
       <div aria-live="polite">
@@ -103,6 +117,26 @@ export default function BillSearch() {
               </section>
             )}
 
+            {unpaid ? (
+              <section className="result-section">
+                <h2>{tn("lists.toCollect", results.bills.length, { amount: formatINR(results.due) })}</h2>
+                <p className="hint">{t("lists.unpaidHint")}</p>
+                {results.bills.length === 0 ? (
+                  <div className="empty empty-list">
+                    <p>{query ? t("lists.noBillsMatch", { query }) : t("lists.noneUnpaid")}</p>
+                  </div>
+                ) : (
+                  <ul className="results">
+                    {results.bills.map((b) => (
+                      <li key={b.id}>
+                        <BillCard bill={b} showDue />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ) : (
+            <>
             <section className="result-section">
               <h2>{query ? t("lists.billsFound", { count: countLabel(results.bills.length) }) : t("lists.recentBills")}</h2>
               {results.bills.length === 0 ? (
@@ -150,6 +184,8 @@ export default function BillSearch() {
                 </ul>
               )}
             </section>
+            </>
+            )}
           </div>
         )}
       </div>
