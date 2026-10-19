@@ -11,6 +11,7 @@ import { useShopSettings } from "../lib/shopSettings";
 import { useIsOwner, useMe } from "../lib/staff";
 import { errorMessage } from "../lib/supabase";
 import type { ShopSettings } from "../lib/types";
+import { cleanGstin, isGstin } from "../lib/gst";
 
 /** Settings are grouped; each sub-group is its own page at /settings/<id>. */
 const GROUPS = [
@@ -92,6 +93,7 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
   const { settings, reload } = useShopSettings();
   const [form, setForm] = useState<ShopSettings | null>(settings);
   const [nameError, setNameError] = useState<string | undefined>();
+  const [gstinError, setGstinError] = useState<string | undefined>();
   const [status, setStatus] = useState<{ kind: "saved" } | { kind: "error"; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const { t } = useT();
@@ -117,6 +119,18 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
       return;
     }
     setNameError(undefined);
+    const gstin = form.gstin ? cleanGstin(form.gstin) : "";
+    if (form.gst_enabled && !gstin) {
+      setGstinError(t("gst.gstinMissing"));
+      document.getElementById("f-gstin")?.focus();
+      return;
+    }
+    if (gstin && !isGstin(gstin)) {
+      setGstinError(t("gst.gstinInvalid"));
+      document.getElementById("f-gstin")?.focus();
+      return;
+    }
+    setGstinError(undefined);
     setSaving(true);
     try {
       await updateShopSettings({
@@ -125,6 +139,9 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
         phone: form.phone?.trim() || null,
         allow_zero_labour: form.allow_zero_labour,
         vehicle_type: form.vehicle_type,
+        gst_enabled: form.gst_enabled,
+        gstin: gstin || null,
+        gst_inclusive: form.gst_inclusive,
       });
       await reload();
       setStatus({ kind: "saved" });
@@ -203,6 +220,41 @@ function ShopSettingsForm({ part }: { part: "shop" | "billing" }) {
             {t("settings.allowZero")}
           </label>
           <p className="hint">{t("settings.allowZeroHint")}</p>
+
+          <h3 className="settings-subhead">{t("gst.title")}</h3>
+          <label className="check">
+            <input type="checkbox" checked={form.gst_enabled} onChange={(e) => update({ gst_enabled: e.target.checked })} />
+            {t("gst.registered")}
+          </label>
+          <p className="hint">{t("gst.registeredHint")}</p>
+          {form.gst_enabled && (
+            <>
+              <Field fieldKey="gstin" label={t("gst.gstin")} required error={gstinError} hint={t("gst.gstinHint")}>
+                <input
+                  {...fieldProps("gstin", gstinError)}
+                  type="text"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  maxLength={15}
+                  className="gstin-input"
+                  value={form.gstin ?? ""}
+                  onChange={(e) => update({ gstin: e.target.value.toUpperCase() })}
+                />
+              </Field>
+              <div className="field">
+                <span className="label-like">{t("gst.pricesTyped")}</span>
+                <div className="segmented" role="group" aria-label={t("gst.pricesTyped")}>
+                  <button type="button" aria-pressed={!form.gst_inclusive} onClick={() => update({ gst_inclusive: false })}>
+                    {t("gst.beforeGst")}
+                  </button>
+                  <button type="button" aria-pressed={form.gst_inclusive} onClick={() => update({ gst_inclusive: true })}>
+                    {t("gst.includingGst")}
+                  </button>
+                </div>
+                <p className="hint">{t("gst.pricesHint")}</p>
+              </div>
+            </>
+          )}
           <SaveRow saving={saving} status={status} />
         </section>
       )}

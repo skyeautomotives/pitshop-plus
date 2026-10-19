@@ -15,6 +15,7 @@ import {
   type OptionalService,
 } from "../lib/bill";
 import { formatINR } from "../lib/money";
+import { GST_RATES, halves, type GstMode } from "../lib/gst";
 import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
 import { useUnsavedGuard } from "../lib/useUnsavedGuard";
@@ -42,10 +43,11 @@ function firstErrorKey(errors: BillErrors, d: BillDraft): string | null {
     "customerName",
     "phone",
     "address",
+    "customerGstin",
     "dateReceived",
     "expectedPickup",
     "deliveredOn",
-    ...d.items.flatMap((i) => [`item-${i.key}-description`, `item-${i.key}-quantity`, `item-${i.key}-price`]),
+    ...d.items.flatMap((i) => [`item-${i.key}-description`, `item-${i.key}-hsn`, `item-${i.key}-quantity`, `item-${i.key}-price`]),
     "labour",
     "painting",
     "washing",
@@ -59,9 +61,10 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
   const { settings } = useShopSettings();
   const { t, tn } = useT();
   const allowZeroLabour = settings?.allow_zero_labour ?? false;
+  const gstin = settings?.gstin ?? null;
 
   const [draft, setDraft] = useState(initial);
-  const [baseline] = useState(() => JSON.stringify(initial));
+  const [baseline, setBaseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -69,7 +72,17 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
 
   const dirty = JSON.stringify(draft) !== baseline;
   const totals = computeTotals(draft);
-  const errors = useMemo(() => validateBill(draft, { allowZeroLabour }).errors, [draft, allowZeroLabour]);
+  const errors = useMemo(() => validateBill(draft, { allowZeroLabour, gstin }).errors, [draft, allowZeroLabour, gstin]);
+  const showGst = Boolean(settings?.gst_enabled) || draft.gstMode !== null;
+
+  // A new bill in a GST workshop starts with the workshop's usual GST choice.
+  const gstDefault: GstMode | null = settings?.gst_enabled ? (settings.gst_inclusive ? "inclusive" : "exclusive") : null;
+  useEffect(() => {
+    if (billId || !gstDefault || draft.gstMode !== null || JSON.stringify(draft) !== baseline) return;
+    const next = { ...draft, gstMode: gstDefault };
+    setDraft(next);
+    setBaseline(JSON.stringify(next));
+  }, [billId, gstDefault, draft, baseline]);
   // Errors appear after the first save attempt, then update live as fields are fixed.
   const shown: BillErrors = submitted ? errors : {};
   const errorCount = Object.keys(shown).length;
@@ -128,7 +141,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
     if (saving) return;
     setSubmitted(true);
     setSaveError(null);
-    const { errors: errs, payload } = validateBill(draft, { allowZeroLabour });
+    const { errors: errs, payload } = validateBill(draft, { allowZeroLabour, gstin });
     if (!payload) {
       setFocusKey(firstErrorKey(errs, draft));
       return;
@@ -245,6 +258,39 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
                     }}
                   />
                   <FieldError fieldKey={descKey} error={shown[descKey]} />
+                  {draft.gstMode && (
+                    <div className="item-gst">
+                      <label>
+                        <span>{t("gst.rate")}</span>
+                        <select
+                          aria-label={`${t("gst.rate")} ${index + 1}`}
+                          value={item.gstRate}
+                          onChange={(e) => setItem(item.key, { gstRate: e.target.value })}
+                        >
+                          {GST_RATES.map((r) => (
+                            <option key={r} value={String(r)}>
+                              {r}%
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>{t("gst.hsn")}</span>
+                        <input
+                          {...fieldProps(`item-${item.key}-hsn`, shown[`item-${item.key}-hsn`])}
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="off"
+                          maxLength={8}
+                          className="hsn-input"
+                          placeholder={t("common.optional")}
+                          value={item.hsn}
+                          onChange={(e) => setItem(item.key, { hsn: e.target.value.replace(/[^0-9]/g, "") })}
+                        />
+                      </label>
+                      <FieldError fieldKey={`item-${item.key}-hsn`} error={shown[`item-${item.key}-hsn`]} />
+                    </div>
+                  )}
                 </div>
                 <div className="item-qty">
                   <label className="sr-only" htmlFor={`f-${qtyKey}`}>
@@ -304,6 +350,32 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       </div>
 
       <aside className="bill-side">
+      {showGst && (
+        <section className="card gst-card">
+          <h2>{t("gst.billGst")}</h2>
+          <div className="segmented segmented-sm gst-mode" role="group" aria-label={t("gst.billGst")}>
+            {([null, "exclusive", "inclusive"] as const).map((mode) => (
+              <button key={mode ?? "none"} type="button" aria-pressed={draft.gstMode === mode} onClick={() => set("gstMode", mode)}>
+                {mode === null ? t("gst.noGst") : mode === "exclusive" ? t("gst.beforeGst") : t("gst.includingGst")}
+              </button>
+            ))}
+          </div>
+          {draft.gstMode && (
+            <Field fieldKey="customerGstin" label={t("gst.customerGstin")} error={shown.customerGstin} hint={t("gst.customerGstinHint")}>
+              <input
+                {...fieldProps("customerGstin", shown.customerGstin)}
+                type="text"
+                autoComplete="off"
+                autoCapitalize="characters"
+                maxLength={15}
+                className="gstin-input"
+                value={draft.customerGstin}
+                onChange={(e) => set("customerGstin", e.target.value.toUpperCase())}
+              />
+            </Field>
+          )}
+        </section>
+      )}
       <section className="card">
         <h2>{t("bill.charges")}</h2>
         <Field
@@ -321,6 +393,18 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
             onChange={(e) => set("labour", e.target.value)}
           />
         </Field>
+        {draft.gstMode && (
+          <div className="field gst-service">
+            <label htmlFor="f-serviceGstRate">{t("gst.serviceRate")}</label>
+            <select id="f-serviceGstRate" value={draft.serviceGstRate} onChange={(e) => set("serviceGstRate", e.target.value)}>
+              {GST_RATES.map((r) => (
+                <option key={r} value={String(r)}>
+                  {r}%
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {(["painting", "washing"] as const).map((field) => {
           const service = draft[field];
@@ -432,6 +516,22 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
               </dt>
               <dd>−{formatINR(totals.discount)}</dd>
             </div>
+          )}
+          {totals.gst && (
+            <>
+              <div>
+                <dt>{t("gst.taxable")}</dt>
+                <dd>{formatINR(totals.gst.taxable)}</dd>
+              </div>
+              <div>
+                <dt>{t("gst.cgst")}</dt>
+                <dd>{formatINR(halves(totals.gst.gst).cgst)}</dd>
+              </div>
+              <div>
+                <dt>{t("gst.sgst")}</dt>
+                <dd>{formatINR(halves(totals.gst.gst).sgst)}</dd>
+              </div>
+            </>
           )}
           <div className="grand">
             <dt>{t("bill.grandTotal")}</dt>

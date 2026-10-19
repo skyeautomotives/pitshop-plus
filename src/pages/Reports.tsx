@@ -49,6 +49,7 @@ function SummaryTiles({ s, view }: { s: SalesSummary; view: View }) {
       <Tile label={t("reports.labourCharge")} value={formatINR(s.labour)} />
       <Tile label={t("reports.paintingWashing")} value={formatINR(s.services)} />
       {s.discount > 0 && <Tile label={t("reports.discounts")} value={`−${formatINR(s.discount)}`} sub={t("reports.discountsSub")} />}
+      {s.gst > 0 && <Tile label={t("reports.gstCollected")} value={formatINR(s.gst)} sub={t("reports.gstCollectedSub")} />}
     </div>
   );
 }

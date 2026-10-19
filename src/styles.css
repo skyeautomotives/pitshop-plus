@@ -4073,13 +4073,18 @@ html:not(:lang(en)) body {
   margin-top: 16px;
 }
 
-.inv-stamp-area {
+.inv-summary-left {
   flex: 1;
-  padding-top: 18px;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  justify-items: start;
 }
 
 .inv-stamp {
   display: inline-block;
+  margin: 10px 0 0 6px;
   padding: 6px 18px;
   border: 3px solid #15803d;
   border-radius: 8px;
@@ -4365,4 +4370,129 @@ html:not(:lang(en)) body {
 
 .job-notes p {
   margin: 0;
+}
+
+.settings-subhead {
+  margin: 22px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 1rem;
+}
+
+.gstin-input {
+  max-width: 260px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* GST on the bill form */
+.gst-card .gst-mode {
+  margin-bottom: 10px;
+}
+
+.gst-card .field {
+  margin-bottom: 0;
+}
+
+.gst-service select,
+.item-gst select {
+  min-height: 38px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+}
+
+.item-gst {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 6px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.item-gst label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.item-gst .hsn-input {
+  width: 9em;
+  min-height: 38px;
+  padding: 4px 8px;
+}
+
+/* Tax invoice parts */
+.inv-note {
+  margin-top: 6px !important;
+  font-size: 0.82rem;
+  color: var(--inv-muted);
+  font-style: italic;
+}
+
+.inv-totals .inv-sub {
+  border-top: 1px solid var(--inv-line);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.inv-totals .inv-sub dt {
+  color: var(--inv-ink);
+}
+
+.inv-words {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--inv-soft);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.inv-words .inv-muted {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.inv-tax {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.inv-tax caption {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--inv-muted);
+  padding-bottom: 6px;
+}
+
+.inv-tax th,
+.inv-tax td {
+  padding: 5px 10px;
+  border: 1px solid var(--inv-line);
+  text-align: left;
+}
+
+.inv-tax th {
+  background: var(--inv-soft);
+  font-weight: 700;
+}
+
+.inv-tax .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }

@@ -10,6 +10,8 @@ export interface SaleRow {
   grand_total: number;
   /** Rupees taken off the bill (grand_total is after it). */
   discount?: number;
+  /** GST on tax invoices (included in grand_total). */
+  gst_total?: number | null;
   /** Staff login that created the bill. */
   created_by?: string | null;
 }
@@ -21,6 +23,8 @@ export interface SalesSummary {
   labour: number;
   services: number;
   discount: number;
+  /** GST collected on tax invoices; included in total. */
+  gst: number;
   total: number;
   /** Total without labour (spares + painting + washing). */
   excludingLabour: number;
@@ -31,7 +35,7 @@ export interface DaySales extends SalesSummary {
 }
 
 export function emptySummary(): SalesSummary {
-  return { bills: 0, spares: 0, labour: 0, services: 0, discount: 0, total: 0, excludingLabour: 0 };
+  return { bills: 0, spares: 0, labour: 0, services: 0, discount: 0, gst: 0, total: 0, excludingLabour: 0 };
 }
 
 function add(s: SalesSummary, r: SaleRow): SalesSummary {
@@ -46,6 +50,7 @@ function add(s: SalesSummary, r: SaleRow): SalesSummary {
     labour: s.labour + labour,
     services: s.services + services,
     discount: s.discount + discount,
+    gst: s.gst + rupeesToPaise(r.gst_total ?? 0),
     total: s.total + total,
     excludingLabour: s.excludingLabour + (total - labour),
   };

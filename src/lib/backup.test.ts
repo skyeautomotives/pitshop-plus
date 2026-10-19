@@ -48,7 +48,7 @@ vi.mock("./sync", async (orig) => ({ ...(await orig<typeof import("./sync")>()),
 const { makeBackup, readBackupFile, backupFileName, restoreBackup, BACKUP_FORMAT } = await import("./backup");
 const { openLocalDb } = await import("./local/db");
 
-const settings = { shop_name: "Ravi Motors & Sons", address: "MG Road", phone: "9876543210", allow_zero_labour: false, vehicle_type: null };
+const settings = { shop_name: "Ravi Motors & Sons", address: "MG Road", phone: "9876543210", allow_zero_labour: false, vehicle_type: null, gst_enabled: false, gstin: null, gst_inclusive: false };
 const bill = (id: string, n: number | null) => ({
   id,
   bill_number: n,
