@@ -1,3 +1,4 @@
+import { registerPlugin } from "@capacitor/core";
 import { t } from "../i18n";
 import type { BillPdf } from "./billPdf";
 import { isAndroidApp, isDesktopApp } from "./platform";
@@ -75,11 +76,32 @@ export async function savePdf(pdf: BillPdf): Promise<boolean> {
   return true;
 }
 
+interface WhatsAppSharePlugin {
+  sendFile(options: { path: string; phone: string; text: string }): Promise<{ app: string }>;
+}
+const WhatsAppShare = registerPlugin<WhatsAppSharePlugin>("WhatsAppShare");
+
+/** The website opened on a phone or tablet (not the apps). */
+export const isPhoneBrowser = () => !isAndroidApp && !isDesktopApp && /Android|iPhone|iPad/i.test(navigator.userAgent);
+
 /**
- * Sends the bill on WhatsApp. Where the share sheet can take a file, it opens with the PDF.
- * Otherwise the PDF is saved, for the person to attach in the customer's chat.
+ * Sends the bill to the customer on WhatsApp.
+ * Android app: WhatsApp opens in the customer's chat with the PDF attached.
+ * Website on a phone: the share sheet (a browser can't pick the chat).
+ * Computers: the PDF is saved ("saved"), and the caller opens the customer's chat to attach it.
+ * `phone` is the customer's number with country code, or null if it can't be used.
  */
-export async function sendBillPdf(pdf: BillPdf, message: string): Promise<SendResult> {
-  if (canShareFile(pdf)) return sharePdf(pdf, message);
+export async function sendBillPdf(pdf: BillPdf, message: string, phone: string | null): Promise<SendResult> {
+  if (isAndroidApp && phone) {
+    try {
+      const { Filesystem, Directory } = await import("@capacitor/filesystem");
+      const { uri } = await Filesystem.writeFile({ path: pdf.name, data: await base64(pdf.blob), directory: Directory.Cache });
+      await WhatsAppShare.sendFile({ path: uri, phone, text: message });
+      return "shared";
+    } catch {
+      // WhatsApp missing or it refused: let the person pick from the share sheet.
+    }
+  }
+  if (isAndroidApp || (isPhoneBrowser() && canShareFile(pdf))) return sharePdf(pdf, message);
   return (await savePdf(pdf)) ? "saved" : "cancelled";
 }

@@ -4,14 +4,14 @@ import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { BillNotFound, LoadError } from "../components/states";
 import { useShopSettings } from "../lib/shopSettings";
 import { useBill } from "../lib/useBill";
-import { billMessage, whatsappLink } from "../lib/whatsapp";
+import { billMessage, whatsappLink, whatsappNumber } from "../lib/whatsapp";
 import BillPayments from "../components/BillPayments";
 import InvoiceDocument, { billParts } from "../components/InvoiceDocument";
-import { canPrint, isNativeApp, openExternal } from "../lib/platform";
+import { canPrint, isDesktopApp, isNativeApp, openExternal } from "../lib/platform";
 import { displayNumber } from "../lib/format";
 import { errorMessage } from "../lib/supabase";
 import { makeBillPdf, type BillPdf } from "../lib/billPdf";
-import { savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
+import { isPhoneBrowser, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
 
 type PdfState =
   | { step: "idle" }
@@ -45,15 +45,25 @@ export default function BillView() {
   const busy = pdfState.step === "busy";
 
   async function sendOnWhatsapp() {
+    const chat = whatsappLink(bill, settings);
+    // On a computer's browser, open the customer's chat now, while the click still counts (or it is blocked).
+    const tab = !isNativeApp && !isPhoneBrowser() ? window.open("about:blank", "_blank") : null;
     setPdfState({ step: "busy" });
     try {
       const pdf = await makeBillPdf(bill, settings);
       const message = billMessage(bill, settings);
-      const result = await sendBillPdf(pdf, message);
-      if (result === "saved") setPdfState({ step: "saved", chat: whatsappLink(bill, settings) });
-      else if (result === "needs-tap") setPdfState({ step: "ready", pdf, message });
+      const result = await sendBillPdf(pdf, message, whatsappNumber(bill.phone));
+      if (result === "saved") {
+        if (tab) tab.location.href = chat;
+        else if (isDesktopApp) await openExternal(chat);
+        setPdfState({ step: "saved", chat });
+        return;
+      }
+      tab?.close();
+      if (result === "needs-tap") setPdfState({ step: "ready", pdf, message });
       else setPdfState({ step: "idle" });
     } catch (err) {
+      tab?.close();
       setPdfState({ step: "failed", message: errorMessage(err) });
     }
   }
