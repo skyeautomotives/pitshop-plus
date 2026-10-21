@@ -19,6 +19,8 @@ The product is "Pitshop Plus". These internal names keep the old spelling on pur
 
 ## Database
 - Every change is a new numbered file in `supabase/migrations/`. Never edit a migration that has been applied.
+- A migration that creates a table must also grant access to it (Supabase stopped doing this automatically on 30 Oct 2026), next to the `create table`:
+  `grant all on public.<table> to anon, authenticated, service_role;` and turn on row level security with policies, like the existing tables.
 - Each workshop sees only its own data. Admin screens show counts only, never workshops' customers or bill amounts.
 - Apply migrations together with the deploy that needs them, with `node supabase/apply-migration.mjs <file>` (needs `SUPABASE_ACCESS_TOKEN` in the environment). Never print tokens or keys.
 - A change that needs a new migration is not finished until the migration is applied to the live database. Apply it right after merging, before tagging a release, and check it worked. Otherwise the website and apps offer things the database refuses, and customers get stuck.
