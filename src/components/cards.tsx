@@ -6,6 +6,8 @@ import { formatINR, rupeesToPaise } from "../lib/money";
 import type { BillWithComplaints, ComplaintStatus, ComplaintWithBills } from "../lib/types";
 import { displayNumber, seqNumber } from "../lib/format";
 import { billMoney } from "../lib/payments";
+import { creditStatus } from "../lib/credit";
+import { todayISO } from "../lib/customer";
 
 export function StatusBadge({ status }: { status: ComplaintStatus }) {
   useT();
@@ -18,10 +20,18 @@ const inr = (rupees: number) => formatINR(rupeesToPaise(rupees));
 function PaymentTag({ bill, showDue }: { bill: BillWithComplaints; showDue: boolean }) {
   const m = billMoney(bill.grand_total, bill.complaints, bill.payments ?? []);
   if (m.status === "unpaid" && !showDue) return null;
-  return m.status === "paid" ? (
-    <span className="badge badge-resolved">{t("lists.paid")}</span>
-  ) : (
-    <span className="badge badge-open">{t("lists.balance", { amount: inr(m.balance) })}</span>
+  if (m.status === "paid") return <span className="badge badge-resolved">{t("lists.paid")}</span>;
+  const due = bill.credit_due_on;
+  return (
+    <>
+      <span className="badge badge-open">{t("lists.balance", { amount: inr(m.balance) })}</span>
+      {due &&
+        (creditStatus(due, todayISO()) === "overdue" ? (
+          <span className="badge badge-overdue">{t("credit.overdueTag")}</span>
+        ) : (
+          <span className="badge">{t("credit.dueTag", { date: formatDate(due) })}</span>
+        ))}
+    </>
   );
 }
 

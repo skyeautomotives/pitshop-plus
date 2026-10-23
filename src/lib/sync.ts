@@ -174,6 +174,9 @@ async function sendOp(op: OutboxOp) {
         ? await supabase.rpc("add_bill_payment", { p_bill: op.entityId, p_payment: op.payload.add })
         : await supabase.rpc("remove_bill_payment", { p_bill: op.entityId, p_payment: op.payload.remove });
     if (error) throw error;
+  } else if (op.kind === "bill-credit") {
+    const { error } = await supabase.rpc("set_bill_credit", { p_bill: op.entityId, p_credit: op.payload });
+    if (error) throw error;
   } else if (op.kind === "complaint-create") {
     const { error } = await supabase.from("complaints").insert({ id: op.entityId, ...op.payload });
     // Already there: an earlier attempt reached the server before the connection dropped.
@@ -191,7 +194,7 @@ async function push() {
   const ordered = [
     ...ops.filter((o) => !isBillOp(o)),
     ...ops.filter((o) => o.kind === "bill"),
-    ...ops.filter((o) => o.kind === "bill-payment"),
+    ...ops.filter((o) => o.kind === "bill-payment" || o.kind === "bill-credit"),
   ];
   for (const op of ordered) {
     try {
@@ -313,6 +316,10 @@ export async function listWaitingChanges(): Promise<WaitingChange[]> {
         const bill = b?.bill_number ? t("syncPage.billLower", { n: b.bill_number }) : t("syncPage.aNewBill");
         title = "add" in op.payload ? t("syncPage.paymentOn", { bill }) : t("syncPage.removedPaymentOn", { bill });
         detail = "add" in op.payload ? `₹${op.payload.add.amount} · ${op.payload.add.method.toUpperCase()}` : "";
+      } else if (op.kind === "bill-credit") {
+        const b = await db.bills.get(op.entityId);
+        title = t("syncPage.creditOn", { bill: b?.bill_number ? t("syncPage.billLower", { n: b.bill_number }) : t("syncPage.aNewBill") });
+        detail = b ? `${b.customer_name} · ${b.vehicle_reg}` : "";
       } else {
         const c = await db.complaints.get(op.entityId);
         title =

@@ -11,6 +11,7 @@ import { complaintText } from "./jobCard";
 import type { SaveBillPayload } from "./bill";
 import type { ComplaintPayload } from "./complaint";
 import { billMoney, type PaymentInput } from "./payments";
+import type { CreditPatch } from "./credit";
 import { getMeta, localDb, localUserId, setMeta, type LocalBill, type LocalComplaint, type OutboxOp } from "./local/db";
 import {
   applyComplaintEdit,
@@ -203,6 +204,44 @@ export async function removeBillPayment(billId: string, paymentId: string): Prom
   await db.bills.update(billId, { payments, pending: 1 });
   notifyDataChanged();
   await enqueue({ kind: "bill-payment", entityId: billId, payload: { remove: paymentId }, createdAt: new Date().toISOString() });
+}
+
+/**
+ * Gives, changes or clears credit on a bill, or records that a reminder was sent.
+ * Offline it is kept on this device and sent later, merged with any change still waiting.
+ */
+export async function setBillCredit(billId: string, patch: CreditPatch): Promise<void> {
+  const db = localDb();
+  const bill = await db.bills.get(billId);
+  if (!bill) throw new Error("Bill not found.");
+  const local: Partial<LocalBill> =
+    "due_on" in patch && !patch.due_on
+      ? { credit_due_on: null, credit_note: null, credit_reminded_on: null }
+      : {
+          ...("due_on" in patch ? { credit_due_on: patch.due_on } : {}),
+          ...("note" in patch ? { credit_note: patch.note?.trim() || null } : {}),
+          ...("reminded_on" in patch ? { credit_reminded_on: patch.reminded_on } : {}),
+        };
+  if (navigator.onLine && !(await hasWaitingChanges(billId))) {
+    const { error } = await supabase.rpc("set_bill_credit", { p_bill: billId, p_credit: patch });
+    if (!error) {
+      await db.bills.update(billId, local);
+      notifyDataChanged();
+      void syncNow();
+      return;
+    }
+    if (!isNetworkError(error)) throw error;
+  }
+  await db.bills.update(billId, { ...local, pending: 1 });
+  notifyDataChanged();
+  const waiting = (await db.outbox.where("entityId").equals(billId).toArray()).find((o) => o.kind === "bill-credit");
+  if (waiting && waiting.kind === "bill-credit") {
+    await db.outbox.update(waiting.seq!, { payload: { ...waiting.payload, ...patch }, error: null });
+    await refreshCounts();
+    void syncNow();
+    return;
+  }
+  await enqueue({ kind: "bill-credit", entityId: billId, payload: patch, createdAt: new Date().toISOString() });
 }
 
 export async function getBill(id: string): Promise<BillWithItems | null> {

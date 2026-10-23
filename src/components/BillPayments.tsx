@@ -7,6 +7,7 @@ import { formatINR, rupeesToPaise } from "../lib/money";
 import { emptyPayment, validatePayment, type BillMoney, type PaymentDraft } from "../lib/payments";
 import { errorMessage } from "../lib/supabase";
 import type { BillPayment, PaymentMethod } from "../lib/types";
+import BillCredit from "./BillCredit";
 import ConfirmDialog from "./ConfirmDialog";
 import { MoneyInput } from "./fields";
 
@@ -20,10 +21,12 @@ export default function BillPayments({
   billId,
   payments,
   money,
+  credit,
 }: {
   billId: string;
   payments: BillPayment[];
   money: BillMoney;
+  credit?: { dueOn: string | null; note: string | null; remindedOn: string | null };
 }) {
   useT();
   const [draft, setDraft] = useState<PaymentDraft | null>(null);
@@ -105,6 +108,9 @@ export default function BillPayments({
         </div>
       </dl>
       {money.extra > 0 && <p className="hint">{t("payments.overpaid", { amount: inr(money.extra) })}</p>}
+      {money.balance > 0 && credit && !draft && (
+        <BillCredit billId={billId} dueOn={credit.dueOn} note={credit.note} remindedOn={credit.remindedOn} />
+      )}
 
       {notice && (
         <div className="alert alert-success" role="status">

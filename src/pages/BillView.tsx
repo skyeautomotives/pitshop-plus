@@ -170,7 +170,12 @@ export default function BillView() {
 
       <InvoiceDocument bill={bill} settings={settings} />
 
-      <BillPayments billId={bill.id} payments={payments} money={money} />
+      <BillPayments
+        billId={bill.id}
+        payments={payments}
+        money={money}
+        credit={{ dueOn: bill.credit_due_on ?? null, note: bill.credit_note ?? null, remindedOn: bill.credit_reminded_on ?? null }}
+      />
     </div>
   );
 }

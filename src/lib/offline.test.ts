@@ -91,6 +91,20 @@ const fakeSupabase = {
   rpc: async (fn: string, args: never) => {
     server.calls.push(fn);
     if (server.down) return netErr();
+    if (fn === "set_bill_credit") {
+      const a = args as unknown as { p_bill: string; p_credit: Record<string, string | null> };
+      const b = server.bills.find((r) => r.id === a.p_bill);
+      if (!b) return { data: null, error: { code: "P0002", message: "Bill not found." } };
+      const c = a.p_credit;
+      if ("due_on" in c && !c.due_on) Object.assign(b, { credit_due_on: null, credit_note: null, credit_reminded_on: null });
+      else {
+        if ("due_on" in c) b.credit_due_on = c.due_on;
+        if ("note" in c) b.credit_note = c.note;
+        if ("reminded_on" in c) b.credit_reminded_on = c.reminded_on;
+      }
+      b.updated_at = stamp();
+      return { data: null, error: null };
+    }
     if (fn === "add_bill_payment" || fn === "remove_bill_payment") {
       const a = args as unknown as { p_bill: string; p_payment: { id: string } | string };
       const b = server.bills.find((r) => r.id === a.p_bill);
@@ -488,5 +502,44 @@ describe("payments on a bill", () => {
     goOffline();
     await api.saveBill(bill({ labour_charge: "800.00" }), id);
     expect((await api.getBill(id))?.payments).toHaveLength(1);
+  });
+});
+
+describe("credit on a bill", () => {
+  it("online, credit goes straight to the server", async () => {
+    const id = await api.saveBill(bill());
+    await api.setBillCredit(id, { due_on: "2026-11-01", note: "Salary day" });
+    expect(server.bills[0]).toMatchObject({ credit_due_on: "2026-11-01", credit_note: "Salary day" });
+    expect((await api.getBill(id))?.credit_due_on).toBe("2026-11-01");
+    expect(await localDb().outbox.count()).toBe(0);
+  });
+
+  it("offline, credit and a reminder are merged into one change, sent after the bill", async () => {
+    goOffline();
+    const id = await api.saveBill(bill());
+    await api.setBillCredit(id, { due_on: "2026-11-01", note: "Salary day" });
+    await api.setBillCredit(id, { reminded_on: "2026-10-23" });
+    expect((await localDb().outbox.toArray()).filter((o) => o.kind === "bill-credit")).toHaveLength(1);
+    goOnline();
+    await sync.syncNow();
+    expect(server.calls.lastIndexOf("save_bill")).toBeLessThan(server.calls.indexOf("set_bill_credit"));
+    expect(server.bills[0]).toMatchObject({ credit_due_on: "2026-11-01", credit_note: "Salary day", credit_reminded_on: "2026-10-23" });
+    expect((await api.getBill(id))?.pending).toBe(false);
+  });
+
+  it("clearing credit removes the date, note and reminder", async () => {
+    const id = await api.saveBill(bill());
+    await api.setBillCredit(id, { due_on: "2026-11-01", note: "x", reminded_on: "2026-10-20" });
+    await api.setBillCredit(id, { due_on: null });
+    const b = await api.getBill(id);
+    expect([b?.credit_due_on, b?.credit_note, b?.credit_reminded_on]).toEqual([null, null, null]);
+  });
+
+  it("editing a bill offline keeps its credit", async () => {
+    const id = await api.saveBill(bill());
+    await api.setBillCredit(id, { due_on: "2026-11-01" });
+    goOffline();
+    await api.saveBill(bill({ labour_charge: "800.00" }), id);
+    expect((await api.getBill(id))?.credit_due_on).toBe("2026-11-01");
   });
 });
