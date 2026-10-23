@@ -6,7 +6,8 @@ import { emptyBill, isBlankItem, type BillDraft } from "../lib/bill";
 
 // Unsaved new bills are kept on this device so a reload, closed tab or dead
 // battery doesn't lose what was typed. Saving the bill removes the draft.
-const DRAFT_KEY = "workshop-billing:new-bill-draft";
+const DRAFT_KEYS = { bill: "workshop-billing:new-bill-draft", sale: "workshop-billing:direct-sale-draft" };
+type Mode = keyof typeof DRAFT_KEYS;
 
 function hasContent(d: BillDraft): boolean {
   return Boolean(
@@ -23,9 +24,9 @@ function hasContent(d: BillDraft): boolean {
   );
 }
 
-function loadDraft(): BillDraft | null {
+function loadDraft(mode: Mode): BillDraft | null {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
+    const raw = localStorage.getItem(DRAFT_KEYS[mode]);
     if (!raw) return null;
     const d = JSON.parse(raw) as BillDraft;
     const looksValid =
@@ -54,9 +55,9 @@ function loadDraft(): BillDraft | null {
   }
 }
 
-function clearDraft() {
+function clearDraft(mode: Mode) {
   try {
-    localStorage.removeItem(DRAFT_KEY);
+    localStorage.removeItem(DRAFT_KEYS[mode]);
   } catch {
     /* storage unavailable */
   }
@@ -65,35 +66,43 @@ function clearDraft() {
 /** Details passed in when starting a bill from a complaint or a vehicle's history. */
 export type BillPrefill = Partial<Pick<BillDraft, "customerName" | "phone" | "address" | "vehicleReg" | "complaintIds">>;
 
+/** New bill, or a direct sale (/bills/new?type=sale): the same bill without the complaint step. */
 export default function NewBill() {
+  const location = useLocation();
+  const mode: Mode = new URLSearchParams(location.search).get("type") === "sale" ? "sale" : "bill";
+  return <NewBillForm key={mode} mode={mode} />;
+}
+
+function NewBillForm({ mode }: { mode: Mode }) {
   useT();
   const location = useLocation();
   const navigate = useNavigate();
   const [prefill] = useState(() => (location.state as { prefill?: BillPrefill } | null)?.prefill ?? null);
+  const fresh = (): BillDraft => (mode === "sale" ? { ...emptyBill(), ...prefill, complaintIds: [] } : { ...emptyBill(), ...prefill });
 
   const [start, setStart] = useState(() => {
-    const draft = loadDraft();
-    if (draft) return { draft, restored: true, key: 0 };
-    return { draft: { ...emptyBill(), ...prefill }, restored: false, key: 0 };
+    const draft = loadDraft(mode);
+    if (draft) return { draft: mode === "sale" ? { ...draft, complaintIds: [] } : draft, restored: true, key: 0 };
+    return { draft: fresh(), restored: false, key: 0 };
   });
 
   // Don't apply the prefill again if the page is reloaded.
   useEffect(() => {
-    if (prefill) navigate(location.pathname, { replace: true, state: null });
-  }, [prefill, navigate, location.pathname]);
+    if (prefill) navigate(location.pathname + location.search, { replace: true, state: null });
+  }, [prefill, navigate, location.pathname, location.search]);
 
   const saveDraft = useCallback((d: BillDraft) => {
     try {
-      if (hasContent(d)) localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-      else localStorage.removeItem(DRAFT_KEY);
+      if (hasContent(d)) localStorage.setItem(DRAFT_KEYS[mode], JSON.stringify(d));
+      else localStorage.removeItem(DRAFT_KEYS[mode]);
     } catch {
       /* storage unavailable: the leave-page warning still protects the bill */
     }
-  }, []);
+  }, [mode]);
 
   function startFresh() {
-    clearDraft();
-    setStart((s) => ({ draft: { ...emptyBill(), ...prefill }, restored: false, key: s.key + 1 }));
+    clearDraft(mode);
+    setStart((s) => ({ draft: fresh(), restored: false, key: s.key + 1 }));
   }
 
   const banner = start.restored ? (
@@ -113,9 +122,10 @@ export default function NewBill() {
     <BillForm
       key={start.key}
       initial={start.draft}
-      title={t("nav.newBill")}
+      title={mode === "sale" ? t("nav.directSale") : t("nav.newBill")}
+      directSale={mode === "sale"}
       onChange={saveDraft}
-      onSaved={clearDraft}
+      onSaved={() => clearDraft(mode)}
       banner={banner}
     />
   );

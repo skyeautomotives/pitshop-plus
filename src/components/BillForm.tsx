@@ -34,6 +34,8 @@ interface Props {
   /** Called after a successful save, before leaving the form. */
   onSaved?: () => void;
   banner?: ReactNode;
+  /** A direct sale: no complaint step. */
+  directSale?: boolean;
 }
 
 /** Error keys in the order the fields appear on screen, so we can focus the first problem. */
@@ -56,7 +58,7 @@ function firstErrorKey(errors: BillErrors, d: BillDraft): string | null {
   return order.find((k) => errors[k]) ?? null;
 }
 
-export default function BillForm({ initial, title, billId, onChange, onSaved, banner }: Props) {
+export default function BillForm({ initial, title, billId, onChange, onSaved, banner, directSale = false }: Props) {
   const navigate = useNavigate();
   const { settings } = useShopSettings();
   const { t, tn } = useT();
@@ -163,6 +165,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
   return (
     <form className="bill-form" onSubmit={onSubmit} noValidate>
       <h1>{title}</h1>
+      {directSale && <p className="hint">{t("billView.directSaleHint")}</p>}
       {banner}
       {errorCount > 0 && (
         <div className="alert alert-error" role="alert">
@@ -212,13 +215,15 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
         </div>
       </section>
 
-      <ComplaintPicker
-        customer={draft}
-        selected={draft.complaintIds}
-        onChange={(ids) => set("complaintIds", ids)}
-        billId={billId}
-        onUseVehicle={(reg) => set("vehicleReg", reg)}
-      />
+      {!directSale && (
+        <ComplaintPicker
+          customer={draft}
+          selected={draft.complaintIds}
+          onChange={(ids) => set("complaintIds", ids)}
+          billId={billId}
+          onUseVehicle={(reg) => set("vehicleReg", reg)}
+        />
+      )}
 
       <section className="card">
         <h2>{t("bill.partsWork")}</h2>
