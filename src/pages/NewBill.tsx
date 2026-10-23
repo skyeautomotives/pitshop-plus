@@ -78,11 +78,12 @@ function NewBillForm({ mode }: { mode: Mode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [prefill] = useState(() => (location.state as { prefill?: BillPrefill } | null)?.prefill ?? null);
-  const fresh = (): BillDraft => (mode === "sale" ? { ...emptyBill(), ...prefill, complaintIds: [] } : { ...emptyBill(), ...prefill });
+  const fresh = (): BillDraft =>
+    mode === "sale" ? { ...emptyBill(), ...prefill, complaintIds: [], directSale: true, labour: "" } : { ...emptyBill(), ...prefill };
 
   const [start, setStart] = useState(() => {
     const draft = loadDraft(mode);
-    if (draft) return { draft: mode === "sale" ? { ...draft, complaintIds: [] } : draft, restored: true, key: 0 };
+    if (draft) return { draft: mode === "sale" ? { ...draft, complaintIds: [], directSale: true } : draft, restored: true, key: 0 };
     return { draft: fresh(), restored: false, key: 0 };
   });
 

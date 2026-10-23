@@ -66,6 +66,10 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
   const gstin = settings?.gstin ?? null;
 
   const [draft, setDraft] = useState(initial);
+
+  // A direct sale (new, or a saved one being edited): no complaint step and no labour.
+
+  const sale = directSale || !!draft.directSale;
   const [baseline, setBaseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -165,7 +169,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
   return (
     <form className="bill-form" onSubmit={onSubmit} noValidate>
       <h1>{title}</h1>
-      {directSale && <p className="hint">{t("billView.directSaleHint")}</p>}
+      {sale && <p className="hint">{t("billView.directSaleHint")}</p>}
       {banner}
       {errorCount > 0 && (
         <div className="alert alert-error" role="alert">
@@ -215,7 +219,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
         </div>
       </section>
 
-      {!directSale && (
+      {!sale && (
         <ComplaintPicker
           customer={draft}
           selected={draft.complaintIds}
@@ -383,21 +387,23 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       )}
       <section className="card">
         <h2>{t("bill.charges")}</h2>
-        <Field
-          fieldKey="labour"
-          label={t("bill.labourCharge")}
-          required
-          error={shown.labour}
-          hint={allowZeroLabour ? t("bill.labourZeroHint") : undefined}
-        >
-          <MoneyInput
-            {...fieldProps("labour", shown.labour)}
-            invalid={Boolean(shown.labour)}
-            className="money-short"
-            value={draft.labour}
-            onChange={(e) => set("labour", e.target.value)}
-          />
-        </Field>
+        {!sale && (
+          <Field
+            fieldKey="labour"
+            label={t("bill.labourCharge")}
+            required
+            error={shown.labour}
+            hint={allowZeroLabour ? t("bill.labourZeroHint") : undefined}
+          >
+            <MoneyInput
+              {...fieldProps("labour", shown.labour)}
+              invalid={Boolean(shown.labour)}
+              className="money-short"
+              value={draft.labour}
+              onChange={(e) => set("labour", e.target.value)}
+            />
+          </Field>
+        )}
         {draft.gstMode && (
           <div className="field gst-service">
             <label htmlFor="f-serviceGstRate">{t("gst.serviceRate")}</label>
@@ -497,10 +503,12 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
             <dt>{tn("bill.itemsSubtotal", filledItems)}</dt>
             <dd>{formatINR(totals.itemsSubtotal)}</dd>
           </div>
-          <div>
-            <dt>{t("bill.labourCharge")}</dt>
-            <dd>{formatINR(totals.labour)}</dd>
-          </div>
+          {!sale && (
+            <div>
+              <dt>{t("bill.labourCharge")}</dt>
+              <dd>{formatINR(totals.labour)}</dd>
+            </div>
+          )}
           {draft.painting.selected && (
             <div>
               <dt>{t("bill.painting")}</dt>
