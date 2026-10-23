@@ -548,6 +548,8 @@ const gu: Translation = {
     colDue: "છેલ્લી તારીખ",
     colReminded: "છેલ્લી યાદ",
     notReminded: "હજી નહીં",
+    overdueAmount: "{amount} મોડું",
+    reportLink: "ઉધાર રિપોર્ટ →",
   },
   syncPage: {
     title: "સિંક",

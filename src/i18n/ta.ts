@@ -548,6 +548,8 @@ const ta: Translation = {
     colDue: "கெடு",
     colReminded: "கடைசி நினைவூட்டல்",
     notReminded: "இன்னும் இல்லை",
+    overdueAmount: "{amount} தாமதம்",
+    reportLink: "கடன் அறிக்கை →",
   },
   syncPage: {
     title: "சிங்க்",

@@ -549,6 +549,8 @@ const ml: Translation = {
     colDue: "അടയ്ക്കേണ്ടത്",
     colReminded: "അവസാന ഓർമ്മപ്പെടുത്തൽ",
     notReminded: "ഇതുവരെ ഇല്ല",
+    overdueAmount: "{amount} വൈകി",
+    reportLink: "ക്രെഡിറ്റ് റിപ്പോർട്ട് →",
   },
   syncPage: {
     title: "സിങ്ക്",

@@ -6,7 +6,8 @@ import MiniSalesChart from "../components/MiniSalesChart";
 import { countAllBills, countBillsOn, countOpenComplaints, listStaff, salesForRange, unpaidBills } from "../lib/api";
 import { todayISO } from "../lib/customer";
 import { formatDate } from "../lib/format";
-import { formatINR } from "../lib/money";
+import { formatINR, rupeesToPaise } from "../lib/money";
+import { creditTotals } from "../lib/credit";
 import { salesForLastDays, shiftDay, summarize } from "../lib/sales";
 import { useShopSettings } from "../lib/shopSettings";
 import { useIsOwner, useMe } from "../lib/staff";
@@ -92,6 +93,7 @@ export default function Dashboard() {
 
   const counts = useLoad(`counts|${today}`, () => Promise.all([countOpenComplaints(), countBillsOn(today), countAllBills()]));
   const owed = useLoad(`unpaid|${today}`, () => unpaidBills());
+  const credit = owed.status === "ok" ? creditTotals(owed.data.bills, today) : null;
   const staff = useLoad(`staffcount|${isOwner}`, () => (isOwner ? listStaff().then((l) => l.length) : Promise.resolve(0)));
 
   // Owners: one fetch covers both the 14-day chart and this month's total.
@@ -168,9 +170,21 @@ export default function Dashboard() {
         <Stat
           to="/bills?show=unpaid"
           label={t("dashboard.toCollect")}
-          value={owed.status === "ok" ? formatINR(owed.data.due) : "…"}
+          value={owed.status === "ok" ? formatINR(rupeesToPaise(owed.data.due)) : "…"}
           sub={owed.status === "ok" ? tn("dashboard.billCount", owed.data.bills.length) : undefined}
         />
+        {credit && credit.total > 0 && (
+          <Stat
+            to={isOwner ? "/reports/credit" : "/bills?show=unpaid"}
+            label={t("credit.outstanding")}
+            value={formatINR(rupeesToPaise(credit.total))}
+            sub={
+              credit.overdue.bills > 0
+                ? t("credit.overdueAmount", { amount: formatINR(rupeesToPaise(credit.overdue.amount)) })
+                : tn("dashboard.billCount", credit.overdue.bills + credit.soon.bills + credit.later.bills)
+            }
+          />
+        )}
         {isOwner && (
           <>
             <Stat
@@ -190,7 +204,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {owed.status === "ok" && <CreditReminders bills={owed.data.bills} />}
+      {owed.status === "ok" && <CreditReminders bills={owed.data.bills} showReportLink={isOwner} />}
 
       <div className="dash-grid">
       {isOwner && (
