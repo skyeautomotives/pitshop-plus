@@ -133,7 +133,6 @@ const en = {
     nameMissing: "Enter the customer's name.",
     nameTooLong: "Name is too long (100 characters max).",
     addressTooLong: "Address is too long (300 characters max).",
-    phoneMissing: "Enter the phone number.",
     phoneInvalid: "Enter a valid phone number with at least 10 digits.",
     regMissing: "Enter the vehicle registration number.",
     regInvalid: "Enter a valid registration number, e.g. KA 01 AB 1234.",

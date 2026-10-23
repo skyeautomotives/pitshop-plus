@@ -168,7 +168,14 @@ describe("validateBill", () => {
 
   it("checks required customer and vehicle fields", () => {
     const r = validateBill(emptyBill(), strict);
-    expect(Object.keys(r.errors).sort()).toEqual(["customerName", "labour", "phone", "vehicleReg"]);
+    expect(Object.keys(r.errors).sort()).toEqual(["customerName", "labour", "vehicleReg"]);
+  });
+
+  it("the phone number is optional, but one that is given must be valid", () => {
+    const empty = validateBill(filled({ phone: "" }), strict);
+    expect(empty.errors.phone).toBeUndefined();
+    expect(empty.payload?.bill.phone).toBe("");
+    expect(validateBill(filled({ phone: "12345" }), strict).errors.phone).toBeTruthy();
   });
 
   it("rejects a pickup date before the received date", () => {
