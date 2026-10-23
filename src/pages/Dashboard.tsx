@@ -120,6 +120,11 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="dash-head-actions">
+          {isOwner && (
+            <Link to="/reports/credit" className="btn btn-outline">
+              {t("reports.credit")}
+            </Link>
+          )}
           <Link to="/complaints/new" className="btn btn-outline">
             {t("nav.newComplaint")}
           </Link>
@@ -133,7 +138,7 @@ export default function Dashboard() {
       </header>
 
       <nav className="dash-actions" aria-label={t("nav.quickActions")}>
-        {ACTIONS.map((a) => (
+        {[...ACTIONS, ...(isOwner ? [{ to: "/reports/credit", icon: "💳", label: "reports.credit" as Key }] : [])].map((a) => (
           <Link key={a.to} to={a.to} className="dash-action">
             <span className="dash-action-icon" aria-hidden="true">
               {a.icon}
@@ -173,7 +178,7 @@ export default function Dashboard() {
           value={owed.status === "ok" ? formatINR(rupeesToPaise(owed.data.due)) : "…"}
           sub={owed.status === "ok" ? tn("dashboard.billCount", owed.data.bills.length) : undefined}
         />
-        {credit && credit.total > 0 && (
+        {credit && (isOwner || credit.total > 0) && (
           <Stat
             to={isOwner ? "/reports/credit" : "/bills?show=unpaid"}
             label={t("credit.outstanding")}
