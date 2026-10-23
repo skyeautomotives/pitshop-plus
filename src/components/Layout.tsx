@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Outlet } from "react-router";
+import { Link, Navigate, NavLink, Outlet } from "react-router";
 import { useT } from "../i18n";
 import { usePlatformAdmin } from "../lib/admin/access";
 import { useShopSettings } from "../lib/shopSettings";
@@ -107,6 +107,9 @@ export default function Layout() {
         <NavLink to="/bills/new" className="sidebar-new">
           <Icon name="plus" /> {t("nav.newBill")}
         </NavLink>
+        <Link to="/bills/new?type=sale" className="sidebar-sale">
+          <Icon name="plus" /> {t("nav.directSale")}
+        </Link>
         <nav className="sidebar-nav">
           <NavLink to="/dashboard" end>
             <Icon name="dashboard" /> {t("nav.dashboard")}
@@ -161,6 +164,7 @@ export default function Layout() {
             </NavLink>
             <NavLink to="/complaints/new">{t("nav.newComplaint")}</NavLink>
             <NavLink to="/bills/new">{t("nav.newBill")}</NavLink>
+            <Link to="/bills/new?type=sale">{t("nav.directSale")}</Link>
             <NavLink to="/complaints" end>
               {t("nav.complaints")}
             </NavLink>
