@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useT, type Key } from "../i18n";
 import { Link } from "react-router";
+import CreditReminders from "../components/CreditReminders";
 import MiniSalesChart from "../components/MiniSalesChart";
 import { countAllBills, countBillsOn, countOpenComplaints, listStaff, salesForRange, unpaidBills } from "../lib/api";
 import { todayISO } from "../lib/customer";
@@ -188,6 +189,8 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      {owed.status === "ok" && <CreditReminders bills={owed.data.bills} />}
 
       <div className="dash-grid">
       {isOwner && (

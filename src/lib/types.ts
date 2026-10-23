@@ -36,6 +36,11 @@ export interface BillRow {
   gst_total?: number | null;
   /** Payments received after billing (0020); missing on bills saved before it. */
   payments?: BillPayment[];
+  /** Credit (0028): the balance is due by this date. */
+  credit_due_on?: string | null;
+  credit_note?: string | null;
+  /** Last time a reminder was sent. */
+  credit_reminded_on?: string | null;
   created_at: string;
   updated_at: string;
   /** True while a change made on this device is waiting to be sent. */
