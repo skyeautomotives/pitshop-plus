@@ -28,6 +28,7 @@ function Stat({ to, label, value, sub, strong }: { to: string; label: string; va
 const ACTIONS: { to: string; icon: string; label: Key }[] = [
   { to: "/complaints/new", icon: "📝", label: "nav.newComplaint" },
   { to: "/bills/new", icon: "🧾", label: "nav.newBill" },
+  { to: "/bills/new?type=sale", icon: "🛒", label: "nav.directSale" },
   { to: "/complaints", icon: "🔧", label: "nav.complaints" },
   { to: "/bills", icon: "🔍", label: "nav.findBills" },
 ];
@@ -118,6 +119,9 @@ export default function Dashboard() {
         <div className="dash-head-actions">
           <Link to="/complaints/new" className="btn btn-outline">
             {t("nav.newComplaint")}
+          </Link>
+          <Link to="/bills/new?type=sale" className="btn btn-outline">
+            {t("nav.directSale")}
           </Link>
           <Link to="/bills/new" className="btn btn-primary">
             {t("nav.newBill")}
