@@ -48,6 +48,8 @@ export interface BillDraft extends CustomerFields {
   customerGstin: string;
   /** GST % on labour, painting and washing. */
   serviceGstRate: string;
+  /** A direct sale: no complaint step and no labour charge. */
+  directSale?: boolean;
 }
 
 let keySeq = 0;
@@ -130,7 +132,7 @@ export function lineTotal(item: ItemDraft): number {
 /** Live totals in paise. Amounts that aren't valid yet count as 0. */
 export function computeTotals(d: BillDraft): Totals {
   const itemsSubtotal = d.items.reduce((sum, item) => sum + lineTotal(item), 0);
-  const labour = paiseOrZero(d.labour);
+  const labour = d.directSale ? 0 : paiseOrZero(d.labour);
   const painting = d.painting.selected ? paiseOrZero(d.painting.amount) : 0;
   const washing = d.washing.selected ? paiseOrZero(d.washing.amount) : 0;
   const gross = itemsSubtotal + labour + painting + washing;
@@ -169,6 +171,8 @@ export interface SaveBillPayload {
     service_gst_rate?: string | null;
     /** The workshop's GSTIN, for the copy kept on this device (the server uses its own). */
     gstin?: string | null;
+    /** A direct sale may have no labour charge (missing in changes queued by older versions). */
+    direct_sale?: boolean;
   };
   items: { description: string; quantity: string; price: string; gst_rate?: string | null; hsn?: string | null }[];
   complaintIds: string[];
@@ -226,10 +230,12 @@ export function validateBill(
   }
   if (d.gstMode && d.customerGstin.trim() && !isGstin(d.customerGstin)) errors.customerGstin = t("gst.gstinInvalid");
 
-  const labour = parseAmount(d.labour);
+  // A direct sale has no labour charge.
+  const sale = !!d.directSale;
+  const labour = parseAmount(sale ? "0" : d.labour);
   const labourError = amountMessage(labour, t("validation.labelLabour"));
   if (labourError) errors.labour = labourError;
-  else if (labour.ok && labour.paise === 0 && !opts.allowZeroLabour) errors.labour = t("validation.labourAboveZero");
+  else if (labour.ok && labour.paise === 0 && !opts.allowZeroLabour && !sale) errors.labour = t("validation.labourAboveZero");
 
   // Optional services: only checked when ticked, and then need an amount above ₹0.
   const optional = (service: OptionalService, field: "painting" | "washing"): string | null => {
@@ -280,6 +286,7 @@ export function validateBill(
         customer_gstin: d.gstMode && d.customerGstin.trim() ? cleanGstin(d.customerGstin) : null,
         service_gst_rate: d.gstMode ? String(gstRate(d.serviceGstRate)) : null,
         gstin: d.gstMode ? (opts.gstin ?? null) : null,
+        direct_sale: sale,
       },
       items,
       complaintIds: [...new Set(d.complaintIds)],
@@ -326,5 +333,6 @@ export function billToDraft(bill: BillWithItems): BillDraft {
     gstMode: bill.gst_mode ?? null,
     customerGstin: bill.customer_gstin ?? "",
     serviceGstRate: String(bill.service_gst_rate ?? DEFAULT_GST_RATE),
+    directSale: bill.direct_sale ?? false,
   };
 }

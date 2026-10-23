@@ -214,10 +214,12 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
             <dt>{d("doc.itemsSubtotal")}</dt>
             <dd>{inr(bill.items_subtotal)}</dd>
           </div>
-          <div>
-            <dt>{gst ? d("doc.labourSac", { sac: SERVICE_SAC }) : d("doc.labour")}</dt>
-            <dd>{inr(bill.labour_charge)}</dd>
-          </div>
+          {!(bill.direct_sale && Number(bill.labour_charge) === 0) && (
+            <div>
+              <dt>{gst ? d("doc.labourSac", { sac: SERVICE_SAC }) : d("doc.labour")}</dt>
+              <dd>{inr(bill.labour_charge)}</dd>
+            </div>
+          )}
           {bill.painting_charge !== null && (
             <div>
               <dt>{d("doc.painting")}</dt>

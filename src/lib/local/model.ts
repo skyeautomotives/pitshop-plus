@@ -86,6 +86,7 @@ export function billFromPayload(id: string, p: SaveBillPayload, prev: LocalBill 
     expected_pickup: b.expected_pickup || null,
     delivered_on: b.delivered_on || todayISO(now),
     labour_charge: rupees(labour),
+    direct_sale: b.direct_sale ?? prev?.direct_sale ?? false,
     painting_charge: painting === null ? null : rupees(painting),
     washing_charge: washing === null ? null : rupees(washing),
     items_subtotal: rupees(subtotal),

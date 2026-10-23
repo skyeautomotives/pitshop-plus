@@ -124,6 +124,7 @@ describe("validateBill", () => {
         customer_gstin: null,
         service_gst_rate: null,
         gstin: null,
+        direct_sale: false,
       },
       items: [
         { description: "Brake pads", quantity: "1.00", price: "1250.00" },
@@ -169,6 +170,18 @@ describe("validateBill", () => {
   it("checks required customer and vehicle fields", () => {
     const r = validateBill(emptyBill(), strict);
     expect(Object.keys(r.errors).sort()).toEqual(["customerName", "labour", "vehicleReg"]);
+  });
+
+  it("a direct sale has no labour charge", () => {
+    const r = validateBill(filled({ directSale: true, labour: "" }), strict);
+    expect(r.errors.labour).toBeUndefined();
+    expect(r.payload?.bill).toMatchObject({ labour_charge: "0.00", direct_sale: true });
+    // Labour typed before switching is ignored, in the saved bill and in the total on screen.
+    expect(validateBill(filled({ directSale: true, labour: "500" }), strict).payload?.bill.labour_charge).toBe("0.00");
+    expect(computeTotals(filled({ directSale: true, labour: "500" })).labour).toBe(0);
+    // A normal bill still needs it.
+    expect(validateBill(filled({ labour: "" }), strict).errors.labour).toBeTruthy();
+    expect(validateBill(filled({ labour: "300" }), strict).payload?.bill.direct_sale).toBe(false);
   });
 
   it("the phone number is optional, but one that is given must be valid", () => {

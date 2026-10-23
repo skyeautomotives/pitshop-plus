@@ -36,6 +36,8 @@ export interface BillRow {
   gst_total?: number | null;
   /** Payments received after billing (0020); missing on bills saved before it. */
   payments?: BillPayment[];
+  /** Sold over the counter: no complaint step, no labour charge (0030). */
+  direct_sale?: boolean;
   /** Credit (0028): the balance is due by this date. */
   credit_due_on?: string | null;
   credit_note?: string | null;
