@@ -134,7 +134,6 @@ const bn: Translation = {
     nameMissing: "কাস্টমারের নাম দিন।",
     nameTooLong: "নাম খুব লম্বা (সর্বোচ্চ 100 অক্ষর)।",
     addressTooLong: "ঠিকানা খুব লম্বা (সর্বোচ্চ 300 অক্ষর)।",
-    phoneMissing: "ফোন নম্বর দিন।",
     phoneInvalid: "অন্তত 10 সংখ্যার সঠিক ফোন নম্বর দিন।",
     regMissing: "গাড়ির রেজিস্ট্রেশন নম্বর দিন।",
     regInvalid: "সঠিক রেজিস্ট্রেশন নম্বর দিন, যেমন KA 01 AB 1234।",

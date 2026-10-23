@@ -101,8 +101,14 @@ describe("validateComplaint", () => {
 
   it("requires customer, vehicle and a description", () => {
     const r = validateComplaint(emptyComplaint());
-    expect(Object.keys(r.errors).sort()).toEqual(["customerName", "description", "phone", "vehicleReg"]);
+    expect(Object.keys(r.errors).sort()).toEqual(["customerName", "description", "vehicleReg"]);
     expect(r.payload).toBeNull();
+  });
+
+  it("saves without a phone number", () => {
+    const r = validateComplaint(filled({ phone: "" }));
+    expect(r.errors).toEqual({});
+    expect(r.payload?.phone).toBe("");
   });
 
   it("rejects a reported date in the future", () => {

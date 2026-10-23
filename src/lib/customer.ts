@@ -36,9 +36,9 @@ export function validateCustomer(d: CustomerFields, errors: FieldErrors) {
 
   if (d.address.trim().length > 300) errors.address = t("customer.addressTooLong");
 
+  // The phone number is optional; one that is given must look like a phone number.
   const phoneDigits = d.phone.replace(/\D/g, "");
-  if (!d.phone.trim()) errors.phone = t("customer.phoneMissing");
-  else if (!/^[+\d\s()-]+$/.test(d.phone.trim()) || phoneDigits.length < 10 || phoneDigits.length > 13)
+  if (d.phone.trim() && (!/^[+\d\s()-]+$/.test(d.phone.trim()) || phoneDigits.length < 10 || phoneDigits.length > 13))
     errors.phone = t("customer.phoneInvalid");
 
   const reg = normalizeVehicleReg(d.vehicleReg);

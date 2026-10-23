@@ -43,7 +43,7 @@ export default function CustomerInputs({
       <div className="span-2">
         <PreviousCustomer fields={value} onUse={onChange} />
       </div>
-      <Field fieldKey="phone" label={t("customer.phone")} required error={errors.phone}>
+      <Field fieldKey="phone" label={t("customer.phone")} error={errors.phone}>
         <input
           {...fieldProps("phone", errors.phone)}
           type="tel"
