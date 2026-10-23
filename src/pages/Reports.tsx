@@ -10,6 +10,7 @@ import { computeStaffPerformance } from "../lib/performance";
 import { monthRange, salesByDay, shiftDay, shiftMonth, summarize, type SaleRow, type SalesSummary } from "../lib/sales";
 import { useIsOwner, useMe } from "../lib/staff";
 import { useLoad } from "../lib/useLoad";
+import CreditReport from "../components/CreditReport";
 
 type View = "combined" | "separate";
 
@@ -63,6 +64,10 @@ const CATEGORIES = [
       { id: "monthly", label: "reports.monthly", hint: "reports.monthlyHint" },
       { id: "chart", label: "reports.chart", hint: "reports.chartHint" },
     ],
+  },
+  {
+    label: "reports.catCredit",
+    items: [{ id: "credit", label: "reports.credit", hint: "reports.creditHint" }],
   },
   {
     label: "reports.catStaff",
@@ -402,6 +407,8 @@ function SalesBody({
           )}
         </section>
       )}
+
+      {section === "credit" && <CreditReport />}
 
       {section === "staff" && (
         <StaffPerformanceSection

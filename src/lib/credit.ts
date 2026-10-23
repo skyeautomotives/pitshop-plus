@@ -60,17 +60,52 @@ export interface CreditReminder {
   status: CreditStatus;
 }
 
-/** Unpaid bills on credit that are overdue or due soon, the most overdue first. */
-export function creditReminders(bills: BillWithComplaints[], today: string): CreditReminder[] {
+/** Every bill on credit with money still due, the earliest due date first. */
+export function creditBills(bills: BillWithComplaints[], today: string): CreditReminder[] {
   return bills
     .flatMap((bill) => {
       if (!bill.credit_due_on) return [];
       const m = billMoney(bill.grand_total, bill.complaints ?? [], bill.payments ?? []);
-      const status = creditStatus(bill.credit_due_on, today);
-      if (m.balance <= 0 || status === "later") return [];
-      return [{ bill, balance: m.balance, dueOn: bill.credit_due_on, status }];
+      if (m.balance <= 0) return [];
+      return [{ bill, balance: m.balance, dueOn: bill.credit_due_on, status: creditStatus(bill.credit_due_on, today) }];
     })
     .sort((a, b) => (a.dueOn === b.dueOn ? a.balance - b.balance : a.dueOn < b.dueOn ? -1 : 1));
+}
+
+/** Unpaid bills on credit that are overdue or due soon, the most overdue first. */
+export function creditReminders(bills: BillWithComplaints[], today: string): CreditReminder[] {
+  return creditBills(bills, today).filter((r) => r.status !== "later");
+}
+
+interface Bucket {
+  amount: number;
+  bills: number;
+}
+
+export interface CreditTotals {
+  /** All credit still to collect. */
+  total: number;
+  overdue: Bucket;
+  /** Due today or in the next 7 days. */
+  soon: Bucket;
+  later: Bucket;
+  /** Unpaid bills with no credit date. */
+  noDate: Bucket;
+}
+
+export function creditTotals(bills: BillWithComplaints[], today: string): CreditTotals {
+  const empty = (): Bucket => ({ amount: 0, bills: 0 });
+  const totals: CreditTotals = { total: 0, overdue: empty(), soon: empty(), later: empty(), noDate: empty() };
+  for (const bill of bills) {
+    const m = billMoney(bill.grand_total, bill.complaints ?? [], bill.payments ?? []);
+    if (m.balance <= 0) continue;
+    const status = bill.credit_due_on ? creditStatus(bill.credit_due_on, today) : null;
+    const bucket = status === null ? totals.noDate : status === "overdue" ? totals.overdue : status === "later" ? totals.later : totals.soon;
+    bucket.amount = Math.round((bucket.amount + m.balance) * 100) / 100;
+    bucket.bills += 1;
+  }
+  totals.total = Math.round((totals.overdue.amount + totals.soon.amount + totals.later.amount) * 100) / 100;
+  return totals;
 }
 
 /** The reminder sent to the customer on WhatsApp (in English, like bills). */
