@@ -546,6 +546,8 @@ const en = {
     colDue: "Due",
     colReminded: "Last reminder",
     notReminded: "Not yet",
+    overdueAmount: "{amount} overdue",
+    reportLink: "Credit report →",
   },
   syncPage: {
     title: "Sync",

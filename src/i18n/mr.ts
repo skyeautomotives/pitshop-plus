@@ -548,6 +548,8 @@ const mr: Translation = {
     colDue: "देय",
     colReminded: "शेवटची आठवण",
     notReminded: "अजून नाही",
+    overdueAmount: "{amount} उशीर",
+    reportLink: "उधारी अहवाल →",
   },
   syncPage: {
     title: "सिंक",

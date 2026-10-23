@@ -3,7 +3,7 @@ import { useT } from "../i18n";
 import { Link, useSearchParams } from "react-router";
 import { BillCard, ComplaintCard } from "../components/cards";
 import { searchBills, searchComplaints, unpaidBills } from "../lib/api";
-import { formatINR } from "../lib/money";
+import { formatINR, rupeesToPaise } from "../lib/money";
 import { errorMessage } from "../lib/supabase";
 import type { BillWithComplaints, ComplaintWithBills } from "../lib/types";
 
@@ -119,7 +119,7 @@ export default function BillSearch() {
 
             {unpaid ? (
               <section className="result-section">
-                <h2>{tn("lists.toCollect", results.bills.length, { amount: formatINR(results.due) })}</h2>
+                <h2>{tn("lists.toCollect", results.bills.length, { amount: formatINR(rupeesToPaise(results.due)) })}</h2>
                 <p className="hint">{t("lists.unpaidHint")}</p>
                 {results.bills.length === 0 ? (
                   <div className="empty empty-list">

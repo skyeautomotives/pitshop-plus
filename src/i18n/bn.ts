@@ -548,6 +548,8 @@ const bn: Translation = {
     colDue: "শেষ তারিখ",
     colReminded: "শেষ রিমাইন্ডার",
     notReminded: "এখনও নয়",
+    overdueAmount: "{amount} দেরি",
+    reportLink: "বাকির রিপোর্ট →",
   },
   syncPage: {
     title: "সিঙ্ক",

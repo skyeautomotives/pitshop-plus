@@ -548,6 +548,8 @@ const te: Translation = {
     colDue: "గడువు",
     colReminded: "చివరి గుర్తింపు",
     notReminded: "ఇంకా లేదు",
+    overdueAmount: "{amount} ఆలస్యం",
+    reportLink: "అప్పు రిపోర్ట్ →",
   },
   syncPage: {
     title: "సింక్",
