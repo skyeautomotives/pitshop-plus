@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, creditDueText, creditReminderLink, creditReminderMessage, creditReminders, creditStatus, daysUntil, validateCredit } from "./credit";
+import { addDays, creditBills, creditDueText, creditTotals, creditReminderLink, creditReminderMessage, creditReminders, creditStatus, daysUntil, validateCredit } from "./credit";
 import type { BillWithComplaints } from "./types";
 
 const TODAY = "2026-10-23";
@@ -91,5 +91,31 @@ describe("reminder message", () => {
 
   it("opens the customer's chat", () => {
     expect(creditReminderLink(r, shop, TODAY)).toMatch(/^https:\/\/wa\.me\/919876543210\?text=Hello%20Ravi/);
+  });
+});
+
+describe("creditTotals and creditBills", () => {
+  const paid = [{ id: "p", amount: 2000, method: "upi" as const, paid_on: TODAY, note: null, created_at: "" }];
+  const bills = [
+    bill({ id: "late", credit_due_on: "2026-10-20" }),
+    bill({ id: "today", credit_due_on: TODAY }),
+    bill({ id: "soon", credit_due_on: "2026-10-28" }),
+    bill({ id: "later", credit_due_on: "2026-12-01" }),
+    bill({ id: "nodate", credit_due_on: null }),
+    bill({ id: "paid", credit_due_on: "2026-10-20", payments: paid }),
+  ];
+
+  it("adds up credit by when it is due, and unpaid bills without a date", () => {
+    expect(creditTotals(bills, TODAY)).toEqual({
+      total: 6000,
+      overdue: { amount: 1500, bills: 1 },
+      soon: { amount: 3000, bills: 2 },
+      later: { amount: 1500, bills: 1 },
+      noDate: { amount: 1500, bills: 1 },
+    });
+  });
+
+  it("lists every bill on credit with a balance, earliest due first", () => {
+    expect(creditBills(bills, TODAY).map((r) => r.bill.id)).toEqual(["late", "today", "soon", "later"]);
   });
 });

@@ -4629,3 +4629,25 @@ html:not(:lang(en)) body {
     background: rgba(255, 255, 255, 0.08);
   }
 }
+
+/* Reports: credit */
+.credit-tiles {
+  margin: 12px 0;
+}
+
+.credit-table td {
+  vertical-align: top;
+}
+
+.credit-table tbody tr {
+  cursor: default;
+}
+
+.credit-row-late {
+  background: #fff7f7;
+}
+
+/* Keeps the hidden column label inside the scroll box (no sideways page scroll on phones). */
+.credit-report .table-scroll {
+  position: relative;
+}
