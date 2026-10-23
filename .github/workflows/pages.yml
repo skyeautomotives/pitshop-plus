@@ -46,6 +46,11 @@ jobs:
             *) echo "::error::VITE_SUPABASE_ANON_KEY doesn't look like a Supabase publishable key (sb_publishable_...)."; exit 1 ;;
           esac
       - run: npm ci
+      # New files in supabase/migrations/ go on the live database before the website that needs them.
+      - name: Apply database migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node supabase/migrate.mjs
       - name: Build
         run: npm run build
         env:

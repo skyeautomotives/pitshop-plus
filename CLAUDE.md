@@ -22,8 +22,8 @@ The product is "Pitshop Plus". These internal names keep the old spelling on pur
 - A migration that creates a table must also grant access to it (Supabase stopped doing this automatically on 30 Oct 2026), next to the `create table`:
   `grant all on public.<table> to anon, authenticated, service_role;` and turn on row level security with policies, like the existing tables.
 - Each workshop sees only its own data. Admin screens show counts only, never workshops' customers or bill amounts.
-- Apply migrations together with the deploy that needs them, with `node supabase/apply-migration.mjs <file>` (needs `SUPABASE_ACCESS_TOKEN` in the environment). Never print tokens or keys.
-- A change that needs a new migration is not finished until the migration is applied to the live database. Apply it right after merging, before tagging a release, and check it worked. Otherwise the website and apps offer things the database refuses, and customers get stuck.
+- Migrations are applied automatically: when a pull request is merged, the website deploy runs `node supabase/migrate.mjs` first, which applies the new files in `supabase/migrations/` in order and records them in `public.schema_migrations`. It uses the repository secret `SUPABASE_ACCESS_TOKEN`. If a migration fails, the deploy stops and the website is not updated. Never print tokens or keys.
+- After merging a change with a migration, check the deploy's "Apply database migrations" step passed before tagging a release. `node supabase/migrate.mjs --check` (with the token set) lists anything still missing.
 
 ## Before finishing
 Run `npm run typecheck`, `npm test` and `npm run build`. All must pass.
