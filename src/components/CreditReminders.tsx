@@ -12,7 +12,7 @@ import { errorMessage } from "../lib/supabase";
 import type { BillWithComplaints } from "../lib/types";
 
 /** Dashboard card: credit that is overdue or due soon, with a WhatsApp reminder for each. */
-export default function CreditReminders({ bills, showReportLink = false }: { bills: BillWithComplaints[]; showReportLink?: boolean }) {
+export default function CreditReminders({ bills, link = "unpaid" }: { bills: BillWithComplaints[]; link?: "report" | "unpaid" | "none" }) {
   useT();
   const { settings } = useShopSettings();
   const today = todayISO();
@@ -34,15 +34,15 @@ export default function CreditReminders({ bills, showReportLink = false }: { bil
     <section className="card credit-reminders" aria-labelledby="credit-reminders-title">
       <div className="card-head">
         <h2 id="credit-reminders-title">{t("credit.remindersTitle")}</h2>
-        {showReportLink ? (
-          <Link to="/reports/credit" className="link-button">
+        {link === "report" ? (
+          <Link to="/credit-report" className="link-button">
             {t("credit.reportLink")}
           </Link>
-        ) : (
+        ) : link === "unpaid" ? (
           <Link to="/bills?show=unpaid" className="link-button">
             {t("credit.allUnpaid")}
           </Link>
-        )}
+        ) : null}
       </div>
       <p className="muted">{t("credit.remindersHint")}</p>
       {error && (

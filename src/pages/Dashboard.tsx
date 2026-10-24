@@ -121,7 +121,7 @@ export default function Dashboard() {
         </div>
         <div className="dash-head-actions">
           {isOwner && (
-            <Link to="/reports/credit" className="btn btn-outline">
+            <Link to="/credit-report" className="btn btn-outline">
               {t("reports.credit")}
             </Link>
           )}
@@ -138,7 +138,7 @@ export default function Dashboard() {
       </header>
 
       <nav className="dash-actions" aria-label={t("nav.quickActions")}>
-        {[...ACTIONS, ...(isOwner ? [{ to: "/reports/credit", icon: "💳", label: "reports.credit" as Key }] : [])].map((a) => (
+        {[...ACTIONS, ...(isOwner ? [{ to: "/credit-report", icon: "💳", label: "reports.credit" as Key }] : [])].map((a) => (
           <Link key={a.to} to={a.to} className="dash-action">
             <span className="dash-action-icon" aria-hidden="true">
               {a.icon}
@@ -180,7 +180,7 @@ export default function Dashboard() {
         />
         {credit && (isOwner || credit.total > 0) && (
           <Stat
-            to={isOwner ? "/reports/credit" : "/bills?show=unpaid"}
+            to={isOwner ? "/credit-report" : "/bills?show=unpaid"}
             label={t("credit.outstanding")}
             value={formatINR(rupeesToPaise(credit.total))}
             sub={
@@ -209,7 +209,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {owed.status === "ok" && <CreditReminders bills={owed.data.bills} showReportLink={isOwner} />}
+      {owed.status === "ok" && <CreditReminders bills={owed.data.bills} link={isOwner ? "report" : "unpaid"} />}
 
       <div className="dash-grid">
       {isOwner && (
