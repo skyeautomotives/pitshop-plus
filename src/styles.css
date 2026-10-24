@@ -4651,3 +4651,10 @@ html:not(:lang(en)) body {
 .credit-report .table-scroll {
   position: relative;
 }
+
+.pay-credit {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff7e8;
+  border: 1px solid var(--info-border);
+}

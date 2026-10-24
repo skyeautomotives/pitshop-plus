@@ -543,3 +543,19 @@ describe("credit on a bill", () => {
     expect((await api.getBill(id))?.credit_due_on).toBe("2026-11-01");
   });
 });
+
+describe("part payment puts the rest on credit", () => {
+  it("offline, the bill, the part payment and the credit all reach the server in order", async () => {
+    goOffline();
+    const id = await api.saveBill(bill());
+    await api.addBillPayment(id, { amount: 700, method: "cash", paid_on: "2026-10-24", note: null });
+    await api.setBillCredit(id, { due_on: "2026-10-31" });
+    goOnline();
+    await sync.syncNow();
+    const calls = server.calls;
+    expect(calls.lastIndexOf("save_bill")).toBeLessThan(calls.indexOf("add_bill_payment"));
+    expect(calls.indexOf("add_bill_payment")).toBeLessThan(calls.indexOf("set_bill_credit"));
+    expect(server.bills[0]).toMatchObject({ credit_due_on: "2026-10-31" });
+    expect(server.bills[0].payments).toHaveLength(1);
+  });
+});
