@@ -116,7 +116,7 @@ export function creditReminderMessage(r: CreditReminder, shop: ShopSettings | nu
   const lines = [
     d("doc.waReminderHello", { name: r.bill.customer_name }),
     "",
-    d("doc.waReminderBody", {
+    d(r.bill.vehicle_reg ? "doc.waReminderBody" : "doc.waReminderBodyNoVehicle", {
       shop: shop?.shop_name || d("doc.workshop"),
       amount: formatINR(rupeesToPaise(r.balance)),
       number: billCode(r.bill.bill_number, shop?.shop_name),

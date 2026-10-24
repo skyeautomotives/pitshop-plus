@@ -29,7 +29,7 @@ export function isLookupKey(key: string): boolean {
 export type FieldErrors = Record<string, string>;
 
 /** Validates customer/vehicle fields into `errors`; returns the cleaned values. */
-export function validateCustomer(d: CustomerFields, errors: FieldErrors) {
+export function validateCustomer(d: CustomerFields, errors: FieldErrors, opts: { vehicleOptional?: boolean } = {}) {
   const name = d.customerName.trim();
   if (!name) errors.customerName = t("customer.nameMissing");
   else if (name.length > 100) errors.customerName = t("customer.nameTooLong");
@@ -43,7 +43,9 @@ export function validateCustomer(d: CustomerFields, errors: FieldErrors) {
 
   const reg = normalizeVehicleReg(d.vehicleReg);
   const regChars = reg.replace(/[^A-Z0-9]/g, "");
-  if (!reg) errors.vehicleReg = t("customer.regMissing");
+  if (!reg) {
+    if (!opts.vehicleOptional) errors.vehicleReg = t("customer.regMissing");
+  }
   else if (!/^[A-Z0-9 -]+$/.test(reg) || regChars.length < 4 || reg.length > 20)
     errors.vehicleReg = t("customer.regInvalid");
 

@@ -319,7 +319,7 @@ export async function listWaitingChanges(): Promise<WaitingChange[]> {
       } else if (op.kind === "bill-credit") {
         const b = await db.bills.get(op.entityId);
         title = t("syncPage.creditOn", { bill: b?.bill_number ? t("syncPage.billLower", { n: b.bill_number }) : t("syncPage.aNewBill") });
-        detail = b ? `${b.customer_name} · ${b.vehicle_reg}` : "";
+        detail = b ? [b.customer_name, b.vehicle_reg].filter(Boolean).join(" · ") : "";
       } else {
         const c = await db.complaints.get(op.entityId);
         title =

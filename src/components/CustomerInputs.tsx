@@ -11,25 +11,30 @@ export default function CustomerInputs({
   value,
   errors,
   onChange,
+  hideVehicle = false,
 }: {
   value: CustomerFields;
   errors: FieldErrors;
   onChange: (patch: Partial<CustomerFields>) => void;
+  /** For a direct sale, which has no vehicle. */
+  hideVehicle?: boolean;
 }) {
   return (
     <>
-      <Field fieldKey="vehicleReg" label={t("customer.vehicleReg")} required error={errors.vehicleReg}>
-        <input
-          {...fieldProps("vehicleReg", errors.vehicleReg)}
-          type="text"
-          className="uppercase"
-          autoComplete="off"
-          autoCapitalize="characters"
-          placeholder="KA 01 AB 1234"
-          value={value.vehicleReg}
-          onChange={(e) => onChange({ vehicleReg: e.target.value })}
-        />
-      </Field>
+      {!hideVehicle && (
+        <Field fieldKey="vehicleReg" label={t("customer.vehicleReg")} required error={errors.vehicleReg}>
+          <input
+            {...fieldProps("vehicleReg", errors.vehicleReg)}
+            type="text"
+            className="uppercase"
+            autoComplete="off"
+            autoCapitalize="characters"
+            placeholder="KA 01 AB 1234"
+            value={value.vehicleReg}
+            onChange={(e) => onChange({ vehicleReg: e.target.value })}
+          />
+        </Field>
+      )}
       <Field fieldKey="customerName" label={t("customer.name")} required error={errors.customerName}>
         <input
           {...fieldProps("customerName", errors.customerName)}
@@ -40,9 +45,11 @@ export default function CustomerInputs({
           onChange={(e) => onChange({ customerName: e.target.value })}
         />
       </Field>
-      <div className="span-2">
-        <PreviousCustomer fields={value} onUse={onChange} />
-      </div>
+      {!hideVehicle && (
+        <div className="span-2">
+          <PreviousCustomer fields={value} onUse={onChange} />
+        </div>
+      )}
       <Field fieldKey="phone" label={t("customer.phone")} error={errors.phone}>
         <input
           {...fieldProps("phone", errors.phone)}

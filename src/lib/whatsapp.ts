@@ -29,7 +29,7 @@ export function billMessage(bill: BillWithItems, shop: ShopSettings | null): str
   const lines = [
     `*${shop?.shop_name || d("doc.workshop")}*`,
     d("doc.bill", { number: billCode(bill.bill_number, shop?.shop_name) }),
-    d("doc.waVehicle", { reg: bill.vehicle_reg }),
+    ...(bill.vehicle_reg ? [d("doc.waVehicle", { reg: bill.vehicle_reg })] : []),
     `*${d("doc.waGrandTotal", { amount: inr(bill.grand_total) })}*`,
   ];
   const money = billMoney(bill.grand_total, bill.complaints ?? [], bill.payments ?? []);

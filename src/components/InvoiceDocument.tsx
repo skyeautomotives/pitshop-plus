@@ -99,17 +99,19 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
           {bill.address && <p className="pre-line">{bill.address}</p>}
           {gst && bill.customer_gstin && <p>{d("doc.gstinLine", { gstin: bill.customer_gstin })}</p>}
         </div>
-        <div className="inv-box">
-          <h2>{d("doc.vehicle")}</h2>
-          <p className="inv-strong inv-reg">{bill.vehicle_reg}</p>
-          {(vehicleName || km) && (
-            <p>
-              {vehicleName}
-              {vehicleName && km ? " · " : ""}
-              {km ? d("doc.km", { km: km.toLocaleString(locale(lang)) }) : ""}
-            </p>
-          )}
-        </div>
+        {!!(bill.vehicle_reg || vehicleName || km) && (
+          <div className="inv-box">
+            <h2>{d("doc.vehicle")}</h2>
+            {bill.vehicle_reg && <p className="inv-strong inv-reg">{bill.vehicle_reg}</p>}
+            {(vehicleName || km) && (
+              <p>
+                {vehicleName}
+                {vehicleName && km ? " · " : ""}
+                {km ? d("doc.km", { km: km.toLocaleString(locale(lang)) }) : ""}
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       {complaints.length > 0 && (
@@ -121,12 +123,7 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
                 {complaintText({ jobs: c.jobs, description: c.note ?? c.description }, lang)}
                 <span className="inv-muted">
                   {" "}
-                  (
-                  {pdf ? (
-                    displayNumber(c.complaint_number, lang)
-                  ) : (
-                    <Link to={`/complaints/${c.id}`}>{displayNumber(c.complaint_number, lang)}</Link>
-                  )}
+                  ({pdf ? displayNumber(c.complaint_number, lang) : <Link to={`/complaints/${c.id}`}>{displayNumber(c.complaint_number, lang)}</Link>}
                   {d("doc.reported", { date: date(c.reported_on) })}
                   {c.attended_by && d("doc.attendedBy", { name: c.attended_by })})
                 </span>
