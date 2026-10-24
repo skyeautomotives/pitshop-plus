@@ -185,36 +185,49 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       <div className="bill-cols">
       <div className="bill-main">
       <section className="card">
-        <h2>{t("form.customerVehicle")}</h2>
+        <h2>{t(sale ? "form.customerOnly" : "form.customerVehicle")}</h2>
         <div className="grid">
           <CustomerInputs value={draft} errors={shown} hideVehicle={sale && !initial.vehicleReg} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
           <div className="grid-2 bill-dates">
-            <Field fieldKey="dateReceived" label={t("bill.dateReceived")} required error={shown.dateReceived}>
-              <input
-                {...fieldProps("dateReceived", shown.dateReceived)}
-                type="date"
-                value={draft.dateReceived}
-                onChange={(e) => set("dateReceived", e.target.value)}
-              />
-            </Field>
-            <Field fieldKey="deliveredOn" label={t("bill.deliveredOn")} required error={shown.deliveredOn}>
-              <input
-                {...fieldProps("deliveredOn", shown.deliveredOn)}
-                type="date"
-                min={draft.dateReceived || undefined}
-                value={draft.deliveredOn}
-                onChange={(e) => set("deliveredOn", e.target.value)}
-              />
-            </Field>
-            <Field fieldKey="expectedPickup" label={t("bill.expectedPickup")} error={shown.expectedPickup}>
-              <input
-                {...fieldProps("expectedPickup", shown.expectedPickup)}
-                type="date"
-                min={draft.dateReceived || undefined}
-                value={draft.expectedPickup}
-                onChange={(e) => set("expectedPickup", e.target.value)}
-              />
-            </Field>
+            {sale ? (
+              <Field fieldKey="deliveredOn" label={t("bill.billDate")} required error={shown.deliveredOn}>
+                <input
+                  {...fieldProps("deliveredOn", shown.deliveredOn)}
+                  type="date"
+                  value={draft.deliveredOn}
+                  onChange={(e) => setDraft((d) => ({ ...d, deliveredOn: e.target.value, dateReceived: e.target.value, expectedPickup: "" }))}
+                />
+              </Field>
+            ) : (
+              <>
+                <Field fieldKey="dateReceived" label={t("bill.dateReceived")} required error={shown.dateReceived}>
+                  <input
+                    {...fieldProps("dateReceived", shown.dateReceived)}
+                    type="date"
+                    value={draft.dateReceived}
+                    onChange={(e) => set("dateReceived", e.target.value)}
+                  />
+                </Field>
+                <Field fieldKey="deliveredOn" label={t("bill.deliveredOn")} required error={shown.deliveredOn}>
+                  <input
+                    {...fieldProps("deliveredOn", shown.deliveredOn)}
+                    type="date"
+                    min={draft.dateReceived || undefined}
+                    value={draft.deliveredOn}
+                    onChange={(e) => set("deliveredOn", e.target.value)}
+                  />
+                </Field>
+                <Field fieldKey="expectedPickup" label={t("bill.expectedPickup")} error={shown.expectedPickup}>
+                  <input
+                    {...fieldProps("expectedPickup", shown.expectedPickup)}
+                    type="date"
+                    min={draft.dateReceived || undefined}
+                    value={draft.expectedPickup}
+                    onChange={(e) => set("expectedPickup", e.target.value)}
+                  />
+                </Field>
+              </>
+            )}
           </div>
         </div>
       </section>

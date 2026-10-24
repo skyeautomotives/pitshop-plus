@@ -172,6 +172,11 @@ describe("validateBill", () => {
     expect(Object.keys(r.errors).sort()).toEqual(["customerName", "labour", "vehicleReg"]);
   });
 
+  it("a direct sale has one bill date", () => {
+    const bill = validateBill(filled({ directSale: true, dateReceived: "2026-10-01", expectedPickup: "2026-10-20", deliveredOn: "2026-10-16" }), strict).payload?.bill;
+    expect(bill).toMatchObject({ date_received: "2026-10-16", delivered_on: "2026-10-16", expected_pickup: null });
+  });
+
   it("a direct sale needs no vehicle number", () => {
     expect(validateBill(filled({ directSale: true, vehicleReg: "" }), strict).payload?.bill.vehicle_reg).toBe("");
     expect(validateBill(filled({ directSale: true, vehicleReg: "ab" }), strict).errors.vehicleReg).toBeTruthy();
