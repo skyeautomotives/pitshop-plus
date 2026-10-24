@@ -142,6 +142,7 @@ const hi: Translation = {
   form: {
     fixFields: { one: "नीचे दिखाया गया फ़ील्ड ठीक करें।", other: "नीचे दिखाए गए {n} फ़ील्ड ठीक करें।" },
     customerVehicle: "ग्राहक और गाड़ी",
+    customerOnly: "ग्राहक",
   },
   bill: {
     unsavedEdit: "इस बिल के बदलाव सेव नहीं हुए हैं, वे खो जाएँगे।",
@@ -149,6 +150,7 @@ const hi: Translation = {
     saveFailed: "बिल सेव नहीं हो सका। {message}",
     dateReceived: "गाड़ी मिलने की तारीख",
     deliveredOn: "डिलीवरी की तारीख",
+    billDate: "बिल की तारीख",
     expectedPickup: "ले जाने की तारीख",
     partsWork: "पार्ट्स और किया गया काम",
     partsHint: "बदला गया हर पार्ट और किया गया हर काम जोड़ें। खाली लाइनें नहीं गिनी जाएँगी।",

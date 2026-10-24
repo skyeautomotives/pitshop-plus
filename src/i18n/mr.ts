@@ -142,6 +142,7 @@ const mr: Translation = {
   form: {
     fixFields: { one: "खाली खूण केलेले फील्ड दुरुस्त करा.", other: "खाली खूण केलेली {n} फील्ड दुरुस्त करा." },
     customerVehicle: "ग्राहक आणि गाडी",
+    customerOnly: "ग्राहक",
   },
   bill: {
     unsavedEdit: "या बिलातले तुमचे बदल सेव्ह झाले नाहीत, ते जातील.",
@@ -149,6 +150,7 @@ const mr: Translation = {
     saveFailed: "बिल सेव्ह करता आले नाही. {message}",
     dateReceived: "गाडी घेतल्याची तारीख",
     deliveredOn: "डिलिव्हरीची तारीख",
+    billDate: "बिलाची तारीख",
     expectedPickup: "गाडी नेण्याची अपेक्षित तारीख",
     partsWork: "पार्ट्स आणि केलेले काम",
     partsHint: "बदललेला प्रत्येक पार्ट आणि केलेले प्रत्येक काम जोडा. रिकाम्या ओळी धरल्या जात नाहीत.",

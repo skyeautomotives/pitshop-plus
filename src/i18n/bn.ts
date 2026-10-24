@@ -142,6 +142,7 @@ const bn: Translation = {
   form: {
     fixFields: { one: "নিচের চিহ্নিত ঘরটি ঠিক করুন।", other: "নিচের {n}টি চিহ্নিত ঘর ঠিক করুন।" },
     customerVehicle: "কাস্টমার আর গাড়ি",
+    customerOnly: "গ্রাহক",
   },
   bill: {
     unsavedEdit: "এই বিলে আপনার পরিবর্তন সেভ হয়নি, সেগুলো হারিয়ে যাবে।",
@@ -149,6 +150,7 @@ const bn: Translation = {
     saveFailed: "বিল সেভ করা গেল না। {message}",
     dateReceived: "গাড়ি নেওয়ার তারিখ",
     deliveredOn: "ডেলিভারির তারিখ",
+    billDate: "বিলের তারিখ",
     expectedPickup: "নিয়ে যাওয়ার সম্ভাব্য তারিখ",
     partsWork: "পার্টস আর করা কাজ",
     partsHint: "বদলানো প্রতিটি পার্ট আর করা প্রতিটি কাজ যোগ করুন। খালি লাইন বাদ যাবে।",

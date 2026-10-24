@@ -142,6 +142,7 @@ const te: Translation = {
   form: {
     fixFields: { one: "కింద గుర్తించిన ఫీల్డ్‌ను సరిచేయండి.", other: "కింద గుర్తించిన {n} ఫీల్డ్‌లను సరిచేయండి." },
     customerVehicle: "కస్టమర్, వాహనం",
+    customerOnly: "కస్టమర్",
   },
   bill: {
     unsavedEdit: "ఈ బిల్లులో మీ మార్పులు సేవ్ కాలేదు, అవి పోతాయి.",
@@ -149,6 +150,7 @@ const te: Translation = {
     saveFailed: "బిల్లు సేవ్ చేయలేకపోయాం. {message}",
     dateReceived: "వాహనం తీసుకున్న తేదీ",
     deliveredOn: "డెలివరీ తేదీ",
+    billDate: "బిల్లు తేదీ",
     expectedPickup: "తీసుకెళ్ళే అంచనా తేదీ",
     partsWork: "పార్ట్స్, చేసిన పని",
     partsHint: "మార్చిన ప్రతి పార్ట్, చేసిన ప్రతి పని చేర్చండి. ఖాళీ వరుసలు లెక్కలోకి రావు.",

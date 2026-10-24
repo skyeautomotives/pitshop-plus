@@ -50,12 +50,20 @@ export function BillCard({ bill, showCustomer = true, showDue = false }: { bill:
       <div className="result-details">
         {bill.vehicle_reg && <span className="reg">{bill.vehicle_reg}</span>}
         {showCustomer && <span>{bill.phone}</span>}
-        <span>{t("lists.received", { date: formatDate(bill.date_received) })}</span>
-        <span>{t("lists.delivered", { date: formatDate(bill.delivered_on) })}</span>
+        {bill.direct_sale ? (
+          <span>{formatDate(bill.delivered_on)}</span>
+        ) : (
+          <>
+            <span>{t("lists.received", { date: formatDate(bill.date_received) })}</span>
+            <span>{t("lists.delivered", { date: formatDate(bill.delivered_on) })}</span>
+          </>
+        )}
         <PaymentTag bill={bill} showDue={showDue} />
       </div>
       <div className="result-links">
-        {bill.complaints.length === 0 ? (
+        {bill.direct_sale && bill.complaints.length === 0 ? (
+          <span className="tag tag-muted">{t("nav.directSale")}</span>
+        ) : bill.complaints.length === 0 ? (
           <span className="tag tag-muted">{t("lists.notLinked")}</span>
         ) : (
           <>

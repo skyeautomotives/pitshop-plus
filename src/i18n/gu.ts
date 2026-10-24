@@ -142,6 +142,7 @@ const gu: Translation = {
   form: {
     fixFields: { one: "નીચે નિશાન કરેલું ખાનું સુધારો.", other: "નીચે નિશાન કરેલાં {n} ખાનાં સુધારો." },
     customerVehicle: "ગ્રાહક અને વાહન",
+    customerOnly: "ગ્રાહક",
   },
   bill: {
     unsavedEdit: "આ બિલમાં તમારા ફેરફારો સેવ થયા નથી, તે જતા રહેશે.",
@@ -149,6 +150,7 @@ const gu: Translation = {
     saveFailed: "બિલ સેવ થઈ શક્યું નહીં. {message}",
     dateReceived: "વાહન લીધાની તારીખ",
     deliveredOn: "ડિલિવરીની તારીખ",
+    billDate: "બિલની તારીખ",
     expectedPickup: "વાહન લઈ જવાની અપેક્ષિત તારીખ",
     partsWork: "પાર્ટ્સ અને કરેલું કામ",
     partsHint: "બદલેલો દરેક પાર્ટ અને કરેલું દરેક કામ ઉમેરો. ખાલી લાઇનો ગણાતી નથી.",

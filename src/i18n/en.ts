@@ -140,6 +140,7 @@ const en = {
   form: {
     fixFields: { one: "Please fix the highlighted field below.", other: "Please fix the {n} highlighted fields below." },
     customerVehicle: "Customer & vehicle",
+    customerOnly: "Customer",
   },
   bill: {
     unsavedEdit: "Your changes to this bill have not been saved and will be lost.",
@@ -147,6 +148,7 @@ const en = {
     saveFailed: "Couldn't save the bill. {message}",
     dateReceived: "Date received",
     deliveredOn: "Delivered on",
+    billDate: "Bill date",
     expectedPickup: "Expected pickup",
     partsWork: "Parts & work done",
     partsHint: "Add every part replaced and every job done. Empty rows are ignored.",

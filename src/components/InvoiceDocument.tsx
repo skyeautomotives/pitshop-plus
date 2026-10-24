@@ -83,10 +83,12 @@ export default function InvoiceDocument({ bill, settings, pdf = false }: Props) 
               <dt>{d("doc.invoiceDate")}</dt>
               <dd>{date(bill.delivered_on)}</dd>
             </div>
-            <div>
-              <dt>{d("doc.vehicleIn")}</dt>
-              <dd>{date(bill.date_received)}</dd>
-            </div>
+            {!bill.direct_sale && (
+              <div>
+                <dt>{d("doc.vehicleIn")}</dt>
+                <dd>{date(bill.date_received)}</dd>
+              </div>
+            )}
           </dl>
         </div>
       </header>
