@@ -11,7 +11,7 @@ import { canPrint, isDesktopApp, isNativeApp, openExternal } from "../lib/platfo
 import { displayNumber } from "../lib/format";
 import { errorMessage } from "../lib/supabase";
 import { makeBillPdf, type BillPdf } from "../lib/billPdf";
-import { isPhoneBrowser, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
+import { isPhoneBrowser, openWhatsAppChat, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
 
 type PdfState =
   | { step: "idle" }
@@ -19,6 +19,7 @@ type PdfState =
   | { step: "saved"; chat: string }
   | { step: "downloaded" }
   | { step: "ready"; pdf: BillPdf; message: string }
+  | { step: "attach"; pdf: BillPdf; phone: string; app: string }
   | { step: "failed"; message: string };
 
 export default function BillView() {
@@ -52,7 +53,14 @@ export default function BillView() {
     try {
       const pdf = await makeBillPdf(bill, settings);
       const message = billMessage(bill, settings);
-      const result = await sendBillPdf(pdf, message, whatsappNumber(bill.phone));
+      const phone = whatsappNumber(bill.phone);
+      // Android app: open the right chat first (WhatsApp can't attach a file to an unsaved number's chat).
+      const app = phone ? await openWhatsAppChat(phone, message) : null;
+      if (phone && app) {
+        setPdfState({ step: "attach", pdf, phone, app });
+        return;
+      }
+      const result = await sendBillPdf(pdf, message, phone);
       if (result === "saved") {
         if (tab) tab.location.href = chat;
         else if (isDesktopApp) await openExternal(chat);
@@ -139,6 +147,24 @@ export default function BillView() {
             onClick={() => {
               const { pdf, message } = pdfState;
               void sharePdf(pdf, message).then(
+                () => setPdfState({ step: "idle" }),
+                (err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }),
+              );
+            }}
+          >
+            {t("billView.sendNow")}
+          </button>
+        </div>
+      )}
+      {pdfState.step === "attach" && (
+        <div className="alert alert-success no-print" role="status">
+          {t("billView.chatOpened", { name: bill.customer_name })}{" "}
+          <button
+            type="button"
+            className="btn btn-whatsapp"
+            onClick={() => {
+              const { pdf, phone, app } = pdfState;
+              void sendBillPdf(pdf, "", phone, app).then(
                 () => setPdfState({ step: "idle" }),
                 (err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }),
               );

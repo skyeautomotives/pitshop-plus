@@ -450,6 +450,7 @@ const ta: Translation = {
     openChat: "WhatsApp சாட்டைத் திற",
     sendReady: "பில் PDF தயார்.",
     sendNow: "PDF அனுப்பு",
+    chatOpened: "{name} அவர்களின் WhatsApp அரட்டை பில் செய்தியுடன் திறந்தது. செய்தியை அனுப்பி, இங்கே திரும்பி வந்து PDF அனுப்புங்கள்.",
     shareTitle: "பில்லை அனுப்பு",
     pdfDownloaded: "பில் PDF சேமிக்கப்பட்டது.",
   },
