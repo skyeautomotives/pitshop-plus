@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { t, useT } from "../i18n";
-import { addBillPayment, removeBillPayment } from "../lib/api";
+import { t, tn, useT } from "../i18n";
+import { addBillPayment, removeBillPayment, setBillCredit } from "../lib/api";
+import { addDays, CREDIT_PRESETS } from "../lib/credit";
+import { todayISO } from "../lib/customer";
 import { PAYMENT_METHODS, paymentMethodLabel } from "../lib/complaint";
 import { formatDate } from "../lib/format";
-import { formatINR, rupeesToPaise } from "../lib/money";
+import { formatINR, parseAmount, rupeesToPaise } from "../lib/money";
 import { emptyPayment, validatePayment, type BillMoney, type PaymentDraft } from "../lib/payments";
 import { errorMessage } from "../lib/supabase";
 import type { BillPayment, PaymentMethod } from "../lib/types";
@@ -37,13 +39,22 @@ export default function BillPayments({
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [removing, setRemoving] = useState<BillPayment | null>(null);
+  const today = todayISO();
+  /** When the rest is due if this payment leaves a balance (and the bill isn't on credit yet). */
+  const [creditDue, setCreditDue] = useState(addDays(today, CREDIT_PRESETS[0]));
+  const onCredit = !!credit?.dueOn;
 
   const open = () => {
     setNotice(null);
     setError(null);
     setSaveError(null);
     setDraft(emptyPayment(money.balance));
+    setCreditDue(addDays(today, CREDIT_PRESETS[0]));
   };
+
+  // What this payment leaves to pay, in rupees (0 when it pays everything or isn't a valid amount yet).
+  const typed = draft ? parseAmount(draft.amount) : null;
+  const left = typed && typed.ok && typed.paise > 0 ? Math.max(0, rupeesToPaise(money.balance) - typed.paise) / 100 : 0;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,8 +70,22 @@ export default function BillPayments({
     setSaveError(null);
     try {
       await addBillPayment(billId, input);
+      // A part payment puts the rest on credit (unless the bill already is).
+      const rest = Math.max(0, rupeesToPaise(money.balance) - rupeesToPaise(input.amount)) / 100;
+      if (rest > 0 && !onCredit) {
+        await setBillCredit(billId, { due_on: creditDue });
+        setNotice(
+          t("payments.recordedCredit", {
+            amount: inr(input.amount),
+            method: paymentMethodLabel(input.method),
+            balance: inr(rest),
+            date: formatDate(creditDue),
+          }),
+        );
+      } else {
+        setNotice(t("payments.recorded", { amount: inr(input.amount), method: paymentMethodLabel(input.method) }));
+      }
       setDraft(null);
-      setNotice(t("payments.recorded", { amount: inr(input.amount), method: paymentMethodLabel(input.method) }));
     } catch (e2) {
       setSaveError(errorMessage(e2));
     } finally {
@@ -193,6 +218,31 @@ export default function BillPayments({
               <input id="f-payDate" type="date" value={draft.paidOn} onChange={(e) => setDraft({ ...draft, paidOn: e.target.value })} />
             </div>
           </div>
+          {left > 0 &&
+            (onCredit ? (
+              <p className="hint pay-credit">{t("payments.stayOnCredit", { amount: inr(left), date: formatDate(credit!.dueOn) })}</p>
+            ) : (
+              <div className="field pay-credit">
+                <label htmlFor="f-payCreditDue">{t("payments.toCredit", { amount: inr(left) })}</label>
+                <div className="credit-presets" role="group" aria-label={t("credit.dueBy")}>
+                  {CREDIT_PRESETS.map((n) => {
+                    const date = addDays(today, n);
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`btn btn-sm ${creditDue === date ? "btn-primary" : "btn-outline"}`}
+                        aria-pressed={creditDue === date}
+                        onClick={() => setCreditDue(date)}
+                      >
+                        {tn("credit.inDays", n)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input id="f-payCreditDue" type="date" min={today} value={creditDue} onChange={(e) => e.target.value && setCreditDue(e.target.value)} />
+              </div>
+            ))}
           <div className="field">
             <label htmlFor="f-payNote">
               {t("payments.note")} <span className="optional">{t("common.optional")}</span>
