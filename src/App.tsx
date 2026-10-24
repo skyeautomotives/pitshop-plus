@@ -20,6 +20,7 @@ import Terms from "./pages/marketing/Terms";
 import NewBill from "./pages/NewBill";
 import Register from "./pages/Register";
 import Reports from "./pages/Reports";
+import CreditReportPage from "./pages/CreditReportPage";
 import Settings from "./pages/Settings";
 import VehicleHistory from "./pages/VehicleHistory";
 import SyncPage from "./pages/SyncPage";
@@ -75,6 +76,7 @@ const router = createRouter(
         { path: "complaints/:id", element: <ComplaintView /> },
         { path: "complaints/:id/edit", element: <EditComplaint /> },
         { path: "vehicles/:key", element: <VehicleHistory /> },
+        { path: "credit-report", element: <CreditReportPage /> },
         { path: "reports", element: <Reports /> },
         { path: "reports/:section", element: <Reports /> },
         { path: "sales", element: <Navigate to="/reports" replace /> },
