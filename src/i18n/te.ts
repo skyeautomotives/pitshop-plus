@@ -450,6 +450,7 @@ const te: Translation = {
     openChat: "WhatsApp చాట్ తెరవండి",
     sendReady: "బిల్లు PDF సిద్ధంగా ఉంది.",
     sendNow: "PDF పంపండి",
+    chatOpened: "{name} WhatsApp చాట్ బిల్లు సందేశంతో తెరుచుకుంది. సందేశం పంపి, ఇక్కడికి తిరిగి వచ్చి PDF పంపండి.",
     shareTitle: "బిల్లు పంపండి",
     pdfDownloaded: "బిల్లు PDF సేవ్ అయింది.",
   },

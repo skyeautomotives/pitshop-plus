@@ -450,6 +450,7 @@ const gu: Translation = {
     openChat: "WhatsApp ચેટ ખોલો",
     sendReady: "બિલની PDF તૈયાર છે.",
     sendNow: "PDF મોકલો",
+    chatOpened: "{name}ની WhatsApp ચેટ બિલના સંદેશ સાથે ખુલી. સંદેશ મોકલો, પછી અહીં પાછા આવીને PDF મોકલો.",
     shareTitle: "બિલ મોકલો",
     pdfDownloaded: "બિલની PDF સેવ થઈ.",
   },
