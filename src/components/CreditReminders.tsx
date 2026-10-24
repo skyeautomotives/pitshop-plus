@@ -59,7 +59,13 @@ export default function CreditReminders({ bills, link = "unpaid" }: { bills: Bil
               <Link to={`/bills/${r.bill.id}`} className="credit-who">
                 <strong>{r.bill.customer_name}</strong>
                 <span className="muted">
-                  {t("lists.billNumber", { number: displayNumber(r.bill.bill_number) })} · <span className="reg">{r.bill.vehicle_reg}</span>
+                  {t("lists.billNumber", { number: displayNumber(r.bill.bill_number) })}
+                  {r.bill.vehicle_reg && (
+                    <>
+                      {" · "}
+                      <span className="reg">{r.bill.vehicle_reg}</span>
+                    </>
+                  )}
                 </span>
               </Link>
               <div className="credit-when">

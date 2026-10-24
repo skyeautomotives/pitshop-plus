@@ -172,6 +172,12 @@ describe("validateBill", () => {
     expect(Object.keys(r.errors).sort()).toEqual(["customerName", "labour", "vehicleReg"]);
   });
 
+  it("a direct sale needs no vehicle number", () => {
+    expect(validateBill(filled({ directSale: true, vehicleReg: "" }), strict).payload?.bill.vehicle_reg).toBe("");
+    expect(validateBill(filled({ directSale: true, vehicleReg: "ab" }), strict).errors.vehicleReg).toBeTruthy();
+    expect(validateBill(filled({ vehicleReg: "" }), strict).errors.vehicleReg).toBeTruthy();
+  });
+
   it("a direct sale has no labour charge", () => {
     const r = validateBill(filled({ directSale: true, labour: "" }), strict);
     expect(r.errors.labour).toBeUndefined();

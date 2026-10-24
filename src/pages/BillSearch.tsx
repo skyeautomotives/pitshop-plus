@@ -58,7 +58,9 @@ export default function BillSearch() {
     results.status === "ok" && query && !unpaid
       ? [
           ...new Map(
-            [...results.bills, ...results.complaints].map((r) => [
+            [...results.bills, ...results.complaints]
+              .filter((r) => r.vehicle_reg_key)
+              .map((r) => [
               r.vehicle_reg_key,
               { key: r.vehicle_reg_key, reg: r.vehicle_reg, name: r.customer_name },
             ]),

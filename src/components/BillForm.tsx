@@ -187,7 +187,7 @@ export default function BillForm({ initial, title, billId, onChange, onSaved, ba
       <section className="card">
         <h2>{t("form.customerVehicle")}</h2>
         <div className="grid">
-          <CustomerInputs value={draft} errors={shown} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
+          <CustomerInputs value={draft} errors={shown} hideVehicle={sale && !initial.vehicleReg} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
           <div className="grid-2 bill-dates">
             <Field fieldKey="dateReceived" label={t("bill.dateReceived")} required error={shown.dateReceived}>
               <input

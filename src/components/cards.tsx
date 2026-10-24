@@ -48,7 +48,7 @@ export function BillCard({ bill, showCustomer = true, showDue = false }: { bill:
         <strong className="result-total">{inr(bill.grand_total)}</strong>
       </div>
       <div className="result-details">
-        <span className="reg">{bill.vehicle_reg}</span>
+        {bill.vehicle_reg && <span className="reg">{bill.vehicle_reg}</span>}
         {showCustomer && <span>{bill.phone}</span>}
         <span>{t("lists.received", { date: formatDate(bill.date_received) })}</span>
         <span>{t("lists.delivered", { date: formatDate(bill.delivered_on) })}</span>

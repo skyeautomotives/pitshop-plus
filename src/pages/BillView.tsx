@@ -81,8 +81,8 @@ export default function BillView() {
   return (
     <div className="bill-page">
       <div className="toolbar no-print">
-        <Link to={`/vehicles/${bill.vehicle_reg_key}`} className="back-link">
-          {t("billView.historyFor", { reg: bill.vehicle_reg })}
+        <Link to={bill.vehicle_reg_key ? `/vehicles/${bill.vehicle_reg_key}` : "/bills"} className="back-link">
+          {bill.vehicle_reg_key ? t("billView.historyFor", { reg: bill.vehicle_reg }) : t("history.back")}
         </Link>
         <div className="toolbar-actions">
           <Link to={`/bills/${bill.id}/edit`} className="btn btn-outline">

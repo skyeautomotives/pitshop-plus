@@ -197,7 +197,8 @@ export function validateBill(
   opts: { allowZeroLabour: boolean; gstin?: string | null },
 ): { errors: BillErrors; payload: SaveBillPayload | null } {
   const errors: BillErrors = {};
-  const customer = validateCustomer(d, errors);
+  // A direct sale has no vehicle number.
+  const customer = validateCustomer(d, errors, { vehicleOptional: !!d.directSale });
 
   if (!ISO_DATE.test(d.dateReceived)) errors.dateReceived = t("validation.dateReceived");
   if (!ISO_DATE.test(d.deliveredOn)) errors.deliveredOn = t("validation.deliveredOn");

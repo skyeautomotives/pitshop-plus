@@ -636,6 +636,7 @@ const en = {
     waContact: "Contact: {phone}",
     waReminderHello: "Hello {name},",
     waReminderBody: "A friendly reminder from {shop}: {amount} is still due on bill {number} for {reg}.",
+    waReminderBodyNoVehicle: "A friendly reminder from {shop}: {amount} is still due on bill {number}.",
     waReminderDue: "Due date: {date}",
     waReminderWasDue: "This was due on {date}.",
     waReminderThanks: "Please pay when you can. Thank you!",
