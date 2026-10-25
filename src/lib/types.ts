@@ -1,3 +1,4 @@
+import type { CarMark } from "./carMarks";
 import type { GstMode } from "./gst";
 import type { VehicleType } from "./vehicleType";
 // Row shapes as returned by Supabase. Amounts are rupees (numeric(12,2)).
@@ -93,6 +94,8 @@ export interface ComplaintRow {
   helmets?: number | null;
   /** Items left in the car (0032): 'cooling_glass', 'umbrella', or typed text. */
   belongings?: string[];
+  /** Scratches, dents and broken parts marked on the car diagram (0033). */
+  car_marks?: CarMark[];
   /** Papers left with the vehicle. */
   documents?: IntakeDocument[];
   /** Anything else left with the vehicle, as typed. */

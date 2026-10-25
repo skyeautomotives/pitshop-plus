@@ -34,6 +34,7 @@ describe("validateComplaint", () => {
       odometer_km: null,
       helmets: 0,
       belongings: [],
+      car_marks: [],
       documents: [],
       other_documents: [],
       advance_amount: null,

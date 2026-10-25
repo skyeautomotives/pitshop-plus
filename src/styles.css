@@ -4672,3 +4672,113 @@ html:not(:lang(en)) body {
   background: #fff7e8;
   border: 1px solid var(--info-border);
 }
+
+/* ---------- Car condition diagram ---------- */
+
+.car-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--border, #e3e7ef);
+  border-radius: 12px;
+}
+
+.car-diagram.is-editable {
+  cursor: crosshair;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.car-diagram-wrap {
+  max-width: 360px;
+  margin: 10px 0;
+}
+
+.mark-kinds button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.car-condition-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 24px;
+}
+
+.car-condition-row .car-diagram-wrap {
+  flex: 1 1 260px;
+}
+
+.car-legend p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+/* Job card PDF */
+
+.jc-section {
+  margin-top: 22px;
+}
+
+.jc-section h2 {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inv-head);
+}
+
+.jc-section h3 {
+  margin: 12px 0 4px;
+  font-size: 0.9rem;
+}
+
+.jc-jobs {
+  margin: 0;
+  padding-left: 22px;
+  columns: 2;
+  column-gap: 32px;
+}
+
+.jc-jobs li {
+  padding: 3px 0;
+  break-inside: avoid;
+}
+
+.jc-facts p {
+  margin: 4px 0;
+}
+
+.jc-car-row {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.jc-car-diagram {
+  width: 300px;
+  flex: none;
+}
+
+.jc-legend p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.jc-legend .jc-agree {
+  display: block;
+  margin-top: 18px;
+  max-width: 260px;
+}
+
+.jc-signs .inv-sign {
+  flex: 1;
+  max-width: 260px;
+}

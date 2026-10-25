@@ -2,6 +2,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useT } from "../i18n";
 import { Link, useNavigate } from "react-router";
 import { createComplaint, updateComplaint } from "../lib/api";
+import CarDiagram, { MARK_LABEL, MarkShape } from "./CarDiagram";
+import { MARK_KINDS, type MarkKind } from "../lib/carMarks";
 import { BELONGINGS, INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
 import type { FieldErrors } from "../lib/customer";
 import { useShopSettings } from "../lib/shopSettings";
@@ -47,6 +49,7 @@ export default function ComplaintForm({
   // Car workshops don't take helmets; bike workshops don't need items left in the car.
   const car = vehicleType === "car";
   const bike = vehicleType === "bike";
+  const [markKind, setMarkKind] = useState<MarkKind>("scratch");
   const [draft, setDraft] = useState(initial);
   const [baseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
@@ -183,6 +186,31 @@ export default function ComplaintForm({
               />
             </div>
             <FieldError fieldKey="otherBelongings" error={shown.otherBelongings} />
+          </fieldset>
+        )}
+
+        {!bike && (
+          <fieldset className="intake-group car-condition">
+            <legend>{t("complaint.carCondition")}</legend>
+            <p className="hint">{t("complaint.carConditionHint")}</p>
+            <div className="segmented mark-kinds" role="group" aria-label={t("complaint.carCondition")}>
+              {MARK_KINDS.map((k) => (
+                <button key={k} type="button" aria-pressed={markKind === k} onClick={() => setMarkKind(k)}>
+                  <svg viewBox="-10 -10 20 20" width={16} height={16} aria-hidden="true">
+                    <MarkShape kind={k} x={0} y={0} size={0.9} />
+                  </svg>
+                  {t(MARK_LABEL[k])}
+                </button>
+              ))}
+            </div>
+            <div className="car-diagram-wrap">
+              <CarDiagram marks={draft.carMarks} kind={markKind} onChange={(carMarks) => set({ carMarks })} label={t("complaint.carCondition")} />
+            </div>
+            {draft.carMarks.length > 0 && (
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => set({ carMarks: [] })}>
+                {t("complaint.markClear")}
+              </button>
+            )}
           </fieldset>
         )}
 

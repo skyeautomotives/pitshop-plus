@@ -222,6 +222,7 @@ const complaint: ComplaintPayload = {
   odometer_km: 12500,
   helmets: 1,
   belongings: [],
+  car_marks: [],
   documents: ["rc"],
   other_documents: [],
   advance_amount: 500,
