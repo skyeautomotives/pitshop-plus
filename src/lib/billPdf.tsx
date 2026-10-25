@@ -2,10 +2,11 @@ import type { ReactElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import InvoiceDocument from "../components/InvoiceDocument";
+import JobCardDocument from "../components/JobCardDocument";
 import { t, type Lang } from "../i18n";
 import { billCode } from "./format";
 import { imagesToPdf, type PdfPage } from "./pdf";
-import type { BillWithItems, ShopSettings } from "./types";
+import type { BillWithItems, ComplaintRow, ShopSettings } from "./types";
 
 // The bill is drawn at A4 width (794 CSS px) and saved at 2.5x for sharp text.
 const WIDTH = 794;
@@ -65,15 +66,33 @@ function toJpeg(canvas: HTMLCanvasElement): Promise<Uint8Array> {
   );
 }
 
-/** Makes the customer's bill as an A4 PDF. Bills are always in English. */
-export async function makeBillPdf(bill: BillWithItems, settings: ShopSettings | null): Promise<BillPdf> {
+/**
+ * Makes the customer's bill as an A4 PDF, followed by the job card of each complaint
+ * it addresses. Bills are always in English.
+ */
+export async function makeBillPdf(bill: BillWithItems, settings: ShopSettings | null, jobCards: ComplaintRow[] = []): Promise<BillPdf> {
   const lang: Lang = "en";
   const title = `${settings?.shop_name || t("doc.workshop", undefined, lang)} · ${t("doc.bill", { number: billCode(bill.bill_number, settings?.shop_name) }, lang)}`;
-  return documentPdf(<InvoiceDocument bill={bill} settings={settings} pdf />, title, billPdfName(bill, settings?.shop_name));
+  const pages = await drawPages(<InvoiceDocument bill={bill} settings={settings} pdf />);
+  for (const c of jobCards) {
+    const showCar = settings?.vehicle_type === "car" || (c.car_marks ?? []).length > 0;
+    pages.push(...(await drawPages(<JobCardDocument complaint={c} settings={settings} showCar={showCar} />)));
+  }
+  return pdfFile(pages, title, billPdfName(bill, settings?.shop_name));
 }
 
 /** Draws a printable document (an A4-wide sheet) and saves it as a PDF, cut into pages. */
 export async function documentPdf(doc: ReactElement, title: string, name: string): Promise<BillPdf> {
+  return pdfFile(await drawPages(doc), title, name);
+}
+
+function pdfFile(pages: PdfPage[], title: string, name: string): BillPdf {
+  const bytes = imagesToPdf(pages, title);
+  return { blob: new Blob([bytes as BlobPart], { type: "application/pdf" }), name };
+}
+
+/** Draws a printable document (an A4-wide sheet) as A4 page images. */
+async function drawPages(doc: ReactElement): Promise<PdfPage[]> {
   const lang: Lang = "en";
   const { default: html2canvas } = await import("html2canvas-pro");
 
@@ -129,8 +148,7 @@ export async function documentPdf(doc: ReactElement, title: string, name: string
       pages.push({ jpeg: await toJpeg(page), width: page.width, height: page.height });
     }
 
-    const bytes = imagesToPdf(pages, title);
-    return { blob: new Blob([bytes as BlobPart], { type: "application/pdf" }), name };
+    return pages;
   } finally {
     root.unmount();
     host.remove();
