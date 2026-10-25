@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useT } from "../i18n";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { BillNotFound, LoadError } from "../components/states";
@@ -11,7 +11,7 @@ import { canPrint, isDesktopApp, isNativeApp, openExternal } from "../lib/platfo
 import { displayNumber } from "../lib/format";
 import { errorMessage } from "../lib/supabase";
 import { makeBillPdf, type BillPdf } from "../lib/billPdf";
-import { isPhoneBrowser, openWhatsAppChat, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
+import { isPhoneBrowser, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
 
 type PdfState =
   | { step: "idle" }
@@ -19,7 +19,6 @@ type PdfState =
   | { step: "saved"; chat: string }
   | { step: "downloaded" }
   | { step: "ready"; pdf: BillPdf; message: string }
-  | { step: "attach"; pdf: BillPdf; phone: string; app: string }
   | { step: "failed"; message: string };
 
 export default function BillView() {
@@ -36,34 +35,6 @@ export default function BillView() {
   useEffect(() => {
     if (justSaved) navigate(location.pathname, { replace: true, state: null });
   }, [justSaved, navigate, location.pathname]);
-
-  // Android app: after the customer's chat was opened, send the PDF there as soon as the person comes back.
-  const wentAway = useRef(false);
-  useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === "hidden") wentAway.current = true;
-    };
-    document.addEventListener("visibilitychange", onHide);
-    return () => document.removeEventListener("visibilitychange", onHide);
-  }, []);
-  useEffect(() => {
-    if (pdfState.step !== "attach") return;
-    const { pdf, phone, app } = pdfState;
-    let away = wentAway.current || document.visibilityState === "hidden";
-    // Already back (the app may pause before this runs).
-    if (away && document.visibilityState === "visible") return sendAttached(pdf, phone, app);
-    const onChange = () => {
-      if (document.visibilityState === "hidden") away = true;
-      else if (away) sendAttached(pdf, phone, app);
-    };
-    document.addEventListener("visibilitychange", onChange);
-    return () => document.removeEventListener("visibilitychange", onChange);
-  }, [pdfState]);
-
-  function sendAttached(pdf: BillPdf, phone: string, app: string) {
-    setPdfState({ step: "idle" });
-    sendBillPdf(pdf, "", phone, app).catch((err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }));
-  }
 
   if (state.status === "loading") return <p className="page-status">{t("billView.loading")}</p>;
   if (state.status === "not-found") return <BillNotFound />;
@@ -82,13 +53,6 @@ export default function BillView() {
       const pdf = await makeBillPdf(bill, settings);
       const message = billMessage(bill, settings);
       const phone = whatsappNumber(bill.phone);
-      // Android app: open the right chat first (WhatsApp can't attach a file to an unsaved number's chat).
-      wentAway.current = false;
-      const app = phone ? await openWhatsAppChat(phone, message) : null;
-      if (phone && app) {
-        setPdfState({ step: "attach", pdf, phone, app });
-        return;
-      }
       const result = await sendBillPdf(pdf, message, phone);
       if (result === "saved") {
         if (tab) tab.location.href = chat;
@@ -180,18 +144,6 @@ export default function BillView() {
                 (err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }),
               );
             }}
-          >
-            {t("billView.sendNow")}
-          </button>
-        </div>
-      )}
-      {pdfState.step === "attach" && (
-        <div className="alert alert-success no-print" role="status">
-          {t("billView.chatOpened", { name: bill.customer_name })}{" "}
-          <button
-            type="button"
-            className="btn btn-whatsapp"
-            onClick={() => sendAttached(pdfState.pdf, pdfState.phone, pdfState.app)}
           >
             {t("billView.sendNow")}
           </button>

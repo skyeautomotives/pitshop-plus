@@ -496,7 +496,6 @@ const en = {
     openChat: "Open WhatsApp chat",
     sendReady: "The bill PDF is ready.",
     sendNow: "Send the PDF",
-    chatOpened: "Opened {name}'s WhatsApp chat with the bill message. Send it, then come back here: the bill PDF opens in the same chat, ready to send.",
     shareTitle: "Send the bill",
     pdfDownloaded: "The bill PDF is saved.",
   },

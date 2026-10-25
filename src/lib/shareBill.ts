@@ -77,23 +77,9 @@ export async function savePdf(pdf: BillPdf): Promise<boolean> {
 }
 
 interface WhatsAppSharePlugin {
-  openChat(options: { phone: string; text: string }): Promise<{ app: string }>;
-  sendFile(options: { path: string; phone: string; text: string; app?: string }): Promise<{ app: string }>;
+  sendFile(options: { path: string; phone: string; text: string }): Promise<{ app: string }>;
 }
 const WhatsAppShare = registerPlugin<WhatsAppSharePlugin>("WhatsAppShare");
-
-/**
- * Android app: opens the customer's own WhatsApp chat with the message typed in.
- * Returns which WhatsApp opened, or null if it could not.
- */
-export async function openWhatsAppChat(phone: string, text: string): Promise<string | null> {
-  if (!isAndroidApp) return null;
-  try {
-    return (await WhatsAppShare.openChat({ phone, text })).app;
-  } catch {
-    return null;
-  }
-}
 
 /** The website opened on a phone or tablet (not the apps). */
 export const isPhoneBrowser = () => !isAndroidApp && !isDesktopApp && /Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -105,12 +91,12 @@ export const isPhoneBrowser = () => !isAndroidApp && !isDesktopApp && /Android|i
  * Computers: the PDF is saved ("saved"), and the caller opens the customer's chat to attach it.
  * `phone` is the customer's number with country code, or null if it can't be used.
  */
-export async function sendBillPdf(pdf: BillPdf, message: string, phone: string | null, app?: string): Promise<SendResult> {
+export async function sendBillPdf(pdf: BillPdf, message: string, phone: string | null): Promise<SendResult> {
   if (isAndroidApp && phone) {
     try {
       const { Filesystem, Directory } = await import("@capacitor/filesystem");
       const { uri } = await Filesystem.writeFile({ path: pdf.name, data: await base64(pdf.blob), directory: Directory.Cache });
-      await WhatsAppShare.sendFile({ path: uri, phone, text: message, app });
+      await WhatsAppShare.sendFile({ path: uri, phone, text: message });
       return "shared";
     } catch {
       // WhatsApp missing or it refused: let the person pick from the share sheet.
