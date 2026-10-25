@@ -498,7 +498,6 @@ const mr: Translation = {
     openChat: "WhatsApp चॅट उघडा",
     sendReady: "बिलाची PDF तयार आहे.",
     sendNow: "PDF पाठवा",
-    chatOpened: "{name} यांची WhatsApp चॅट बिलाच्या संदेशासह उघडली. संदेश पाठवा, मग इथे परत या: बिलाची PDF त्याच चॅटमध्ये पाठवण्यासाठी तयार उघडेल.",
     shareTitle: "बिल पाठवा",
     pdfDownloaded: "बिलाची PDF सेव्ह झाली.",
   },
