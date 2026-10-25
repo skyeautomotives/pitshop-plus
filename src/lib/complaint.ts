@@ -1,3 +1,4 @@
+import { cleanMarks, type CarMark } from "./carMarks";
 import { emptyCustomer, ISO_DATE, todayISO, validateCustomer, type CustomerFields, type FieldErrors } from "./customer";
 import { t, type Lang } from "../i18n";
 import { paiseToInput, parseAmount, rupeesToPaise } from "./money";
@@ -37,6 +38,8 @@ export interface ComplaintDraft extends CustomerFields {
   belongings: string[];
   /** Other items left in the car, typed with commas between them. */
   otherBelongings: string;
+  /** Scratches, dents and broken parts marked on the car diagram. */
+  carMarks: CarMark[];
   documents: IntakeDocument[];
   /** "Other" ticked: show the boxes for other items. */
   otherDocumentsOn: boolean;
@@ -60,6 +63,7 @@ export function emptyComplaint(customer: Partial<CustomerFields> = {}): Complain
     helmets: 0,
     belongings: [],
     otherBelongings: "",
+    carMarks: [],
     documents: [],
     otherDocumentsOn: false,
     otherDocuments: [""],
@@ -83,6 +87,7 @@ export interface ComplaintPayload {
   /** Null for car workshops, which don't take helmets. */
   helmets: number | null;
   belongings: string[];
+  car_marks: CarMark[];
   documents: IntakeDocument[];
   other_documents: string[];
   /** Rupees, e.g. 500 or 499.5. */
@@ -150,6 +155,7 @@ export function validateComplaint(d: ComplaintDraft, opts: { car?: boolean } = {
       odometer_km: odometerKm,
       helmets: opts.car ? null : d.helmets,
       belongings,
+      car_marks: cleanMarks(d.carMarks),
       documents: INTAKE_DOCUMENTS.map((x) => x.id).filter((id) => d.documents.includes(id)),
       other_documents: otherDocuments,
       advance_amount: advanceAmount,
@@ -176,6 +182,7 @@ export function complaintToDraft(c: ComplaintRow): ComplaintDraft {
     helmets: helmets === 1 || helmets === 2 ? helmets : 0,
     belongings: (c.belongings ?? []).filter(isBelonging),
     otherBelongings: (c.belongings ?? []).filter((x) => !isBelonging(x)).join(", "),
+    carMarks: cleanMarks(c.car_marks),
     documents: c.documents ?? [],
     otherDocumentsOn: others.length > 0,
     otherDocuments: others.length > 0 ? [...others] : [""],
@@ -193,17 +200,18 @@ const MAX_BELONGINGS = 10;
 const isBelonging = (x: string) => BELONGINGS.some((b) => b.id === x);
 
 /** "Cooling glass, Umbrella, Phone charger" for display; empty when nothing was left. */
-export function belongingsText(c: Pick<ComplaintRow, "belongings">): string {
-  return (c.belongings ?? []).map((x) => BELONGINGS.find((b) => b.id === x)?.label ?? x).join(", ");
+export function belongingsText(c: Pick<ComplaintRow, "belongings">, lang?: Lang): string {
+  const label = (x: string) => (x === "cooling_glass" ? t("complaint.coolingGlass", undefined, lang) : x === "umbrella" ? t("complaint.umbrella", undefined, lang) : x);
+  return (c.belongings ?? []).map(label).join(", ");
 }
 
 /** "RC book, Pollution certificate, Spare key" for display; empty when nothing was left. */
-export function documentsText(c: Pick<ComplaintRow, "documents" | "other_documents">): string {
+export function documentsText(c: Pick<ComplaintRow, "documents" | "other_documents">, lang?: Lang): string {
   const short: Record<IntakeDocument, string> = {
-    rc: t("documents.rcShort"),
-    pollution: t("documents.pollution"),
-    licence: t("documents.licence"),
-    insurance: t("documents.insurance"),
+    rc: t("documents.rcShort", undefined, lang),
+    pollution: t("documents.pollution", undefined, lang),
+    licence: t("documents.licence", undefined, lang),
+    insurance: t("documents.insurance", undefined, lang),
   };
   return [...(c.documents ?? []).map((d) => short[d] ?? d), ...(c.other_documents ?? [])].join(", ");
 }

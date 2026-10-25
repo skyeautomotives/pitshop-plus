@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import InvoiceDocument from "../components/InvoiceDocument";
@@ -67,6 +68,13 @@ function toJpeg(canvas: HTMLCanvasElement): Promise<Uint8Array> {
 /** Makes the customer's bill as an A4 PDF. Bills are always in English. */
 export async function makeBillPdf(bill: BillWithItems, settings: ShopSettings | null): Promise<BillPdf> {
   const lang: Lang = "en";
+  const title = `${settings?.shop_name || t("doc.workshop", undefined, lang)} · ${t("doc.bill", { number: billCode(bill.bill_number, settings?.shop_name) }, lang)}`;
+  return documentPdf(<InvoiceDocument bill={bill} settings={settings} pdf />, title, billPdfName(bill, settings?.shop_name));
+}
+
+/** Draws a printable document (an A4-wide sheet) and saves it as a PDF, cut into pages. */
+export async function documentPdf(doc: ReactElement, title: string, name: string): Promise<BillPdf> {
+  const lang: Lang = "en";
   const { default: html2canvas } = await import("html2canvas-pro");
 
   const host = document.createElement("div");
@@ -75,7 +83,7 @@ export async function makeBillPdf(bill: BillWithItems, settings: ShopSettings | 
   document.body.appendChild(host);
   const root = createRoot(host);
   try {
-    flushSync(() => root.render(<InvoiceDocument bill={bill} settings={settings} pdf />));
+    flushSync(() => root.render(doc));
     const sheet = host.firstElementChild as HTMLElement;
     await Promise.all([
       document.fonts.ready,
@@ -121,9 +129,8 @@ export async function makeBillPdf(bill: BillWithItems, settings: ShopSettings | 
       pages.push({ jpeg: await toJpeg(page), width: page.width, height: page.height });
     }
 
-    const title = `${settings?.shop_name || t("doc.workshop", undefined, lang)} · ${t("doc.bill", { number: billCode(bill.bill_number, settings?.shop_name) }, lang)}`;
     const bytes = imagesToPdf(pages, title);
-    return { blob: new Blob([bytes as BlobPart], { type: "application/pdf" }), name: billPdfName(bill, settings?.shop_name) };
+    return { blob: new Blob([bytes as BlobPart], { type: "application/pdf" }), name };
   } finally {
     root.unmount();
     host.remove();

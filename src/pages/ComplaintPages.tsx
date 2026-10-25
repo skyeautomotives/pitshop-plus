@@ -4,6 +4,11 @@ import { jobLabel } from "../lib/jobCard";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { StatusBadge } from "../components/cards";
 import ComplaintForm from "../components/ComplaintForm";
+import CarDiagram, { MARK_LABEL, MarkShape } from "../components/CarDiagram";
+import { countMarks, MARK_KINDS } from "../lib/carMarks";
+import { makeJobCardPdf } from "../lib/jobCardPdf";
+import { savePdf } from "../lib/shareBill";
+import { useShopSettings } from "../lib/shopSettings";
 import { getComplaint, setComplaintStatus } from "../lib/api";
 import { belongingsText, complaintToDraft, documentsText, emptyComplaint, paymentMethodLabel } from "../lib/complaint";
 import type { CustomerFields } from "../lib/customer";
@@ -83,6 +88,9 @@ export function ComplaintView() {
   const [statusOverride, setStatusOverride] = useState<ComplaintStatus | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const { settings } = useShopSettings();
   const { t } = useT();
 
   useEffect(() => {
@@ -103,6 +111,22 @@ export function ComplaintView() {
     vehicleReg: c.vehicle_reg,
   };
   const billPrefill: BillPrefill = { ...customer, complaintIds: [c.id] };
+
+  const marks = c.car_marks ?? [];
+  const markCounts = countMarks(marks);
+  const showCar = settings?.vehicle_type === "car" || marks.length > 0;
+
+  async function downloadJobCard() {
+    setPdfBusy(true);
+    setPdfError(null);
+    try {
+      await savePdf(await makeJobCardPdf(c, settings, showCar));
+    } catch (err) {
+      setPdfError(errorMessage(err));
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   async function toggleStatus() {
     const next: ComplaintStatus = status === "open" ? "resolved" : "open";
@@ -128,6 +152,9 @@ export function ComplaintView() {
           <Link to={`/complaints/${c.id}/edit`} className="btn btn-outline">
             {t("complaint.edit")}
           </Link>
+          <button type="button" className="btn btn-outline" onClick={() => void downloadJobCard()} disabled={pdfBusy}>
+            {pdfBusy ? t("billView.preparingPdf") : t("complaint.jobCardPdf")}
+          </button>
           <button type="button" className="btn btn-outline" onClick={() => void toggleStatus()} disabled={statusBusy}>
             {statusBusy ? t("common.saving") : status === "open" ? t("complaint.markResolved") : t("complaint.reopen")}
           </button>
@@ -140,6 +167,11 @@ export function ComplaintView() {
       {justSaved && (
         <div className="alert alert-success" role="status">
           {c.complaint_number === null ? t("complaint.savedOffline") : t("complaint.saved", { number: displayNumber(c.complaint_number) })}
+        </div>
+      )}
+      {pdfError && (
+        <div className="alert alert-error" role="alert">
+          {t("complaint.jobCardFailed", { message: pdfError })}
         </div>
       )}
       {statusError && (
@@ -255,6 +287,27 @@ export function ComplaintView() {
                 <p className="pre-line">{c.description}</p>
               </div>
             )}
+          </section>
+        )}
+        {showCar && (
+          <section className="job-sheet car-condition-view">
+            <h2>{t("complaint.carCondition")}</h2>
+            <div className="car-condition-row">
+              <div className="car-diagram-wrap">
+                <CarDiagram marks={marks} label={t("complaint.carCondition")} />
+              </div>
+              <div className="car-legend">
+                {MARK_KINDS.map((k) => (
+                  <p key={k}>
+                    <svg viewBox="-10 -10 20 20" width={16} height={16} aria-hidden="true">
+                      <MarkShape kind={k} x={0} y={0} size={0.9} />
+                    </svg>
+                    {t(MARK_LABEL[k])}: <strong>{markCounts[k]}</strong>
+                  </p>
+                ))}
+                {marks.length === 0 && <p className="muted">{t("complaint.noMarks")}</p>}
+              </div>
+            </div>
           </section>
         )}
       </article>
