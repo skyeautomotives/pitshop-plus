@@ -4,7 +4,7 @@ import { complaintText, jobLabel, jobList } from "./jobCard";
 describe("job card", () => {
   it("has a list for bikes and one for cars", () => {
     expect(jobList("bike").some((j) => j.id === "chain_sprocket")).toBe(true);
-    expect(jobList("car").some((j) => j.id === "ac")).toBe(true);
+    expect(jobList("car").some((j) => j.id === "car_ac")).toBe(true);
     expect(jobList("car").some((j) => j.id === "chain_sprocket")).toBe(false);
   });
 
@@ -15,6 +15,15 @@ describe("job card", () => {
     expect(bike[22].label).toBe("Tyre and tube change (puncture)");
   });
 
+  it("car job card: the workshop's 13 jobs, in order", () => {
+    const car = jobList("car");
+    expect(car).toHaveLength(13);
+    expect(car[0].label).toBe("Engine oil and fluid levels");
+    expect(car[12].label).toBe("AC");
+    // Complaints saved with the old car list still show their names.
+    expect(jobLabel("general_service")).toBe("General service");
+  });
+
   it("complaints saved with jobs from the old bike list still show their names", () => {
     expect(jobLabel("tappet")).toBe("Tappet adjustment");
     expect(jobLabel("chain")).toBe("Drive chain clean & adjust");
@@ -23,7 +32,7 @@ describe("job card", () => {
   it("shows both lists, without repeats, before the workshop type is chosen", () => {
     const ids = jobList(null).map((j) => j.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toEqual(expect.arrayContaining(["chain_sprocket", "ac"]));
+    expect(ids).toEqual(expect.arrayContaining(["chain_sprocket", "car_ac"]));
   });
 
   it("gives a job the same name in both lists", () => {
