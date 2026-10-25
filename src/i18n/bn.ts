@@ -452,7 +452,7 @@ const bn: Translation = {
     openChat: "WhatsApp চ্যাট খুলুন",
     sendReady: "বিলের PDF তৈরি।",
     sendNow: "PDF পাঠান",
-    chatOpened: "{name}-এর WhatsApp চ্যাট বিলের বার্তা সহ খোলা হয়েছে। বার্তাটি পাঠান, তারপর এখানে ফিরে PDF পাঠান।",
+    chatOpened: "{name}-এর WhatsApp চ্যাট বিলের বার্তা সহ খোলা হয়েছে। বার্তাটি পাঠান, তারপর এখানে ফিরে আসুন: বিলের PDF একই চ্যাটে পাঠানোর জন্য তৈরি হয়ে খুলবে।",
     shareTitle: "বিল পাঠান",
     pdfDownloaded: "বিলের PDF সেভ হয়েছে।",
   },

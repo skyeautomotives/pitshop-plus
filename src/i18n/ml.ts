@@ -453,7 +453,7 @@ const ml: Translation = {
     openChat: "WhatsApp ചാറ്റ് തുറക്കുക",
     sendReady: "ബിൽ PDF തയ്യാറാണ്.",
     sendNow: "PDF അയയ്ക്കുക",
-    chatOpened: "{name} എന്നയാളുടെ WhatsApp ചാറ്റ് ബിൽ സന്ദേശത്തോടെ തുറന്നു. അത് അയച്ച ശേഷം ഇവിടെ തിരികെ വന്ന് PDF അയയ്ക്കുക.",
+    chatOpened: "{name} എന്നയാളുടെ WhatsApp ചാറ്റ് ബിൽ സന്ദേശത്തോടെ തുറന്നു. അത് അയച്ച ശേഷം ഇവിടെ തിരികെ വരൂ: ബിൽ PDF അതേ ചാറ്റിൽ അയയ്ക്കാൻ തയ്യാറായി തുറക്കും.",
     shareTitle: "ബിൽ അയയ്ക്കുക",
     pdfDownloaded: "ബിൽ PDF സേവ് ചെയ്തു.",
   },
