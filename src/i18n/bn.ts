@@ -315,6 +315,11 @@ const bn: Translation = {
     resolved: "সমাধান হয়েছে",
   },
   complaint: {
+    itemsInCar: "গাড়িতে থাকা জিনিস",
+    coolingGlass: "কুলিং গ্লাস",
+    umbrella: "ছাতা",
+    otherItems: "অন্য জিনিস, কমা দিয়ে আলাদা করুন (যেমন ফোন চার্জার, ব্যাগ)",
+    itemsInvalid: "প্রতিটি জিনিস ৬০ অক্ষর পর্যন্ত, আর সর্বোচ্চ ১০টি জিনিস।",
     unsaved: "এই কমপ্লেন সেভ হয়নি, এটি হারিয়ে যাবে।",
     saveFailed: "কমপ্লেন সেভ করা গেল না। {message}",
     vehicleReceived: "গাড়ি নেওয়া হয়েছে",

@@ -313,6 +313,11 @@ const en = {
     resolved: "Resolved",
   },
   complaint: {
+    itemsInCar: "Items in the car",
+    coolingGlass: "Cooling glass",
+    umbrella: "Umbrella",
+    otherItems: "Other items, separated by commas (e.g. phone charger, bag)",
+    itemsInvalid: "Each item can be up to 60 characters, and up to 10 items.",
     unsaved: "This complaint has not been saved and will be lost.",
     saveFailed: "Couldn't save the complaint. {message}",
     vehicleReceived: "Vehicle received",

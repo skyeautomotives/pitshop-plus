@@ -315,6 +315,11 @@ const te: Translation = {
     resolved: "పరిష్కారమైంది",
   },
   complaint: {
+    itemsInCar: "కారులో ఉన్న వస్తువులు",
+    coolingGlass: "కూలింగ్ గ్లాస్",
+    umbrella: "గొడుగు",
+    otherItems: "ఇతర వస్తువులు, కామాతో వేరు చేయండి (ఉదా. ఫోన్ ఛార్జర్, బ్యాగ్)",
+    itemsInvalid: "ప్రతి వస్తువు 60 అక్షరాల వరకు, గరిష్ఠంగా 10 వస్తువులు.",
     unsaved: "ఈ ఫిర్యాదు సేవ్ కాలేదు, ఇది పోతుంది.",
     saveFailed: "ఫిర్యాదు సేవ్ చేయలేకపోయాం. {message}",
     vehicleReceived: "వాహనం తీసుకున్నాం",

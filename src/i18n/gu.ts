@@ -315,6 +315,11 @@ const gu: Translation = {
     resolved: "ઉકેલાઈ",
   },
   complaint: {
+    itemsInCar: "કારમાં રાખેલી વસ્તુઓ",
+    coolingGlass: "કૂલિંગ ગ્લાસ",
+    umbrella: "છત્રી",
+    otherItems: "બીજી વસ્તુઓ, અલ્પવિરામથી અલગ કરો (દા.ત. ફોન ચાર્જર, બેગ)",
+    itemsInvalid: "દરેક વસ્તુ 60 અક્ષર સુધી, અને વધુમાં વધુ 10 વસ્તુઓ.",
     unsaved: "આ ફરિયાદ સેવ થઈ નથી, તે જતી રહેશે.",
     saveFailed: "ફરિયાદ સેવ થઈ શકી નહીં. {message}",
     vehicleReceived: "વાહન લીધું",

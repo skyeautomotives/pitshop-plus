@@ -91,6 +91,8 @@ export interface ComplaintRow {
   odometer_km?: number | null;
   /** Helmets left with the vehicle (0-2). */
   helmets?: number | null;
+  /** Items left in the car (0032): 'cooling_glass', 'umbrella', or typed text. */
+  belongings?: string[];
   /** Papers left with the vehicle. */
   documents?: IntakeDocument[];
   /** Anything else left with the vehicle, as typed. */

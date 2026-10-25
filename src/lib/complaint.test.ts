@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { complaintToDraft, documentsText, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
+import { belongingsText, complaintToDraft, documentsText, emptyComplaint, validateComplaint, type ComplaintDraft } from "./complaint";
 import { vehicleKey } from "./customer";
 import { buildHistory, filterHistory, historyCounts } from "./history";
 import type { BillWithComplaints, ComplaintWithBills } from "./types";
@@ -33,11 +33,22 @@ describe("validateComplaint", () => {
       vehicle_name: null,
       odometer_km: null,
       helmets: 0,
+      belongings: [],
       documents: [],
       other_documents: [],
       advance_amount: null,
       advance_method: null,
     });
+  });
+
+  it("car workshops: no helmets, and items left in the car", () => {
+    const { errors, payload } = validateComplaint(filled({ helmets: 2, belongings: ["umbrella", "cooling_glass"], otherBelongings: " Phone charger, , Bag " }), { car: true });
+    expect(errors).toEqual({});
+    expect(payload?.helmets).toBeNull();
+    expect(payload?.belongings).toEqual(["cooling_glass", "umbrella", "Phone charger", "Bag"]);
+    expect(belongingsText({ belongings: payload!.belongings })).toBe("Cooling glass, Umbrella, Phone charger, Bag");
+    expect(complaintToDraft({ ...payload!, id: "x" } as never)).toMatchObject({ belongings: ["cooling_glass", "umbrella"], otherBelongings: "Phone charger, Bag" });
+    expect(validateComplaint(filled({ otherBelongings: "x".repeat(61) }), { car: true }).errors.otherBelongings).toBeTruthy();
   });
 
   it("accepts ticked jobs without a written problem", () => {

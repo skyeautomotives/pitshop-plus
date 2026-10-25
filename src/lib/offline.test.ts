@@ -221,6 +221,7 @@ const complaint: ComplaintPayload = {
   vehicle_name: "Honda Activa",
   odometer_km: 12500,
   helmets: 1,
+  belongings: [],
   documents: ["rc"],
   other_documents: [],
   advance_amount: 500,
