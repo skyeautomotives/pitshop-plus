@@ -48,6 +48,7 @@ export default function Register() {
   const [form, setForm] = useState<Form>({ shopName: "", fullName: "", phone: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [error, setError] = useState<string | null>(null);
+  const [taken, setTaken] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
@@ -86,6 +87,7 @@ export default function Register() {
     const email = form.email.trim().toLowerCase();
     setBusy(true);
     setError(null);
+    setTaken(false);
     const { data, error: err } = await supabase.auth.signUp({
       email,
       password: form.password,
@@ -102,8 +104,14 @@ export default function Register() {
       },
     });
     setBusy(false);
+    // An email that already has an account comes back with no identities, and no email is sent.
+    if ((err && /already registered/i.test(err.message)) || (!err && data.user?.identities?.length === 0)) {
+      setTaken(true);
+      setError(t("register.alreadyRegistered"));
+      return;
+    }
     if (err) {
-      setError(/already registered/i.test(err.message) ? t("register.alreadyRegistered") : errorMessage(err));
+      setError(errorMessage(err));
       return;
     }
     // With email confirmation on there is no session yet: ask them to check their inbox.
@@ -160,6 +168,12 @@ export default function Register() {
         {error && (
           <div className="alert alert-error" role="alert">
             {error}
+            {taken && (
+              <span className="taken-links">
+                <Link to="/login">{t("login.title")}</Link>
+                <Link to="/forgot-password">{t("login.forgotLink")}</Link>
+              </span>
+            )}
           </div>
         )}
         <div className="field">
