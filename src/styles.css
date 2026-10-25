@@ -4761,7 +4761,7 @@ html:not(:lang(en)) body {
 }
 
 .jc-car-diagram {
-  width: 300px;
+  width: 230px;
   flex: none;
 }
 
@@ -4776,6 +4776,10 @@ html:not(:lang(en)) body {
   display: block;
   margin-top: 18px;
   max-width: 260px;
+}
+
+.jc-signs {
+  margin-top: 20px;
 }
 
 .jc-signs .inv-sign {

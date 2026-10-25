@@ -12,6 +12,14 @@ import { displayNumber } from "../lib/format";
 import { errorMessage } from "../lib/supabase";
 import { makeBillPdf, type BillPdf } from "../lib/billPdf";
 import { isPhoneBrowser, savePdf, sendBillPdf, sharePdf } from "../lib/shareBill";
+import { getComplaint } from "../lib/api";
+import type { BillWithItems, ComplaintRow, ComplaintWithBills } from "../lib/types";
+
+/** The full complaints a bill addresses, for their job cards (from this device, so it works offline). */
+async function jobCardsFor(bill: BillWithItems): Promise<ComplaintRow[]> {
+  const found = await Promise.all(bill.complaints.map((c) => getComplaint(c.id).catch(() => null)));
+  return found.filter((c): c is ComplaintWithBills => c !== null);
+}
 
 type PdfState =
   | { step: "idle" }
@@ -50,7 +58,7 @@ export default function BillView() {
     const tab = !isNativeApp && !isPhoneBrowser() ? window.open("about:blank", "_blank") : null;
     setPdfState({ step: "busy" });
     try {
-      const pdf = await makeBillPdf(bill, settings);
+      const pdf = await makeBillPdf(bill, settings, await jobCardsFor(bill));
       const message = billMessage(bill, settings);
       const phone = whatsappNumber(bill.phone);
       const result = await sendBillPdf(pdf, message, phone);
@@ -72,7 +80,7 @@ export default function BillView() {
   async function downloadPdf() {
     setPdfState({ step: "busy" });
     try {
-      const saved = await savePdf(await makeBillPdf(bill, settings));
+      const saved = await savePdf(await makeBillPdf(bill, settings, await jobCardsFor(bill)));
       setPdfState(saved && !isNativeApp ? { step: "downloaded" } : { step: "idle" });
     } catch (err) {
       setPdfState({ step: "failed", message: errorMessage(err) });
