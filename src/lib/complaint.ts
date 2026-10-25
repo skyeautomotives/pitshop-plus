@@ -33,6 +33,10 @@ export interface ComplaintDraft extends CustomerFields {
   /** Km driven, as typed. */
   odometerKm: string;
   helmets: 0 | 1 | 2;
+  /** Items left in the car that are ticked (cars). */
+  belongings: string[];
+  /** Other items left in the car, typed with commas between them. */
+  otherBelongings: string;
   documents: IntakeDocument[];
   /** "Other" ticked: show the boxes for other items. */
   otherDocumentsOn: boolean;
@@ -54,6 +58,8 @@ export function emptyComplaint(customer: Partial<CustomerFields> = {}): Complain
     vehicleName: "",
     odometerKm: "",
     helmets: 0,
+    belongings: [],
+    otherBelongings: "",
     documents: [],
     otherDocumentsOn: false,
     otherDocuments: [""],
@@ -74,7 +80,9 @@ export interface ComplaintPayload {
   status: ComplaintStatus;
   vehicle_name: string | null;
   odometer_km: number | null;
-  helmets: number;
+  /** Null for car workshops, which don't take helmets. */
+  helmets: number | null;
+  belongings: string[];
   documents: IntakeDocument[];
   other_documents: string[];
   /** Rupees, e.g. 500 or 499.5. */
@@ -82,7 +90,7 @@ export interface ComplaintPayload {
   advance_method: PaymentMethod | null;
 }
 
-export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; payload: ComplaintPayload | null } {
+export function validateComplaint(d: ComplaintDraft, opts: { car?: boolean } = {}): { errors: FieldErrors; payload: ComplaintPayload | null } {
   const errors: FieldErrors = {};
   const customer = validateCustomer(d, errors);
 
@@ -113,6 +121,12 @@ export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; pay
     else if (otherDocuments.length > MAX_OTHER_DOCUMENTS) errors.otherDocuments = t("complaint.otherTooMany", { n: MAX_OTHER_DOCUMENTS });
   }
 
+  const belongings = [
+    ...BELONGINGS.map((x) => x.id).filter((id) => d.belongings.includes(id)),
+    ...d.otherBelongings.split(",").map((x) => x.trim()).filter(Boolean),
+  ];
+  if (belongings.length > MAX_BELONGINGS || belongings.some((x) => x.length > 60)) errors.otherBelongings = t("complaint.itemsInvalid");
+
   let advanceAmount: number | null = null;
   if (d.advance.trim() !== "") {
     const a = parseAmount(d.advance);
@@ -134,7 +148,8 @@ export function validateComplaint(d: ComplaintDraft): { errors: FieldErrors; pay
       status: d.status,
       vehicle_name: vehicleName || null,
       odometer_km: odometerKm,
-      helmets: d.helmets,
+      helmets: opts.car ? null : d.helmets,
+      belongings,
       documents: INTAKE_DOCUMENTS.map((x) => x.id).filter((id) => d.documents.includes(id)),
       other_documents: otherDocuments,
       advance_amount: advanceAmount,
@@ -159,12 +174,27 @@ export function complaintToDraft(c: ComplaintRow): ComplaintDraft {
     vehicleName: c.vehicle_name ?? "",
     odometerKm: c.odometer_km === null || c.odometer_km === undefined ? "" : String(c.odometer_km),
     helmets: helmets === 1 || helmets === 2 ? helmets : 0,
+    belongings: (c.belongings ?? []).filter(isBelonging),
+    otherBelongings: (c.belongings ?? []).filter((x) => !isBelonging(x)).join(", "),
     documents: c.documents ?? [],
     otherDocumentsOn: others.length > 0,
     otherDocuments: others.length > 0 ? [...others] : [""],
     advance: c.advance_amount ? paiseToInput(rupeesToPaise(c.advance_amount)) : "",
     advanceMethod: c.advance_method ?? "cash",
   };
+}
+
+/** Items car workshops can tick as left in the car. */
+export const BELONGINGS = [
+  { id: "cooling_glass", get label() { return t("complaint.coolingGlass"); } },
+  { id: "umbrella", get label() { return t("complaint.umbrella"); } },
+];
+const MAX_BELONGINGS = 10;
+const isBelonging = (x: string) => BELONGINGS.some((b) => b.id === x);
+
+/** "Cooling glass, Umbrella, Phone charger" for display; empty when nothing was left. */
+export function belongingsText(c: Pick<ComplaintRow, "belongings">): string {
+  return (c.belongings ?? []).map((x) => BELONGINGS.find((b) => b.id === x)?.label ?? x).join(", ");
 }
 
 /** "RC book, Pollution certificate, Spare key" for display; empty when nothing was left. */

@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useT } from "../i18n";
 import { Link, useNavigate } from "react-router";
 import { createComplaint, updateComplaint } from "../lib/api";
-import { INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
+import { BELONGINGS, INTAKE_DOCUMENTS, MAX_OTHER_DOCUMENTS, PAYMENT_METHODS, validateComplaint, type ComplaintDraft } from "../lib/complaint";
 import type { FieldErrors } from "../lib/customer";
 import { useShopSettings } from "../lib/shopSettings";
 import { errorMessage } from "../lib/supabase";
@@ -21,6 +21,7 @@ const FIELD_ORDER = [
   "vehicleName",
   "odometerKm",
   "otherDocuments",
+  "otherBelongings",
   "description",
   "reportedOn",
   "notes",
@@ -43,6 +44,9 @@ export default function ComplaintForm({
   const navigate = useNavigate();
   const vehicleType = useShopSettings().settings?.vehicle_type;
   const examples = vehicleExamples(vehicleType);
+  // Car workshops don't take helmets; bike workshops don't need items left in the car.
+  const car = vehicleType === "car";
+  const bike = vehicleType === "bike";
   const [draft, setDraft] = useState(initial);
   const [baseline] = useState(() => JSON.stringify(initial));
   const [submitted, setSubmitted] = useState(false);
@@ -50,7 +54,7 @@ export default function ComplaintForm({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const dirty = JSON.stringify(draft) !== baseline;
-  const errors = useMemo(() => validateComplaint(draft).errors, [draft]);
+  const errors = useMemo(() => validateComplaint(draft, { car }).errors, [draft, car]);
   const shown: FieldErrors = submitted ? errors : {};
   const errorCount = Object.keys(shown).length;
 
@@ -72,7 +76,7 @@ export default function ComplaintForm({
     if (saving) return;
     setSubmitted(true);
     setSaveError(null);
-    const { errors: errs, payload } = validateComplaint(draft);
+    const { errors: errs, payload } = validateComplaint(draft, { car });
     if (!payload) {
       const first = FIELD_ORDER.find((k) => errs[k]);
       if (first) document.getElementById(`f-${first}`)?.focus();
@@ -138,16 +142,49 @@ export default function ComplaintForm({
           </Field>
         </div>
 
-        <fieldset className="intake-group">
-          <legend>{t("complaint.helmets")}</legend>
-          <div className="segmented" role="group" aria-label={t("complaint.helmets")}>
-            {([0, 1, 2] as const).map((n) => (
-              <button key={n} type="button" aria-pressed={draft.helmets === n} onClick={() => set({ helmets: n })}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        {!car && (
+          <fieldset className="intake-group">
+            <legend>{t("complaint.helmets")}</legend>
+            <div className="segmented" role="group" aria-label={t("complaint.helmets")}>
+              {([0, 1, 2] as const).map((n) => (
+                <button key={n} type="button" aria-pressed={draft.helmets === n} onClick={() => set({ helmets: n })}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {!bike && (
+          <fieldset className={`intake-group${shown.otherBelongings ? " has-error" : ""}`}>
+            <legend>{t("complaint.itemsInCar")}</legend>
+            <div className="intake-checks">
+              {BELONGINGS.map((b) => (
+                <label key={b.id} className="check">
+                  <input
+                    type="checkbox"
+                    checked={draft.belongings.includes(b.id)}
+                    onChange={(e) =>
+                      set({ belongings: e.target.checked ? [...draft.belongings, b.id] : draft.belongings.filter((x) => x !== b.id) })
+                    }
+                  />
+                  {b.label}
+                </label>
+              ))}
+            </div>
+            <div className="intake-others">
+              <input
+                {...fieldProps("otherBelongings", shown.otherBelongings)}
+                type="text"
+                aria-label={t("complaint.otherItems")}
+                placeholder={t("complaint.otherItems")}
+                value={draft.otherBelongings}
+                onChange={(e) => set({ otherBelongings: e.target.value })}
+              />
+            </div>
+            <FieldError fieldKey="otherBelongings" error={shown.otherBelongings} />
+          </fieldset>
+        )}
 
         <fieldset className={`intake-group${shown.otherDocuments ? " has-error" : ""}`}>
           <legend>{t("complaint.documentsReceived")}</legend>

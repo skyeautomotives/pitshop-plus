@@ -316,6 +316,11 @@ const ml: Translation = {
     resolved: "തീർന്നു",
   },
   complaint: {
+    itemsInCar: "കാറിലുള്ള സാധനങ്ങൾ",
+    coolingGlass: "കൂളിംഗ് ഗ്ലാസ്",
+    umbrella: "കുട",
+    otherItems: "മറ്റ് സാധനങ്ങൾ, കോമ ഇട്ട് വേർതിരിക്കുക (ഉദാ. ഫോൺ ചാർജർ, ബാഗ്)",
+    itemsInvalid: "ഓരോ സാധനവും 60 അക്ഷരം വരെ, പരമാവധി 10 സാധനങ്ങൾ.",
     unsaved: "ഈ പരാതി സേവ് ചെയ്തിട്ടില്ല, അത് നഷ്ടപ്പെടും.",
     saveFailed: "പരാതി സേവ് ചെയ്യാനായില്ല. {message}",
     vehicleReceived: "വാഹനം ലഭിച്ചപ്പോൾ",

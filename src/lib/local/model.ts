@@ -138,6 +138,7 @@ export function complaintFromPayload(id: string, p: ComplaintPayload, me: Me, no
     vehicle_name: p.vehicle_name,
     odometer_km: p.odometer_km,
     helmets: p.helmets,
+    belongings: p.belongings,
     documents: p.documents,
     other_documents: p.other_documents,
     advance_amount: p.advance_amount,

@@ -315,6 +315,11 @@ const mr: Translation = {
     resolved: "सुटली",
   },
   complaint: {
+    itemsInCar: "गाडीत ठेवलेल्या वस्तू",
+    coolingGlass: "कूलिंग ग्लास",
+    umbrella: "छत्री",
+    otherItems: "इतर वस्तू, स्वल्पविरामाने वेगळ्या करा (उदा. फोन चार्जर, बॅग)",
+    itemsInvalid: "प्रत्येक वस्तू 60 अक्षरांपर्यंत, आणि जास्तीत जास्त 10 वस्तू.",
     unsaved: "ही तक्रार सेव्ह झालेली नाही, ती जाईल.",
     saveFailed: "तक्रार सेव्ह करता आली नाही. {message}",
     vehicleReceived: "गाडी घेतली",

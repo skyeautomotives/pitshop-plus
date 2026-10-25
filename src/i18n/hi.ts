@@ -315,6 +315,11 @@ const hi: Translation = {
     resolved: "हल हो गई",
   },
   complaint: {
+    itemsInCar: "कार में रखा सामान",
+    coolingGlass: "कूलिंग ग्लास",
+    umbrella: "छाता",
+    otherItems: "दूसरा सामान, कॉमा से अलग करें (जैसे फ़ोन चार्जर, बैग)",
+    itemsInvalid: "हर सामान 60 अक्षर तक, और ज़्यादा से ज़्यादा 10 सामान।",
     unsaved: "यह शिकायत सेव नहीं हुई है, यह खो जाएगी।",
     saveFailed: "शिकायत सेव नहीं हो सकी। {message}",
     vehicleReceived: "गाड़ी मिलते समय",
