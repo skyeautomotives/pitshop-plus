@@ -110,6 +110,9 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+        <p className="forgot-link">
+          <Link to="/forgot-password">{t("login.forgotLink")}</Link>
+        </p>
         <label className="check remember">
           <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
           {t("login.rememberMe")}

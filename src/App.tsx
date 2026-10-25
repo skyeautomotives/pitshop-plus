@@ -19,6 +19,7 @@ import Privacy from "./pages/marketing/Privacy";
 import Terms from "./pages/marketing/Terms";
 import NewBill from "./pages/NewBill";
 import Register from "./pages/Register";
+import { ForgotPassword, ResetPassword } from "./pages/PasswordReset";
 import Reports from "./pages/Reports";
 import CreditReportPage from "./pages/CreditReportPage";
 import Settings from "./pages/Settings";
@@ -55,6 +56,8 @@ const router = createRouter(
     { path: "/privacy", element: <Privacy /> },
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
+    { path: "/forgot-password", element: <ForgotPassword /> },
+    { path: "/reset-password", element: <ResetPassword /> },
     {
       element: (
         <RequireAuth>

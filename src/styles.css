@@ -2221,6 +2221,20 @@ h3 {
   font-weight: 600;
 }
 
+.alert .taken-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Under the password box on the sign-in page. */
+.forgot-link {
+  margin: -4px 0 12px;
+  text-align: right;
+}
+
 /* "Get the app" on the sign-in page (website only). */
 .get-app {
   margin-top: 18px;
