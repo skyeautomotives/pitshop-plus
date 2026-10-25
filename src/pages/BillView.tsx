@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "../i18n";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { BillNotFound, LoadError } from "../components/states";
@@ -37,6 +37,34 @@ export default function BillView() {
     if (justSaved) navigate(location.pathname, { replace: true, state: null });
   }, [justSaved, navigate, location.pathname]);
 
+  // Android app: after the customer's chat was opened, send the PDF there as soon as the person comes back.
+  const wentAway = useRef(false);
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === "hidden") wentAway.current = true;
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, []);
+  useEffect(() => {
+    if (pdfState.step !== "attach") return;
+    const { pdf, phone, app } = pdfState;
+    let away = wentAway.current || document.visibilityState === "hidden";
+    // Already back (the app may pause before this runs).
+    if (away && document.visibilityState === "visible") return sendAttached(pdf, phone, app);
+    const onChange = () => {
+      if (document.visibilityState === "hidden") away = true;
+      else if (away) sendAttached(pdf, phone, app);
+    };
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, [pdfState]);
+
+  function sendAttached(pdf: BillPdf, phone: string, app: string) {
+    setPdfState({ step: "idle" });
+    sendBillPdf(pdf, "", phone, app).catch((err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }));
+  }
+
   if (state.status === "loading") return <p className="page-status">{t("billView.loading")}</p>;
   if (state.status === "not-found") return <BillNotFound />;
   if (state.status === "error") return <LoadError message={state.message} onRetry={state.retry} />;
@@ -55,6 +83,7 @@ export default function BillView() {
       const message = billMessage(bill, settings);
       const phone = whatsappNumber(bill.phone);
       // Android app: open the right chat first (WhatsApp can't attach a file to an unsaved number's chat).
+      wentAway.current = false;
       const app = phone ? await openWhatsAppChat(phone, message) : null;
       if (phone && app) {
         setPdfState({ step: "attach", pdf, phone, app });
@@ -162,13 +191,7 @@ export default function BillView() {
           <button
             type="button"
             className="btn btn-whatsapp"
-            onClick={() => {
-              const { pdf, phone, app } = pdfState;
-              void sendBillPdf(pdf, "", phone, app).then(
-                () => setPdfState({ step: "idle" }),
-                (err: unknown) => setPdfState({ step: "failed", message: errorMessage(err) }),
-              );
-            }}
+            onClick={() => sendAttached(pdfState.pdf, pdfState.phone, pdfState.app)}
           >
             {t("billView.sendNow")}
           </button>
