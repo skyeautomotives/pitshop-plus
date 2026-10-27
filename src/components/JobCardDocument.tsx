@@ -34,6 +34,7 @@ export default function JobCardDocument({
     <article className="invoice invoice-pdf job-card-doc" lang={lang}>
       <header className="inv-top" data-keep>
         <div className="inv-shop">
+          {settings?.logo && <img className="inv-logo" src={settings.logo} alt="" />}
           <h1 className="inv-shop-name">{shopName}</h1>
           {settings?.address && <p className="pre-line">{settings.address}</p>}
           {settings?.phone && <p>{d("doc.phoneLine", { phone: settings.phone })}</p>}
@@ -152,7 +153,8 @@ export default function JobCardDocument({
         </div>
         <div className="inv-sign">
           <p>{d("doc.forShop", { shop: shopName })}</p>
-          <span className="inv-sign-line" />
+          {settings?.signature ? <img className="inv-signature" src={settings.signature} alt="" /> : null}
+          <span className={settings?.signature ? "inv-sign-line is-signed" : "inv-sign-line"} />
           <p className="inv-muted">{d("doc.signatory")}</p>
         </div>
       </footer>

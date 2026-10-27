@@ -185,4 +185,7 @@ export interface ShopSettings {
   gstin: string | null;
   /** Default for new bills: prices typed include GST. */
   gst_inclusive: boolean;
+  /** Logo and signature on bills and job cards, as small picture data URLs (owner sets them). */
+  logo?: string | null;
+  signature?: string | null;
 }

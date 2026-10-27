@@ -455,7 +455,7 @@ export async function openComplaintsForPhoneElsewhere(phoneDigits: string, vehic
 // ---------- Shop settings (read offline from the last copy; changes need a connection) ----------
 
 export async function getShopSettings(): Promise<ShopSettings> {
-  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type, gst_enabled, gstin, gst_inclusive").single();
+  const { data, error } = await supabase.from("shop_settings").select("shop_name, address, phone, allow_zero_labour, vehicle_type, gst_enabled, gstin, gst_inclusive, logo, signature").single();
   if (!error) {
     await setMeta("shopSettings", data);
     return data as ShopSettings;
@@ -474,7 +474,19 @@ export async function updateShopSettings(s: ShopSettings): Promise<void> {
     .update({ ...s, updated_at: new Date().toISOString() })
     .eq("shop_id", shopId as string);
   if (error) throw error;
-  await setMeta("shopSettings", s);
+  await setMeta("shopSettings", { ...(await getMeta<ShopSettings>("shopSettings")), ...s });
+}
+
+/** The owner sets or removes the logo or signature (null removes it). */
+export async function updateShopBranding(patch: Pick<ShopSettings, "logo"> | Pick<ShopSettings, "signature">): Promise<void> {
+  const { data: shopId, error: shopError } = await supabase.rpc("my_shop_id");
+  if (shopError) throw shopError;
+  const { error } = await supabase
+    .from("shop_settings")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("shop_id", shopId as string);
+  if (error) throw error;
+  await setMeta("shopSettings", { ...(await getMeta<ShopSettings>("shopSettings")), ...patch });
 }
 
 // ---------- Staff (owner tools need a connection; the list is kept for offline reports) ----------

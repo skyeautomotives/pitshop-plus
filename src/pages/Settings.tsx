@@ -3,6 +3,7 @@ import { useT, type Key } from "../i18n";
 import { Navigate, NavLink, useParams } from "react-router";
 import { Field, fieldProps } from "../components/fields";
 import BackupSection from "../components/BackupSection";
+import BrandingSection from "../components/BrandingSection";
 import DisplaySection from "../components/DisplaySection";
 import StaffSection from "../components/StaffSection";
 import VehicleTypeChoice from "../components/VehicleTypeChoice";
@@ -20,6 +21,7 @@ const GROUPS = [
     items: [
       { id: "shop", label: "settings.shopDetails", hint: "settings.shopDetailsHint" },
       { id: "billing", label: "settings.billingRules", hint: "settings.billingRulesHint" },
+      { id: "branding", label: "settings.branding", hint: "settings.brandingHint" },
     ],
   },
   {
@@ -78,6 +80,7 @@ export default function Settings() {
         <div className="settings-content">
           {current === "shop" && <ShopSettingsForm part="shop" />}
           {current === "billing" && <ShopSettingsForm part="billing" />}
+          {current === "branding" && <BrandingSection />}
           {current === "staff" && <StaffSection show="list" />}
           {current === "add-staff" && <StaffSection show="add" />}
           {current === "backup" && <BackupSection />}
