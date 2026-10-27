@@ -4786,3 +4786,76 @@ html:not(:lang(en)) body {
   flex: 1;
   max-width: 260px;
 }
+
+/* Workshop logo and signature on bills and job cards */
+
+.inv-logo {
+  display: block;
+  max-width: 180px;
+  max-height: 72px;
+  margin-bottom: 8px;
+  object-fit: contain;
+}
+
+.inv-signature {
+  display: block;
+  max-width: 180px;
+  max-height: 56px;
+  margin: 6px auto -6px;
+  object-fit: contain;
+}
+
+.inv-sign-line.is-signed {
+  height: 0;
+}
+
+/* Settings: logo and signature */
+
+.branding-item {
+  margin-top: 20px;
+}
+
+.branding-item h3 {
+  margin: 0 0 4px;
+}
+
+.branding-preview {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  max-width: 360px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px dashed var(--border, #d0d5dd);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.branding-preview img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+}
+
+.branding-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.branding-actions label.btn {
+  cursor: pointer;
+}
+
+.signature-pad canvas {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 3 / 1;
+  margin-top: 10px;
+  background: #fff;
+  border: 1px dashed var(--border, #98a2b3);
+  border-radius: 10px;
+  touch-action: none;
+  cursor: crosshair;
+}
